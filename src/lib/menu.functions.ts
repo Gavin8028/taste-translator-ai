@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateText, Output } from "ai";
+import { generateObject } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
@@ -54,9 +54,9 @@ Also return sourceLanguage (the detected language of the menu) and restaurantNam
 
 Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes that are not visible.`;
 
-    const { experimental_output } = await generateText({
-      model: gateway.chatModel("google/gemini-3-flash-preview"),
-      experimental_output: Output.object({ schema: MenuSchema }),
+    const { object } = await generateObject({
+      model: gateway("google/gemini-3-flash-preview"),
+      schema: MenuSchema,
       messages: [
         {
           role: "user",
@@ -68,5 +68,5 @@ Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes 
       ],
     });
 
-    return experimental_output;
+    return object;
   });
