@@ -14,7 +14,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ScanIdRouteImport } from './routes/scan.$id'
+import { Route as ScanIdRouteImport } from './routes/scan_.$id'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 
 const ScanRoute = ScanRouteImport.update({
@@ -43,9 +43,9 @@ const IndexRoute = IndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScanIdRoute = ScanIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ScanRoute,
+  id: '/scan_/$id',
+  path: '/scan/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDishImageRoute = ApiDishImageRouteImport.update({
   id: '/api/dish-image',
@@ -58,7 +58,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/scan': typeof ScanRouteWithChildren
+  '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/scan/$id': typeof ScanIdRoute
 }
@@ -67,7 +67,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/scan': typeof ScanRouteWithChildren
+  '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/scan/$id': typeof ScanIdRoute
 }
@@ -77,9 +77,9 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/scan': typeof ScanRouteWithChildren
+  '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
-  '/scan/$id': typeof ScanIdRoute
+  '/scan_/$id': typeof ScanIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -108,7 +108,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/scan'
     | '/api/dish-image'
-    | '/scan/$id'
+    | '/scan_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,8 +116,9 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  ScanRoute: typeof ScanRouteWithChildren
+  ScanRoute: typeof ScanRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
+  ScanIdRoute: typeof ScanIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -157,12 +158,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/scan/$id': {
-      id: '/scan/$id'
-      path: '/$id'
+    '/scan_/$id': {
+      id: '/scan_/$id'
+      path: '/scan/$id'
       fullPath: '/scan/$id'
       preLoaderRoute: typeof ScanIdRouteImport
-      parentRoute: typeof ScanRoute
+      parentRoute: typeof rootRouteImport
     }
     '/api/dish-image': {
       id: '/api/dish-image'
@@ -174,24 +175,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface ScanRouteChildren {
-  ScanIdRoute: typeof ScanIdRoute
-}
-
-const ScanRouteChildren: ScanRouteChildren = {
-  ScanIdRoute: ScanIdRoute,
-}
-
-const ScanRouteWithChildren = ScanRoute._addFileChildren(ScanRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  ScanRoute: ScanRouteWithChildren,
+  ScanRoute: ScanRoute,
   ApiDishImageRoute: ApiDishImageRoute,
+  ScanIdRoute: ScanIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

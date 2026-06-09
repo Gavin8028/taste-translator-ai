@@ -8,7 +8,7 @@ import type { Dish, MenuResult } from "@/lib/menu.functions";
 import { DishCard } from "@/components/dish-card";
 import { DishDetailSheet } from "@/components/dish-detail-sheet";
 
-export const Route = createFileRoute("/scan/$id")({
+export const Route = createFileRoute("/scan_/$id")({
   head: () => ({
     meta: [
       { title: "Your menu — MenuVision AI" },
