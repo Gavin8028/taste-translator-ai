@@ -9,13 +9,43 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ScanRouteImport } from './routes/scan'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ScanIdRouteImport } from './routes/scan.$id'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ScanIdRoute = ScanIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ScanRoute,
 } as any)
 const ApiDishImageRoute = ApiDishImageRouteImport.update({
   id: '/api/dish-image',
@@ -25,38 +55,114 @@ const ApiDishImageRoute = ApiDishImageRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/scan': typeof ScanRouteWithChildren
   '/api/dish-image': typeof ApiDishImageRoute
+  '/scan/$id': typeof ScanIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/scan': typeof ScanRouteWithChildren
   '/api/dish-image': typeof ApiDishImageRoute
+  '/scan/$id': typeof ScanIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
+  '/scan': typeof ScanRouteWithChildren
   '/api/dish-image': typeof ApiDishImageRoute
+  '/scan/$id': typeof ScanIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/dish-image'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/pricing'
+    | '/privacy'
+    | '/scan'
+    | '/api/dish-image'
+    | '/scan/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/dish-image'
-  id: '__root__' | '/' | '/api/dish-image'
+  to:
+    | '/'
+    | '/about'
+    | '/pricing'
+    | '/privacy'
+    | '/scan'
+    | '/api/dish-image'
+    | '/scan/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/pricing'
+    | '/privacy'
+    | '/scan'
+    | '/api/dish-image'
+    | '/scan/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
+  ScanRoute: typeof ScanRouteWithChildren
   ApiDishImageRoute: typeof ApiDishImageRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/scan/$id': {
+      id: '/scan/$id'
+      path: '/$id'
+      fullPath: '/scan/$id'
+      preLoaderRoute: typeof ScanIdRouteImport
+      parentRoute: typeof ScanRoute
     }
     '/api/dish-image': {
       id: '/api/dish-image'
@@ -68,8 +174,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ScanRouteChildren {
+  ScanIdRoute: typeof ScanIdRoute
+}
+
+const ScanRouteChildren: ScanRouteChildren = {
+  ScanIdRoute: ScanIdRoute,
+}
+
+const ScanRouteWithChildren = ScanRoute._addFileChildren(ScanRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
+  ScanRoute: ScanRouteWithChildren,
   ApiDishImageRoute: ApiDishImageRoute,
 }
 export const routeTree = rootRouteImport
