@@ -24,8 +24,15 @@ export function SiteHeader() {
             Scan
           </Link>
           <Link
-            to="/pricing"
+            to="/restaurants"
             className="rounded-md px-3 py-1.5 hover:text-foreground"
+            activeProps={{ className: "text-foreground" }}
+          >
+            For restaurants
+          </Link>
+          <Link
+            to="/pricing"
+            className="hidden rounded-md px-3 py-1.5 hover:text-foreground sm:inline"
             activeProps={{ className: "text-foreground" }}
           >
             Pricing

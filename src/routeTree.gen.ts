@@ -17,6 +17,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScanIdRouteImport } from './routes/scan_.$id'
 import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
+import { Route as MSlugRouteImport } from './routes/m.$slug'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 
 const ScanRoute = ScanRouteImport.update({
@@ -59,6 +60,11 @@ const RestaurantsNewRoute = RestaurantsNewRouteImport.update({
   path: '/new',
   getParentRoute: () => RestaurantsRoute,
 } as any)
+const MSlugRoute = MSlugRouteImport.update({
+  id: '/m/$slug',
+  path: '/m/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDishImageRoute = ApiDishImageRouteImport.update({
   id: '/api/dish-image',
   path: '/api/dish-image',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
 }
@@ -84,6 +91,7 @@ export interface FileRoutesByTo {
   '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
 }
@@ -96,6 +104,7 @@ export interface FileRoutesById {
   '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
 }
@@ -109,6 +118,7 @@ export interface FileRouteTypes {
     | '/restaurants'
     | '/scan'
     | '/api/dish-image'
+    | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -120,6 +130,7 @@ export interface FileRouteTypes {
     | '/restaurants'
     | '/scan'
     | '/api/dish-image'
+    | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
   id:
@@ -131,6 +142,7 @@ export interface FileRouteTypes {
     | '/restaurants'
     | '/scan'
     | '/api/dish-image'
+    | '/m/$slug'
     | '/restaurants/new'
     | '/scan_/$id'
   fileRoutesById: FileRoutesById
@@ -143,6 +155,7 @@ export interface RootRouteChildren {
   RestaurantsRoute: typeof RestaurantsRouteWithChildren
   ScanRoute: typeof ScanRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
+  MSlugRoute: typeof MSlugRoute
   ScanIdRoute: typeof ScanIdRoute
 }
 
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsNewRouteImport
       parentRoute: typeof RestaurantsRoute
     }
+    '/m/$slug': {
+      id: '/m/$slug'
+      path: '/m/$slug'
+      fullPath: '/m/$slug'
+      preLoaderRoute: typeof MSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/dish-image': {
       id: '/api/dish-image'
       path: '/api/dish-image'
@@ -234,8 +254,19 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantsRoute: RestaurantsRouteWithChildren,
   ScanRoute: ScanRoute,
   ApiDishImageRoute: ApiDishImageRoute,
+  MSlugRoute: MSlugRoute,
   ScanIdRoute: ScanIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
