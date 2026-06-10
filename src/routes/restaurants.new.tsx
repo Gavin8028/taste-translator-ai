@@ -184,14 +184,34 @@ function NewRestaurantMenu() {
             </code>
           </div>
 
+          <div className="mt-6 grid gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-[auto,1fr] sm:items-center">
+            <QrCode value={url} filename={`${result.slug}-qr.png`} />
+            <div>
+              <p className="font-medium">Print this on your tables</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Guests scan to open your translated menu with photos. No app
+                download, no sign-in.
+              </p>
+            </div>
+          </div>
+
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild className="rounded-full">
               <Link to="/m/$slug" params={{ slug: result.slug }}>
                 View your menu
               </Link>
             </Button>
+            <Button asChild variant="outline" className="rounded-full">
+              <Link
+                to="/restaurants/$slug/edit"
+                params={{ slug: result.slug }}
+              >
+                <Pencil className="h-4 w-4" />
+                Manage menu
+              </Link>
+            </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => {
                 setResult(null);
                 setName("");
@@ -203,6 +223,7 @@ function NewRestaurantMenu() {
               Create another
             </Button>
           </div>
+
         </main>
         <SiteFooter />
       </div>
