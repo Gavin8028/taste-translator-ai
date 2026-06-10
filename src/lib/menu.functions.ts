@@ -46,9 +46,14 @@ export const analyzeMenu = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => {
     return z
       .object({
-        imageDataUrl: z.string().min(20),
+        // Accept either a single image (legacy) or an array of pages.
+        imageDataUrl: z.string().min(20).optional(),
+        imageDataUrls: z.array(z.string().min(20)).min(1).max(8).optional(),
         targetLanguage: z.string().min(2).max(40).default("English"),
         multiLanguage: z.boolean().optional().default(false),
+      })
+      .refine((v) => v.imageDataUrl || (v.imageDataUrls && v.imageDataUrls.length > 0), {
+        message: "At least one image is required",
       })
       .parse(input);
   })
@@ -58,13 +63,22 @@ export const analyzeMenu = createServerFn({ method: "POST" })
 
     const gateway = createLovableAiGatewayProvider(key);
 
+    const images = data.imageDataUrls && data.imageDataUrls.length
+      ? data.imageDataUrls
+      : [data.imageDataUrl!];
+
     const multiLangBlock = data.multiLanguage
       ? `\n- translations: an object with keys "English", "Spanish", "French", "Japanese", "Chinese" — each holding { "name": <dish name in that language>, "description": <1-2 sentence description in that language> }. Translate naturally; don't leave any language blank.`
       : "";
 
+    const pagesNote =
+      images.length > 1
+        ? `\n\nThe user has provided ${images.length} photos. They are pages or sections of the SAME menu. Combine every dish across all photos into one list. De-duplicate dishes that clearly appear on multiple pages (same name and ingredients) — keep one entry. Preserve the order pages were given.`
+        : "";
+
     const prompt = `You are MenuVision, an expert at reading restaurant menus from photos.
 
-Analyze the menu image. For EVERY dish you can see (skip headers, drink lists if not real dishes, and footers):
+Analyze the menu image${images.length > 1 ? "s" : ""}. For EVERY dish you can see (skip headers, drink lists if not real dishes, and footers):
 - nameOriginal: dish name exactly as printed
 - nameTranslated: dish name in ${data.targetLanguage}
 - description: 1-2 sentence appetizing description in ${data.targetLanguage} explaining what the dish is
@@ -76,7 +90,7 @@ Analyze the menu image. For EVERY dish you can see (skip headers, drink lists if
 
 Also return sourceLanguage (the detected language of the menu) and restaurantName if visible.
 
-Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes that are not visible.`;
+Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes that are not visible.${pagesNote}`;
 
     const { object } = await generateObject({
       model: gateway("google/gemini-3-flash-preview"),
@@ -86,7 +100,7 @@ Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes 
           role: "user",
           content: [
             { type: "text", text: prompt },
-            { type: "image", image: data.imageDataUrl },
+            ...images.map((img) => ({ type: "image" as const, image: img })),
           ],
         },
       ],
