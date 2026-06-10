@@ -112,15 +112,13 @@ function NewRestaurantMenu() {
         },
       });
       window.clearInterval(stageTimer);
-      // Remember edit token locally so the owner can prove ownership later.
-      try {
-        const map = JSON.parse(localStorage.getItem("menuvision:owner") || "{}");
-        map[res.slug] = res.editToken;
-        localStorage.setItem("menuvision:owner", JSON.stringify(map));
-      } catch {
-        // ignore
-      }
+      rememberOwner(res.slug, {
+        editToken: res.editToken,
+        name: name.trim(),
+        createdAt: new Date().toISOString(),
+      });
       setResult({ slug: res.slug, editToken: res.editToken });
+
     } catch (e) {
       window.clearInterval(stageTimer);
       console.error(e);
