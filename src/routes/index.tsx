@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
-import { Camera, Globe, Sparkles, Eye } from "lucide-react";
+import { Camera, Globe, Sparkles, Eye, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -128,6 +129,73 @@ function Landing() {
           <div className="mt-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="h-4 w-4 text-primary" />
             Works on menus from anywhere in the world
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing teaser */}
+      <section className="border-t border-border/60">
+        <div className="mx-auto max-w-5xl px-5 py-16">
+          <div className="text-center">
+            <p className="text-sm font-medium text-primary">Pricing</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Free to start. Cheap to love.
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {[
+              {
+                name: "Free",
+                price: "$0",
+                cadence: "forever",
+                features: ["5 scans per month", "50+ languages", "Pictures for every dish"],
+                featured: false,
+              },
+              {
+                name: "Premium",
+                price: "$4.79",
+                cadence: "per month",
+                features: ["Unlimited scans", "Priority image generation", "Higher-resolution photos"],
+                featured: true,
+              },
+            ].map((t) => (
+              <div
+                key={t.name}
+                className={`flex flex-col rounded-3xl border p-7 shadow-sm ${
+                  t.featured
+                    ? "border-primary/60 bg-card ring-1 ring-primary/30"
+                    : "border-border bg-card"
+                }`}
+              >
+                <div className="flex items-baseline justify-between">
+                  <h3 className="text-lg font-semibold">{t.name}</h3>
+                  {t.featured && (
+                    <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
+                      Best value
+                    </span>
+                  )}
+                </div>
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="text-3xl font-semibold tracking-tight">{t.price}</span>
+                  <span className="text-sm text-muted-foreground">{t.cadence}</span>
+                </div>
+                <ul className="mt-5 space-y-2 text-sm">
+                  {t.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <Button asChild variant="outline" className="rounded-full">
+              <Link to="/pricing">Compare plans</Link>
+            </Button>
           </div>
         </div>
       </section>
