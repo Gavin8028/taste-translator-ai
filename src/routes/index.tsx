@@ -43,7 +43,7 @@ function Landing() {
           <Link
             to="/scan"
             aria-label="Scan a menu"
-            className="group relative mt-12 flex h-60 w-60 items-center justify-center rounded-full text-primary-foreground transition-transform active:scale-95 sm:h-72 sm:w-72"
+            className="group relative mt-12 flex h-60 w-60 flex-col items-center justify-center rounded-full text-primary-foreground transition-transform active:scale-95 sm:h-72 sm:w-72"
             style={{
               background:
                 "radial-gradient(circle at 30% 25%, color-mix(in oklch, var(--accent) 70%, white), var(--primary) 55%, color-mix(in oklch, var(--secondary) 70%, var(--primary)))",
@@ -61,7 +61,10 @@ function Landing() {
               className="absolute -inset-6 -z-10 rounded-full opacity-30 blur-2xl"
               style={{ backgroundColor: "var(--secondary)" }}
             />
-            <Camera className="relative h-24 w-24" strokeWidth={1.5} />
+            <Camera className="relative h-16 w-16" strokeWidth={1.5} />
+            <span className="relative mt-2 text-xl font-semibold tracking-tight">
+              Scan Menu
+            </span>
           </Link>
 
           <Link
