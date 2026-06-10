@@ -10,16 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as RestaurantsRouteImport } from './routes/restaurants'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScanIdRouteImport } from './routes/scan_.$id'
+import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RestaurantsRoute = RestaurantsRouteImport.update({
+  id: '/restaurants',
+  path: '/restaurants',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -47,6 +54,11 @@ const ScanIdRoute = ScanIdRouteImport.update({
   path: '/scan/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RestaurantsNewRoute = RestaurantsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => RestaurantsRoute,
+} as any)
 const ApiDishImageRoute = ApiDishImageRouteImport.update({
   id: '/api/dish-image',
   path: '/api/dish-image',
@@ -58,8 +70,10 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
 }
 export interface FileRoutesByTo {
@@ -67,8 +81,10 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
 }
 export interface FileRoutesById {
@@ -77,8 +93,10 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
 }
 export interface FileRouteTypes {
@@ -88,8 +106,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/pricing'
     | '/privacy'
+    | '/restaurants'
     | '/scan'
     | '/api/dish-image'
+    | '/restaurants/new'
     | '/scan/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -97,8 +117,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/pricing'
     | '/privacy'
+    | '/restaurants'
     | '/scan'
     | '/api/dish-image'
+    | '/restaurants/new'
     | '/scan/$id'
   id:
     | '__root__'
@@ -106,8 +128,10 @@ export interface FileRouteTypes {
     | '/about'
     | '/pricing'
     | '/privacy'
+    | '/restaurants'
     | '/scan'
     | '/api/dish-image'
+    | '/restaurants/new'
     | '/scan_/$id'
   fileRoutesById: FileRoutesById
 }
@@ -116,6 +140,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  RestaurantsRoute: typeof RestaurantsRouteWithChildren
   ScanRoute: typeof ScanRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
   ScanIdRoute: typeof ScanIdRoute
@@ -128,6 +153,13 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/restaurants': {
+      id: '/restaurants'
+      path: '/restaurants'
+      fullPath: '/restaurants'
+      preLoaderRoute: typeof RestaurantsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -165,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ScanIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/restaurants/new': {
+      id: '/restaurants/new'
+      path: '/new'
+      fullPath: '/restaurants/new'
+      preLoaderRoute: typeof RestaurantsNewRouteImport
+      parentRoute: typeof RestaurantsRoute
+    }
     '/api/dish-image': {
       id: '/api/dish-image'
       path: '/api/dish-image'
@@ -175,11 +214,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface RestaurantsRouteChildren {
+  RestaurantsNewRoute: typeof RestaurantsNewRoute
+}
+
+const RestaurantsRouteChildren: RestaurantsRouteChildren = {
+  RestaurantsNewRoute: RestaurantsNewRoute,
+}
+
+const RestaurantsRouteWithChildren = RestaurantsRoute._addFileChildren(
+  RestaurantsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  RestaurantsRoute: RestaurantsRouteWithChildren,
   ScanRoute: ScanRoute,
   ApiDishImageRoute: ApiDishImageRoute,
   ScanIdRoute: ScanIdRoute,
@@ -187,3 +239,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
