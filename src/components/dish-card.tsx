@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Flame, Leaf } from "lucide-react";
 import type { Dish } from "@/lib/menu.functions";
 import { streamDishImage } from "@/lib/stream-image";
+import { dishKey, getCachedImage, setCachedImage } from "@/lib/image-cache";
 
 export function DishCard({ dish, onClick }: { dish: Dish; onClick: () => void }) {
   const [src, setSrc] = useState<string | null>(null);
@@ -12,21 +13,36 @@ export function DishCard({ dish, onClick }: { dish: Dish; onClick: () => void })
   useEffect(() => {
     if (!ref.current || started.current) return;
     const node = ref.current;
+    const key = dishKey(dish.nameOriginal, dish.cuisine);
+
     const obs = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
           if (e.isIntersecting && !started.current) {
             started.current = true;
             obs.disconnect();
-            const ac = new AbortController();
-            streamDishImage(
-              { dish: dish.nameOriginal, cuisine: dish.cuisine },
-              (dataUrl, final) => {
-                setSrc(dataUrl);
-                if (final) setIsFinal(true);
-              },
-              ac.signal,
-            ).catch((err) => console.warn("dish image failed:", err));
+
+            // 1. Try cache first — instant on repeat views.
+            getCachedImage(key).then((cached) => {
+              if (cached) {
+                setSrc(cached);
+                setIsFinal(true);
+                return;
+              }
+              // 2. Otherwise stream from the gateway.
+              const ac = new AbortController();
+              streamDishImage(
+                { dish: dish.nameOriginal, cuisine: dish.cuisine },
+                (dataUrl, final) => {
+                  setSrc(dataUrl);
+                  if (final) {
+                    setIsFinal(true);
+                    setCachedImage(key, dataUrl).catch(() => {});
+                  }
+                },
+                ac.signal,
+              ).catch((err) => console.warn("dish image failed:", err));
+            });
           }
         }
       },
