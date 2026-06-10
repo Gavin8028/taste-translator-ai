@@ -250,6 +250,24 @@ function Landing() {
         </div>
       </section>
 
+      {/* Restaurant mode callout */}
+      <section className="border-t border-border/60 bg-surface">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-5 py-12 text-center sm:flex-row sm:justify-between sm:text-left">
+          <div>
+            <p className="text-sm font-medium text-primary">For restaurants</p>
+            <h3 className="mt-1 text-xl font-semibold tracking-tight sm:text-2xl">
+              Give every guest a translated, illustrated menu.
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Snap your menu once. Share one permanent link forever.
+            </p>
+          </div>
+          <Button asChild className="rounded-full">
+            <Link to="/restaurants">Learn more</Link>
+          </Button>
+        </div>
+      </section>
+
       <SiteFooter />
     </div>
   );
