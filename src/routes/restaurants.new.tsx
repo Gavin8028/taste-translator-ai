@@ -80,10 +80,18 @@ function NewRestaurantMenu() {
   const cameraRef = useRef<HTMLInputElement>(null);
 
   function pickFile(f: File) {
+    if (!f.type.startsWith("image/")) {
+      setError("Please pick an image file (JPG, PNG, WEBP, or HEIC).");
+      return;
+    }
+    if (f.size > 20 * 1024 * 1024) {
+      setError("That photo is over 20 MB. Try a smaller one.");
+      return;
+    }
     setError(null);
     setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreview(url);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(URL.createObjectURL(f));
   }
 
   function clearFile() {
@@ -315,6 +323,9 @@ function NewRestaurantMenu() {
                       <ImageUp className="h-5 w-5" />
                     </div>
                     <p className="mt-3 text-sm font-medium">Drop a photo or pick one</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      JPG, PNG, WEBP, HEIC — up to 20 MB
+                    </p>
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
                       <Button
                         type="button"
@@ -333,27 +344,6 @@ function NewRestaurantMenu() {
                         Use camera
                       </Button>
                     </div>
-                    <input
-                      ref={inputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp,image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) pickFile(f);
-                      }}
-                    />
-                    <input
-                      ref={cameraRef}
-                      type="file"
-                      accept="image/*"
-                      capture="environment"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) pickFile(f);
-                      }}
-                    />
                   </div>
                 ) : (
                   <div className="relative mt-1.5 overflow-hidden rounded-2xl border border-border bg-card">
@@ -372,6 +362,32 @@ function NewRestaurantMenu() {
                     </button>
                   </div>
                 )}
+
+                {/* File inputs are always mounted so onChange fires reliably,
+                    and value is reset so picking the same file twice works. */}
+                <input
+                  ref={inputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) pickFile(f);
+                    e.target.value = "";
+                  }}
+                />
+                <input
+                  ref={cameraRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) pickFile(f);
+                    e.target.value = "";
+                  }}
+                />
               </div>
 
               {error && (
