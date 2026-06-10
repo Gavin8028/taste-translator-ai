@@ -80,10 +80,18 @@ function NewRestaurantMenu() {
   const cameraRef = useRef<HTMLInputElement>(null);
 
   function pickFile(f: File) {
+    if (!f.type.startsWith("image/")) {
+      setError("Please pick an image file (JPG, PNG, WEBP, or HEIC).");
+      return;
+    }
+    if (f.size > 20 * 1024 * 1024) {
+      setError("That photo is over 20 MB. Try a smaller one.");
+      return;
+    }
     setError(null);
     setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreview(url);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(URL.createObjectURL(f));
   }
 
   function clearFile() {
