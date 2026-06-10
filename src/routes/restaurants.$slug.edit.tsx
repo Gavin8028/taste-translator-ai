@@ -21,6 +21,7 @@ import {
   verifyEditToken,
 } from "@/lib/restaurant.functions";
 import { forgetOwner, getOwnerToken, rememberOwner } from "@/lib/owner-store";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 
 export const Route = createFileRoute("/restaurants/$slug/edit")({
   head: () => ({
@@ -59,11 +60,13 @@ async function fileToDataUrl(file: File): Promise<string> {
 function EditMenuPage() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
+  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const [phase, setPhase] = useState<"loading" | "need-token" | "ready">("loading");
   const [token, setToken] = useState("");
   const [tokenInput, setTokenInput] = useState("");
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [paid, setPaid] = useState(false);
 
   const [name, setName] = useState("");
   const [savingName, setSavingName] = useState(false);
