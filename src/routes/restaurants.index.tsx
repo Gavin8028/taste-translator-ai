@@ -59,7 +59,7 @@ function RestaurantsLanding() {
               size="lg"
               className="h-12 rounded-full px-6 text-base"
             >
-              <Link to="/">See how it works</Link>
+              <a href="#how-it-works">See how it works</a>
             </Button>
           </div>
         </div>
