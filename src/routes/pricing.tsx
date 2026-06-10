@@ -95,15 +95,9 @@ function PricingPage() {
                 ))}
               </ul>
               <div className="mt-8">
-                {t.ctaTo ? (
-                  <Button asChild className="h-11 w-full rounded-full">
-                    <Link to={t.ctaTo}>{t.cta}</Link>
-                  </Button>
-                ) : (
-                  <Button disabled className="h-11 w-full rounded-full">
-                    {t.cta}
-                  </Button>
-                )}
+                <Button asChild className="h-11 w-full rounded-full">
+                  <Link to={t.ctaTo}>{t.cta}</Link>
+                </Button>
               </div>
             </div>
           ))}
