@@ -3,6 +3,23 @@ import { generateObject } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 
+export const SUPPORTED_LANGUAGES = [
+  "English",
+  "Spanish",
+  "French",
+  "Japanese",
+  "Chinese",
+] as const;
+export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
+
+const TranslationsSchema = z.object({
+  English: z.object({ name: z.string(), description: z.string() }),
+  Spanish: z.object({ name: z.string(), description: z.string() }),
+  French: z.object({ name: z.string(), description: z.string() }),
+  Japanese: z.object({ name: z.string(), description: z.string() }),
+  Chinese: z.object({ name: z.string(), description: z.string() }),
+});
+
 const DishSchema = z.object({
   nameOriginal: z.string(),
   nameTranslated: z.string(),
@@ -12,6 +29,7 @@ const DishSchema = z.object({
   spiceLevel: z.number().min(0).max(3),
   dietary: z.array(z.string()),
   priceText: z.string().optional().nullable(),
+  translations: TranslationsSchema.optional().nullable(),
 });
 
 const MenuSchema = z.object({
@@ -22,6 +40,7 @@ const MenuSchema = z.object({
 
 export type Dish = z.infer<typeof DishSchema>;
 export type MenuResult = z.infer<typeof MenuSchema>;
+export type DishTranslations = z.infer<typeof TranslationsSchema>;
 
 export const analyzeMenu = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => {
@@ -29,6 +48,7 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       .object({
         imageDataUrl: z.string().min(20),
         targetLanguage: z.string().min(2).max(40).default("English"),
+        multiLanguage: z.boolean().optional().default(false),
       })
       .parse(input);
   })
@@ -37,6 +57,10 @@ export const analyzeMenu = createServerFn({ method: "POST" })
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
     const gateway = createLovableAiGatewayProvider(key);
+
+    const multiLangBlock = data.multiLanguage
+      ? `\n- translations: an object with keys "English", "Spanish", "French", "Japanese", "Chinese" — each holding { "name": <dish name in that language>, "description": <1-2 sentence description in that language> }. Translate naturally; don't leave any language blank.`
+      : "";
 
     const prompt = `You are MenuVision, an expert at reading restaurant menus from photos.
 
@@ -48,7 +72,7 @@ Analyze the menu image. For EVERY dish you can see (skip headers, drink lists if
 - cuisine: short cuisine label, e.g. "Italian", "Thai", "Mexican"
 - spiceLevel: integer 0 (none), 1 (mild), 2 (medium), 3 (hot)
 - dietary: subset of ["vegetarian","vegan","gluten-free","contains-dairy","contains-nuts","seafood","pork","beef"] that clearly apply
-- priceText: the price exactly as printed if visible, otherwise null
+- priceText: the price exactly as printed if visible, otherwise null${multiLangBlock}
 
 Also return sourceLanguage (the detected language of the menu) and restaurantName if visible.
 
