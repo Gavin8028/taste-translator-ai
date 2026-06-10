@@ -64,8 +64,8 @@ const STAGES = [
 ];
 
 function NewRestaurantMenu() {
-  const navigate = useNavigate();
   const [name, setName] = useState("");
+
   const [slug, setSlug] = useState("");
   const [language, setLanguage] = useState("English");
   const [file, setFile] = useState<File | null>(null);
