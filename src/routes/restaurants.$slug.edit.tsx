@@ -98,6 +98,7 @@ function EditMenuPage() {
           setToken(saved);
           setName(res.menu.name);
           setLanguage(res.menu.targetLanguage);
+          setPaid(res.menu.paid);
           setPhase("ready");
         } else {
           setPhase("need-token");
@@ -124,6 +125,7 @@ function EditMenuPage() {
       setToken(tokenInput.trim());
       setName(res.menu.name);
       setLanguage(res.menu.targetLanguage);
+      setPaid(res.menu.paid);
       setPhase("ready");
     } catch (err) {
       setVerifyError(err instanceof Error ? err.message : "Something went wrong.");
