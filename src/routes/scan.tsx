@@ -219,7 +219,7 @@ function ScanPage() {
               </select>
             </div>
 
-            {!preview && (
+            {pages.length === 0 && (
               <>
                 {/* Mobile-first primary action: huge camera button */}
                 <div className="mt-8 grid gap-3 sm:hidden">
@@ -249,8 +249,7 @@ function ScanPage() {
                   onDrop={(e) => {
                     e.preventDefault();
                     setDragOver(false);
-                    const f = e.dataTransfer.files?.[0];
-                    if (f) pickFile(f);
+                    if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
                   }}
                   className={`mt-8 hidden rounded-3xl border-2 border-dashed p-10 text-center transition-colors sm:block ${
                     dragOver
@@ -261,9 +260,11 @@ function ScanPage() {
                   <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                     <ImageUp className="h-6 w-6" />
                   </div>
-                  <p className="mt-4 text-base font-medium">Drop a menu photo here</p>
+                  <p className="mt-4 text-base font-medium">
+                    Drop one or more menu photos here
+                  </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    JPG, PNG, WEBP, HEIC — up to 20 MB
+                    Up to {MAX_PHOTOS} pages · JPG, PNG, WEBP, HEIC · 20 MB each
                   </p>
 
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -271,7 +272,7 @@ function ScanPage() {
                       onClick={() => inputRef.current?.click()}
                       className="rounded-full"
                     >
-                      Choose a file
+                      Choose files
                     </Button>
                     <Button
                       variant="outline"
@@ -283,64 +284,102 @@ function ScanPage() {
                     </Button>
                   </div>
                 </div>
-
-                <input
-                  ref={inputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) pickFile(f);
-                    e.target.value = "";
-                  }}
-                />
-                <input
-                  ref={cameraRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) pickFile(f);
-                    e.target.value = "";
-                  }}
-                />
               </>
             )}
 
-            {preview && (
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif,image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.length) addFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            <input
+              ref={cameraRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.length) addFiles(e.target.files);
+                e.target.value = "";
+              }}
+            />
+
+            {pages.length > 0 && (
               <div className="mt-8 space-y-4">
-                <div className="relative overflow-hidden rounded-2xl border border-border bg-card">
-                  <img
-                    src={preview}
-                    alt="Menu preview"
-                    className="max-h-[60vh] w-full object-contain"
-                  />
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">
+                    {pages.length} {pages.length === 1 ? "page" : "pages"}
+                    <span className="ml-1 text-muted-foreground">
+                      · added in order
+                    </span>
+                  </p>
                   <button
-                    onClick={clearFile}
-                    aria-label="Remove photo"
-                    className="absolute right-3 top-3 inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/80 backdrop-blur hover:bg-background"
+                    onClick={clearAll}
+                    className="text-xs text-muted-foreground underline-offset-2 hover:underline"
                   >
-                    <X className="h-4 w-4" />
+                    Clear all
                   </button>
                 </div>
-                <div className="flex gap-2">
+
+                <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                  {pages.map((p, i) => (
+                    <li
+                      key={p.previewUrl}
+                      className="relative overflow-hidden rounded-2xl border border-border bg-card"
+                    >
+                      <img
+                        src={p.previewUrl}
+                        alt={`Menu page ${i + 1}`}
+                        className="aspect-[3/4] w-full object-cover"
+                      />
+                      <span className="absolute left-2 top-2 rounded-full bg-background/85 px-2 py-0.5 text-xs font-medium backdrop-blur">
+                        Page {i + 1}
+                      </span>
+                      <button
+                        onClick={() => removePage(i)}
+                        aria-label={`Remove page ${i + 1}`}
+                        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-full bg-background/85 backdrop-blur hover:bg-background"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+
+                  {pages.length < MAX_PHOTOS && (
+                    <li>
+                      <button
+                        onClick={() => cameraRef.current?.click()}
+                        className="flex aspect-[3/4] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-surface text-sm text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                      >
+                        <Camera className="h-6 w-6" />
+                        Add page
+                      </button>
+                    </li>
+                  )}
+                </ul>
+
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
-                    onClick={() => cameraRef.current?.click()}
+                    onClick={() => inputRef.current?.click()}
+                    disabled={pages.length >= MAX_PHOTOS}
                     className="rounded-full"
                   >
-                    <Camera className="h-4 w-4" />
-                    Retake
+                    <ImageUp className="h-4 w-4" />
+                    Add from gallery
                   </Button>
                   <Button
                     onClick={onAnalyze}
                     size="lg"
                     className="h-12 flex-1 rounded-full text-base"
                   >
-                    Analyze menu
+                    Analyze {pages.length === 1 ? "menu" : `${pages.length} pages`}
                   </Button>
                 </div>
               </div>
@@ -352,7 +391,7 @@ function ScanPage() {
               </p>
             )}
 
-            {!preview && recent.length > 0 && (
+            {pages.length === 0 && recent.length > 0 && (
               <section className="mt-12">
                 <div className="mb-4 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
