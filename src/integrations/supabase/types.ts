@@ -79,6 +79,9 @@ export type Database = {
           edit_token: string
           id: string
           name: string
+          paddle_transaction_id: string | null
+          paid: boolean
+          paid_at: string | null
           slug: string
           source_language: string | null
           target_language: string
@@ -89,6 +92,9 @@ export type Database = {
           edit_token: string
           id?: string
           name: string
+          paddle_transaction_id?: string | null
+          paid?: boolean
+          paid_at?: string | null
           slug: string
           source_language?: string | null
           target_language?: string
@@ -99,6 +105,9 @@ export type Database = {
           edit_token?: string
           id?: string
           name?: string
+          paddle_transaction_id?: string | null
+          paid?: boolean
+          paid_at?: string | null
           slug?: string
           source_language?: string | null
           target_language?: string
