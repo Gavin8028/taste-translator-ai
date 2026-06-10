@@ -20,6 +20,7 @@ import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
 import { Route as MSlugRouteImport } from './routes/m.$slug'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
+import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
@@ -76,6 +77,12 @@ const RestaurantsSlugEditRoute = RestaurantsSlugEditRouteImport.update({
   path: '/restaurants/$slug/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPaymentsWebhookRoute =
+  ApiPublicPaymentsWebhookRouteImport.update({
+    id: '/api/public/payments/webhook',
+    path: '/api/public/payments/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/scan/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +110,7 @@ export interface FileRoutesByTo {
   '/scan/$id': typeof ScanIdRoute
   '/restaurants': typeof RestaurantsIndexRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +125,7 @@ export interface FileRoutesById {
   '/scan_/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
+  '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/scan/$id'
     | '/restaurants/'
     | '/restaurants/$slug/edit'
+    | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/scan/$id'
     | '/restaurants'
     | '/restaurants/$slug/edit'
+    | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
@@ -157,6 +169,7 @@ export interface FileRouteTypes {
     | '/scan_/$id'
     | '/restaurants/'
     | '/restaurants/$slug/edit'
+    | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +184,7 @@ export interface RootRouteChildren {
   ScanIdRoute: typeof ScanIdRoute
   RestaurantsIndexRoute: typeof RestaurantsIndexRoute
   RestaurantsSlugEditRoute: typeof RestaurantsSlugEditRoute
+  ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -252,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsSlugEditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/payments/webhook': {
+      id: '/api/public/payments/webhook'
+      path: '/api/public/payments/webhook'
+      fullPath: '/api/public/payments/webhook'
+      preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -267,7 +288,18 @@ const rootRouteChildren: RootRouteChildren = {
   ScanIdRoute: ScanIdRoute,
   RestaurantsIndexRoute: RestaurantsIndexRoute,
   RestaurantsSlugEditRoute: RestaurantsSlugEditRoute,
+  ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
