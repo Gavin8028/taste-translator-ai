@@ -6,6 +6,8 @@ import { Camera, ImageUp, Loader2, X, Check, Copy, Pencil } from "lucide-react";
 import { createRestaurantMenu } from "@/lib/restaurant.functions";
 import { rememberOwner } from "@/lib/owner-store";
 import { QrCode } from "@/components/qr-code";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+
 
 
 export const Route = createFileRoute("/restaurants/new")({
