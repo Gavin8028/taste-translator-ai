@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
-import { Camera } from "lucide-react";
+import { Camera, Globe, Sparkles, Eye } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,59 +21,113 @@ function Landing() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
-      <main className="relative flex flex-1 items-center justify-center overflow-hidden px-5">
-        {/* Vibrant ambient glow */}
+      {/* Hero — Shazam-style centered button */}
+      <section className="relative overflow-hidden">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 -z-10"
           style={{
             background:
-              "radial-gradient(40rem 40rem at 50% 40%, color-mix(in oklch, var(--primary) 35%, transparent), transparent 70%), radial-gradient(30rem 30rem at 80% 90%, color-mix(in oklch, var(--accent) 60%, transparent), transparent 70%), radial-gradient(30rem 30rem at 10% 80%, color-mix(in oklch, var(--primary) 25%, transparent), transparent 70%)",
+              "radial-gradient(45rem 35rem at 50% 30%, color-mix(in oklch, var(--primary) 45%, transparent), transparent 70%), radial-gradient(35rem 30rem at 85% 90%, color-mix(in oklch, var(--secondary) 55%, transparent), transparent 70%), radial-gradient(30rem 30rem at 10% 80%, color-mix(in oklch, var(--accent) 70%, transparent), transparent 70%)",
           }}
         />
 
-        <div className="flex flex-col items-center text-center">
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+        <div className="mx-auto flex max-w-3xl flex-col items-center px-5 pb-16 pt-16 text-center sm:pb-24 sm:pt-20">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-6xl">
             Tap to scan a menu
           </h1>
-          <p className="mt-3 text-base text-muted-foreground">
-            See every dish before you order.
+          <p className="mt-4 max-w-md text-base text-muted-foreground sm:text-lg">
+            See every dish before you order — in any language, anywhere.
           </p>
 
-          {/* Big Shazam-style button */}
           <Link
             to="/scan"
             aria-label="Scan a menu"
-            className="group relative mt-12 flex h-56 w-56 items-center justify-center rounded-full text-primary-foreground shadow-2xl transition-transform active:scale-95 sm:h-64 sm:w-64"
+            className="group relative mt-12 flex h-60 w-60 items-center justify-center rounded-full text-primary-foreground transition-transform active:scale-95 sm:h-72 sm:w-72"
             style={{
               background:
-                "radial-gradient(circle at 30% 30%, color-mix(in oklch, var(--primary) 80%, white), var(--primary))",
+                "radial-gradient(circle at 30% 25%, color-mix(in oklch, var(--accent) 70%, white), var(--primary) 55%, color-mix(in oklch, var(--secondary) 70%, var(--primary)))",
               boxShadow:
-                "0 25px 60px -15px color-mix(in oklch, var(--primary) 60%, transparent)",
+                "0 30px 70px -15px color-mix(in oklch, var(--primary) 70%, transparent), 0 0 0 8px color-mix(in oklch, var(--primary) 12%, transparent)",
             }}
           >
-            {/* Pulse rings */}
             <span
               aria-hidden
-              className="absolute inset-0 -z-10 animate-ping rounded-full opacity-40"
+              className="absolute inset-0 animate-ping rounded-full opacity-30"
               style={{ backgroundColor: "var(--primary)" }}
             />
             <span
               aria-hidden
-              className="absolute -inset-4 -z-10 rounded-full opacity-20 blur-2xl"
-              style={{ backgroundColor: "var(--primary)" }}
+              className="absolute -inset-6 -z-10 rounded-full opacity-30 blur-2xl"
+              style={{ backgroundColor: "var(--secondary)" }}
             />
-            <Camera className="h-20 w-20" strokeWidth={1.5} />
+            <Camera className="relative h-24 w-24" strokeWidth={1.5} />
           </Link>
 
           <Link
             to="/pricing"
-            className="mt-10 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="mt-8 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             See pricing
           </Link>
+
+          <p className="mt-4 text-xs text-muted-foreground">
+            Free · No sign-up · 50+ languages
+          </p>
         </div>
-      </main>
+      </section>
+
+      {/* How it works */}
+      <section className="border-t border-border/60 bg-surface">
+        <div className="mx-auto max-w-5xl px-5 py-16">
+          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
+            Three taps. One great meal.
+          </h2>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: Camera,
+                title: "Snap",
+                body: "Take a photo of any menu — printed, handwritten, or chalkboard.",
+                tint: "var(--primary)",
+              },
+              {
+                icon: Globe,
+                title: "Translate",
+                body: "We detect the language and translate every dish into yours.",
+                tint: "var(--secondary)",
+              },
+              {
+                icon: Eye,
+                title: "See it",
+                body: "A picture, ingredients, and a short description for each dish.",
+                tint: "var(--accent)",
+              },
+            ].map((step) => (
+              <div
+                key={step.title}
+                className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm"
+              >
+                <span
+                  className="flex h-11 w-11 items-center justify-center rounded-xl text-primary-foreground"
+                  style={{ backgroundColor: step.tint }}
+                >
+                  <step.icon className="h-5 w-5" />
+                </span>
+                <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {step.body}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Sparkles className="h-4 w-4 text-primary" />
+            Works on menus from anywhere in the world
+          </div>
+        </div>
+      </section>
 
       <SiteFooter />
     </div>
