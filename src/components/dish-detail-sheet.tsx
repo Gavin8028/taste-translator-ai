@@ -1,0 +1,132 @@
+import { useEffect, useState } from "react";
+import { X, Flame } from "lucide-react";
+import type { Dish } from "@/lib/menu.functions";
+import { streamDishImage } from "@/lib/stream-image";
+
+export function DishDetailSheet({
+  dish,
+  onClose,
+}: {
+  dish: Dish | null;
+  onClose: () => void;
+}) {
+  const [src, setSrc] = useState<string | null>(null);
+  const [isFinal, setIsFinal] = useState(false);
+
+  useEffect(() => {
+    if (!dish) return;
+    setSrc(null);
+    setIsFinal(false);
+    const ac = new AbortController();
+    streamDishImage(
+      { dish: dish.nameOriginal, cuisine: dish.cuisine },
+      (dataUrl, final) => {
+        setSrc(dataUrl);
+        if (final) setIsFinal(true);
+      },
+      ac.signal,
+    ).catch(() => {});
+    return () => ac.abort();
+  }, [dish]);
+
+  useEffect(() => {
+    if (!dish) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [dish, onClose]);
+
+  if (!dish) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-t-3xl bg-card shadow-2xl sm:rounded-3xl"
+      >
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-background/85 backdrop-blur hover:bg-background"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        <div className="aspect-[16/10] w-full overflow-hidden bg-muted">
+          {src ? (
+            <img
+              src={src}
+              alt={dish.nameTranslated}
+              className={`h-full w-full object-cover transition-[filter] duration-500 ${
+                isFinal ? "blur-0" : "blur-2xl"
+              }`}
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <div className="h-10 w-10 animate-pulse rounded-full bg-border" />
+            </div>
+          )}
+        </div>
+        <div className="max-h-[50vh] overflow-y-auto p-6 sm:p-8">
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {dish.nameTranslated}
+          </h2>
+          {dish.nameOriginal !== dish.nameTranslated && (
+            <p className="mt-1 italic text-muted-foreground">{dish.nameOriginal}</p>
+          )}
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+            {dish.cuisine && (
+              <span className="rounded-full bg-accent px-2.5 py-1 text-accent-foreground">
+                {dish.cuisine}
+              </span>
+            )}
+            {dish.spiceLevel > 0 && (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+                {Array.from({ length: dish.spiceLevel }).map((_, i) => (
+                  <Flame key={i} className="h-3 w-3" />
+                ))}
+                {dish.spiceLevel === 1 ? "Mild" : dish.spiceLevel === 2 ? "Medium" : "Hot"}
+              </span>
+            )}
+            {dish.dietary.map((d) => (
+              <span
+                key={d}
+                className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground"
+              >
+                {d}
+              </span>
+            ))}
+            {dish.priceText && (
+              <span className="ml-auto text-base font-medium">{dish.priceText}</span>
+            )}
+          </div>
+          <p className="mt-5 text-base leading-relaxed">{dish.description}</p>
+
+          {dish.ingredients.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Ingredients
+              </h3>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {dish.ingredients.map((ing) => (
+                  <span
+                    key={ing}
+                    className="rounded-full border border-border bg-background px-2.5 py-1 text-xs"
+                  >
+                    {ing}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
