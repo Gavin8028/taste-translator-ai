@@ -1,101 +1,49 @@
+# Monetization plan — keep it simple
 
-# Full build-out plan (A → E)
+You don't need to learn pricing theory. I'll set up the simplest model that makes money from day one, and we can adjust later if needed.
 
-Sequenced so each phase ships something useful on its own. I'll work top-to-bottom and pause after each phase so you can review.
+## The model (one line)
 
----
+**Restaurants pay $39 once to publish their menu page. Diners scan for free.**
 
-## Phase A — Finish restaurant mode
+That's it. No subscriptions, no tiers, no math. If a restaurant pays, their menu page goes live at `menuvision.app/m/their-name`. If they don't pay, the menu they created sits in "draft" and shows a paywall instead of the public page.
 
-Make restaurant mode actually usable by a real restaurant.
+Why this and not something fancier:
+- One price is easy to explain and easy to buy.
+- $39 is low enough that a restaurant owner can decide on the spot (no manager approval, no procurement).
+- You get paid before you owe them anything — no refund drama.
+- Diners stay 100% free, so the scan-a-menu flow (your main growth engine) is untouched.
 
-- **Owner edit page** `/restaurants/$slug/edit`
-  - Gated by the `edit_token` saved in `localStorage` (key: `menuvision.editTokens` → `{ [slug]: token }`)
-  - Actions: rename menu, re-scan (replace dishes), delete menu
-  - Server fns: `updateRestaurantMenu`, `deleteRestaurantMenu`, `replaceMenuDishes`
-- **Owner memory**: on successful create, save `{ slug, editToken, name }` to localStorage. Add a "Your menus" list on `/restaurants` for returning owners.
-- **Multi-language switcher on `/m/$slug`**
-  - Pre-translate at creation into EN / ES / FR / JA / ZH
-  - Add `translations` JSONB column to `menu_dishes` (name + description per language)
-  - Language picker in the guest header, persists in URL query (`?lang=es`)
-- **QR code download** on the edit page and the share screen (use `qrcode` npm package, render to canvas, download as PNG)
-- **OG metadata** on `/m/$slug` — restaurant name in title/description, dish count, first dish image as og:image (loader-fed `head()`)
-- **Storage for dish images** — bucket `menu-images`, generate once on create, store URL on `menu_dishes.image_url` so guest views are instant (no live generation)
+If later you see restaurants asking "can I update my menu monthly?" we add a $5/mo upgrade. Not now.
 
----
+## What changes in the app
 
-## Phase B — Home page trust pass
+1. **New `paid` flag on each restaurant menu.** New menus start unpaid.
+2. **Public page `/m/$slug`** — if unpaid, show a friendly "This menu isn't live yet" screen instead of the dishes. (Owner can still preview from their edit page.)
+3. **"Publish for $39" button** on the owner's edit page and right after they create the menu.
+4. **Stripe Checkout** opens, they pay, webhook flips the `paid` flag, page goes live.
+5. **Pricing page** updated to reflect the real model (currently it advertises a fake $4.79/mo Premium tier — I'll replace that).
+6. **Diner side stays free.** The `/scan` flow for travelers doesn't change.
 
-Convert curious visitors into scanners.
+## Why Stripe (not Paddle)
 
-- **"Try a sample menu"** button on hero → links to a pre-seeded `/m/demo` slug so people can see the output without uploading
-- **"How it works"** 3-step section with icons (Snap → Translate → Explore) below the hero
-- **FAQ section** (accordion) on home: accuracy, languages supported, privacy, cost, restaurant use case
-- **Refined value-prop copy** + a secondary CTA strip near the bottom
+For a service like "publish a webpage for a restaurant," Stripe is the right fit and is built into Lovable — no Stripe account needed to start testing. Built-in Stripe handles tax calculation automatically so you don't have to think about it.
 
----
+## What I need from you to proceed
 
-## Phase C — Scan flow upgrades
+Just a yes. When you approve this plan I will:
+1. Turn on Lovable's built-in Stripe payments (test mode first, so no real money moves).
+2. Create the $39 "Publish menu" product.
+3. Wire up the paywall, checkout button, and webhook.
+4. Fix the pricing page so it matches reality.
 
-Make `/scan` feel polished.
+You'll be able to test the whole flow with a fake card before anything goes live. When you're ready to accept real money, you'll claim the Stripe account (takes ~5 min, standard business info) and flip it to live mode.
 
-- **Mobile camera capture**: `<input type="file" accept="image/*" capture="environment">` so phones open the camera directly
-- **Multi-photo upload** (long menus): accept up to 4 images, send all to `analyzeMenu` in one call, merge dishes
-- **Language picker in UI** (you have it server-side already, expose it on the upload screen with a `<Select>`)
-- **Better empty/error states**: friendly messages when OCR finds 0 dishes or the photo is blurry
-- **"Save as restaurant menu"** button on `/scan_/$id` — promotes a personal scan into a permanent `/m/$slug`
+## Things I am explicitly NOT doing
 
----
+- No subscriptions, no monthly billing, no tiers.
+- No diner-side payments, ads, or paywalls.
+- No "freemium with watermark" — unpaid menus are simply not public.
+- No affiliate/commission logic.
 
-## Phase D — Lightweight auth (Google only)
-
-Keeps the anonymous flow but unlocks cross-device menu management for owners.
-
-- Enable Google OAuth via the Lovable broker
-- `/auth` route + sign-in button in the header
-- `restaurant_menus.owner_id` (nullable) — when signed in at creation, claim the menu
-- "My menus" dashboard at `/restaurants/mine` — list claimed menus, edit/delete each
-- Anonymous edit-token flow still works for users who don't sign in
-- Public guest view `/m/$slug` stays unchanged (no auth required to view)
-
-*(This is the lightest possible auth — Google only, no email/password, no profiles table beyond what's needed.)*
-
----
-
-## Phase E — SEO & content pages pass
-
-Polish for shareability and search.
-
-- **Per-route `head()` audit** — every route gets a unique title, description, og:title, og:description; canonical only at leaves
-- **`/about`** filled out (mission, how MenuVision works, who it's for)
-- **`/pricing`** filled out — even if everything is free for now, state it clearly
-- **JSON-LD** on home (`Organization`) and on `/m/$slug` (`Restaurant` + `Menu` schema for rich snippets)
-- **`public/robots.txt`** + **`public/sitemap.xml`** (skip `/scan_/*`, `/restaurants/*/edit`)
-- **`public/llms.txt`** for AI crawlers
-- **Favicon + apple-touch-icon set**
-
----
-
-## Technical notes (for the engineer in the loop)
-
-- **Migrations needed**:
-  - `menu_dishes`: add `image_url text`, `translations jsonb default '{}'::jsonb`
-  - `restaurant_menus`: add `owner_id uuid references auth.users(id) on delete set null` (Phase D)
-  - Storage bucket `menu-images` (public read, service-role write)
-- **New server fns** (in `src/lib/restaurant.functions.ts`):
-  `updateRestaurantMenu`, `deleteRestaurantMenu`, `replaceMenuDishes`, `claimMenu`
-- **New route files**:
-  `src/routes/restaurants.$slug.edit.tsx`, `src/routes/restaurants.mine.tsx`, `src/routes/auth.tsx`, `src/routes/m.demo.tsx` (or seeded via migration)
-- **New deps**: `qrcode` (QR generation, ~5kb)
-- **AI calls**:
-  - Pre-translate: extend `analyzeMenu` to return translations for all 5 languages in one structured-output call (Gemini handles this cheaply)
-  - Dish images: generate at create-time, upload to `menu-images` bucket, store URL (eliminates live regen on every view)
-- **Existing patterns preserved**: `createServerFn` for app logic, `attachSupabaseAuth` middleware (added when Phase D lands), no changes to `src/integrations/supabase/*` generated files
-
-## Estimated review pauses
-
-I'll pause after **A**, **B**, **C**, **D**, **E** so you can test each phase in preview before I move to the next. If anything in a phase doesn't feel right, we adjust before continuing.
-
-## Heads-up
-
-This contradicts the "MVP / no restaurant management" brief you pasted just before this — that brief said to avoid restaurant mode entirely. If you want, I can drop Phase A and Phase D and just do B + C + E (pure consumer scan app). Otherwise I'll proceed with the full A–E plan as written here.
+Keeping it boring on purpose. We can layer on more later if and when the numbers say to.
