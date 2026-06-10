@@ -230,11 +230,6 @@ function NewRestaurantMenu() {
           </div>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild className="rounded-full">
-              <Link to="/m/$slug" params={{ slug: result.slug }}>
-                View your menu
-              </Link>
-            </Button>
             <Button asChild variant="outline" className="rounded-full">
               <Link
                 to="/restaurants/$slug/edit"
