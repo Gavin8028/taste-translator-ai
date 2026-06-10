@@ -133,8 +133,6 @@ function Landing() {
         </div>
       </section>
 
-      </section>
-
       {/* Pricing teaser */}
       <section className="border-t border-border/60">
         <div className="mx-auto max-w-5xl px-5 py-16">
