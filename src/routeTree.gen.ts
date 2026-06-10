@@ -10,11 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ScanRouteImport } from './routes/scan'
-import { Route as RestaurantsRouteImport } from './routes/restaurants'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RestaurantsIndexRouteImport } from './routes/restaurants.index'
 import { Route as ScanIdRouteImport } from './routes/scan_.$id'
 import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
 import { Route as MSlugRouteImport } from './routes/m.$slug'
@@ -24,11 +24,6 @@ import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$s
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RestaurantsRoute = RestaurantsRouteImport.update({
-  id: '/restaurants',
-  path: '/restaurants',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -51,15 +46,20 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RestaurantsIndexRoute = RestaurantsIndexRouteImport.update({
+  id: '/restaurants/',
+  path: '/restaurants/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScanIdRoute = ScanIdRouteImport.update({
   id: '/scan_/$id',
   path: '/scan/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RestaurantsNewRoute = RestaurantsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => RestaurantsRoute,
+  id: '/restaurants/new',
+  path: '/restaurants/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MSlugRoute = MSlugRouteImport.update({
   id: '/m/$slug',
@@ -72,9 +72,9 @@ const ApiDishImageRoute = ApiDishImageRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const RestaurantsSlugEditRoute = RestaurantsSlugEditRouteImport.update({
-  id: '/$slug/edit',
-  path: '/$slug/edit',
-  getParentRoute: () => RestaurantsRoute,
+  id: '/restaurants/$slug/edit',
+  path: '/restaurants/$slug/edit',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -82,12 +82,12 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
+  '/restaurants/': typeof RestaurantsIndexRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
 }
 export interface FileRoutesByTo {
@@ -95,12 +95,12 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
+  '/restaurants': typeof RestaurantsIndexRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
 }
 export interface FileRoutesById {
@@ -109,12 +109,12 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
-  '/restaurants': typeof RestaurantsRouteWithChildren
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
+  '/restaurants/': typeof RestaurantsIndexRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
 }
 export interface FileRouteTypes {
@@ -124,12 +124,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/pricing'
     | '/privacy'
-    | '/restaurants'
     | '/scan'
     | '/api/dish-image'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
+    | '/restaurants/'
     | '/restaurants/$slug/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -137,12 +137,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/pricing'
     | '/privacy'
-    | '/restaurants'
     | '/scan'
     | '/api/dish-image'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
+    | '/restaurants'
     | '/restaurants/$slug/edit'
   id:
     | '__root__'
@@ -150,12 +150,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/pricing'
     | '/privacy'
-    | '/restaurants'
     | '/scan'
     | '/api/dish-image'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan_/$id'
+    | '/restaurants/'
     | '/restaurants/$slug/edit'
   fileRoutesById: FileRoutesById
 }
@@ -164,11 +164,13 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
-  RestaurantsRoute: typeof RestaurantsRouteWithChildren
   ScanRoute: typeof ScanRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
   MSlugRoute: typeof MSlugRoute
+  RestaurantsNewRoute: typeof RestaurantsNewRoute
   ScanIdRoute: typeof ScanIdRoute
+  RestaurantsIndexRoute: typeof RestaurantsIndexRoute
+  RestaurantsSlugEditRoute: typeof RestaurantsSlugEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -178,13 +180,6 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/restaurants': {
-      id: '/restaurants'
-      path: '/restaurants'
-      fullPath: '/restaurants'
-      preLoaderRoute: typeof RestaurantsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -215,6 +210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/restaurants/': {
+      id: '/restaurants/'
+      path: '/restaurants'
+      fullPath: '/restaurants/'
+      preLoaderRoute: typeof RestaurantsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scan_/$id': {
       id: '/scan_/$id'
       path: '/scan/$id'
@@ -224,10 +226,10 @@ declare module '@tanstack/react-router' {
     }
     '/restaurants/new': {
       id: '/restaurants/new'
-      path: '/new'
+      path: '/restaurants/new'
       fullPath: '/restaurants/new'
       preLoaderRoute: typeof RestaurantsNewRouteImport
-      parentRoute: typeof RestaurantsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/m/$slug': {
       id: '/m/$slug'
@@ -245,38 +247,26 @@ declare module '@tanstack/react-router' {
     }
     '/restaurants/$slug/edit': {
       id: '/restaurants/$slug/edit'
-      path: '/$slug/edit'
+      path: '/restaurants/$slug/edit'
       fullPath: '/restaurants/$slug/edit'
       preLoaderRoute: typeof RestaurantsSlugEditRouteImport
-      parentRoute: typeof RestaurantsRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface RestaurantsRouteChildren {
-  RestaurantsNewRoute: typeof RestaurantsNewRoute
-  RestaurantsSlugEditRoute: typeof RestaurantsSlugEditRoute
-}
-
-const RestaurantsRouteChildren: RestaurantsRouteChildren = {
-  RestaurantsNewRoute: RestaurantsNewRoute,
-  RestaurantsSlugEditRoute: RestaurantsSlugEditRoute,
-}
-
-const RestaurantsRouteWithChildren = RestaurantsRoute._addFileChildren(
-  RestaurantsRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
-  RestaurantsRoute: RestaurantsRouteWithChildren,
   ScanRoute: ScanRoute,
   ApiDishImageRoute: ApiDishImageRoute,
   MSlugRoute: MSlugRoute,
+  RestaurantsNewRoute: RestaurantsNewRoute,
   ScanIdRoute: ScanIdRoute,
+  RestaurantsIndexRoute: RestaurantsIndexRoute,
+  RestaurantsSlugEditRoute: RestaurantsSlugEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

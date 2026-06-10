@@ -3,7 +3,7 @@ import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Camera, Share2, Globe, Sparkles } from "lucide-react";
 
-export const Route = createFileRoute("/restaurants")({
+export const Route = createFileRoute("/restaurants/")({
   head: () => ({
     meta: [
       { title: "For restaurants — MenuVision AI" },
@@ -59,13 +59,13 @@ function RestaurantsLanding() {
               size="lg"
               className="h-12 rounded-full px-6 text-base"
             >
-              <Link to="/">See how it works</Link>
+              <a href="#how-it-works">See how it works</a>
             </Button>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-5xl px-5 py-16">
+      <section id="how-it-works" className="mx-auto w-full max-w-5xl px-5 py-16 scroll-mt-20">
         <div className="grid gap-5 md:grid-cols-3">
           {[
             {
