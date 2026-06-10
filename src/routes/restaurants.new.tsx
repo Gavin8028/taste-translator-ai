@@ -1,9 +1,12 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, ImageUp, Loader2, X, Check, Copy } from "lucide-react";
+import { Camera, ImageUp, Loader2, X, Check, Copy, Pencil } from "lucide-react";
 import { createRestaurantMenu } from "@/lib/restaurant.functions";
+import { rememberOwner } from "@/lib/owner-store";
+import { QrCode } from "@/components/qr-code";
+
 
 export const Route = createFileRoute("/restaurants/new")({
   head: () => ({
@@ -61,8 +64,8 @@ const STAGES = [
 ];
 
 function NewRestaurantMenu() {
-  const navigate = useNavigate();
   const [name, setName] = useState("");
+
   const [slug, setSlug] = useState("");
   const [language, setLanguage] = useState("English");
   const [file, setFile] = useState<File | null>(null);
@@ -109,15 +112,13 @@ function NewRestaurantMenu() {
         },
       });
       window.clearInterval(stageTimer);
-      // Remember edit token locally so the owner can prove ownership later.
-      try {
-        const map = JSON.parse(localStorage.getItem("menuvision:owner") || "{}");
-        map[res.slug] = res.editToken;
-        localStorage.setItem("menuvision:owner", JSON.stringify(map));
-      } catch {
-        // ignore
-      }
+      rememberOwner(res.slug, {
+        editToken: res.editToken,
+        name: name.trim(),
+        createdAt: new Date().toISOString(),
+      });
       setResult({ slug: res.slug, editToken: res.editToken });
+
     } catch (e) {
       window.clearInterval(stageTimer);
       console.error(e);
@@ -183,14 +184,34 @@ function NewRestaurantMenu() {
             </code>
           </div>
 
+          <div className="mt-6 grid gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-[auto,1fr] sm:items-center">
+            <QrCode value={url} filename={`${result.slug}-qr.png`} />
+            <div>
+              <p className="font-medium">Print this on your tables</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Guests scan to open your translated menu with photos. No app
+                download, no sign-in.
+              </p>
+            </div>
+          </div>
+
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild className="rounded-full">
               <Link to="/m/$slug" params={{ slug: result.slug }}>
                 View your menu
               </Link>
             </Button>
+            <Button asChild variant="outline" className="rounded-full">
+              <Link
+                to="/restaurants/$slug/edit"
+                params={{ slug: result.slug }}
+              >
+                <Pencil className="h-4 w-4" />
+                Manage menu
+              </Link>
+            </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => {
                 setResult(null);
                 setName("");
@@ -202,6 +223,7 @@ function NewRestaurantMenu() {
               Create another
             </Button>
           </div>
+
         </main>
         <SiteFooter />
       </div>

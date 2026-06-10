@@ -21,6 +21,7 @@ export type Database = {
           description: string
           dietary: string[]
           id: string
+          image_url: string | null
           ingredients: string[]
           menu_id: string
           name_original: string
@@ -28,6 +29,7 @@ export type Database = {
           position: number
           price_text: string | null
           spice_level: number
+          translations: Json
         }
         Insert: {
           created_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           description?: string
           dietary?: string[]
           id?: string
+          image_url?: string | null
           ingredients?: string[]
           menu_id: string
           name_original: string
@@ -42,6 +45,7 @@ export type Database = {
           position?: number
           price_text?: string | null
           spice_level?: number
+          translations?: Json
         }
         Update: {
           created_at?: string
@@ -49,6 +53,7 @@ export type Database = {
           description?: string
           dietary?: string[]
           id?: string
+          image_url?: string | null
           ingredients?: string[]
           menu_id?: string
           name_original?: string
@@ -56,6 +61,7 @@ export type Database = {
           position?: number
           price_text?: string | null
           spice_level?: number
+          translations?: Json
         }
         Relationships: [
           {
