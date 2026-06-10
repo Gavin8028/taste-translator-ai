@@ -80,6 +80,7 @@ function NewRestaurantMenu() {
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
 
   function pickFile(f: File) {
     if (!f.type.startsWith("image/")) {
