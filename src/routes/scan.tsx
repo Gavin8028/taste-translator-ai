@@ -1,10 +1,16 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, ImageUp, Loader2, X } from "lucide-react";
+import { Camera, ImageUp, Loader2, X, Clock, Trash2 } from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
-import { newScanId, saveScan } from "@/lib/scan-store";
+import {
+  newScanId,
+  saveScan,
+  listRecentScans,
+  deleteScan,
+  type RecentScan,
+} from "@/lib/scan-store";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -46,7 +52,6 @@ const LANGUAGES = [
 ];
 
 async function fileToDataUrl(file: File): Promise<string> {
-  // Resize to keep under ~1.5MB while preserving readable text.
   const bitmap = await createImageBitmap(file).catch(() => null);
   if (!bitmap) {
     return new Promise((res, rej) => {
@@ -68,6 +73,17 @@ async function fileToDataUrl(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.85);
 }
 
+function formatRelative(ts: number): string {
+  const diff = Date.now() - ts;
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  return `${d}d ago`;
+}
+
 function ScanPage() {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
@@ -77,14 +93,30 @@ function ScanPage() {
   const [stage, setStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [recent, setRecent] = useState<RecentScan[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    setRecent(listRecentScans());
+  }, []);
+
+  function validate(f: File): string | null {
+    if (!f.type.startsWith("image/")) return "Please pick an image file.";
+    if (f.size > 20 * 1024 * 1024) return "That photo is over 20 MB. Try a smaller one.";
+    return null;
+  }
+
   function pickFile(f: File) {
+    const err = validate(f);
+    if (err) {
+      setError(err);
+      return;
+    }
     setError(null);
     setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreview(url);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(URL.createObjectURL(f));
   }
 
   function clearFile() {
@@ -125,18 +157,23 @@ function ScanPage() {
     }
   }
 
+  function onDeleteRecent(id: string) {
+    deleteScan(id);
+    setRecent(listRecentScans());
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-12 sm:py-16">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-16">
         {!loading && (
           <>
             <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
               Scan a menu
             </h1>
             <p className="mt-3 text-muted-foreground">
-              Drop in a photo, or take one with your camera. We'll do the rest.
+              Take a photo, or drop one in. We'll do the rest.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -153,47 +190,68 @@ function ScanPage() {
             </div>
 
             {!preview && (
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setDragOver(true);
-                }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOver(false);
-                  const f = e.dataTransfer.files?.[0];
-                  if (f) pickFile(f);
-                }}
-                className={`mt-8 rounded-3xl border-2 border-dashed p-10 text-center transition-colors ${
-                  dragOver
-                    ? "border-primary bg-primary/5"
-                    : "border-border bg-surface hover:bg-accent/40"
-                }`}
-              >
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <ImageUp className="h-6 w-6" />
-                </div>
-                <p className="mt-4 text-base font-medium">Drop a menu photo here</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  JPG, PNG, WEBP up to 20 MB
-                </p>
-
-                <div className="mt-6 flex flex-wrap justify-center gap-2">
-                  <Button
-                    onClick={() => inputRef.current?.click()}
-                    className="rounded-full"
-                  >
-                    Choose a file
-                  </Button>
-                  <Button
-                    variant="outline"
+              <>
+                {/* Mobile-first primary action: huge camera button */}
+                <div className="mt-8 grid gap-3 sm:hidden">
+                  <button
                     onClick={() => cameraRef.current?.click()}
-                    className="rounded-full"
+                    className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-3xl bg-primary text-primary-foreground shadow-lg active:scale-[0.99]"
                   >
-                    <Camera className="h-4 w-4" />
-                    Use camera
-                  </Button>
+                    <Camera className="h-8 w-8" strokeWidth={1.75} />
+                    <span className="text-lg font-semibold">Take a photo</span>
+                  </button>
+                  <button
+                    onClick={() => inputRef.current?.click()}
+                    className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card text-sm font-medium"
+                  >
+                    <ImageUp className="h-4 w-4" />
+                    Upload from gallery
+                  </button>
+                </div>
+
+                {/* Desktop: dropzone */}
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setDragOver(true);
+                  }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    const f = e.dataTransfer.files?.[0];
+                    if (f) pickFile(f);
+                  }}
+                  className={`mt-8 hidden rounded-3xl border-2 border-dashed p-10 text-center transition-colors sm:block ${
+                    dragOver
+                      ? "border-primary bg-primary/5"
+                      : "border-border bg-surface hover:bg-accent/40"
+                  }`}
+                >
+                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <ImageUp className="h-6 w-6" />
+                  </div>
+                  <p className="mt-4 text-base font-medium">Drop a menu photo here</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    JPG, PNG, WEBP, HEIC — up to 20 MB
+                  </p>
+
+                  <div className="mt-6 flex flex-wrap justify-center gap-2">
+                    <Button
+                      onClick={() => inputRef.current?.click()}
+                      className="rounded-full"
+                    >
+                      Choose a file
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => cameraRef.current?.click()}
+                      className="rounded-full"
+                    >
+                      <Camera className="h-4 w-4" />
+                      Use camera
+                    </Button>
+                  </div>
                 </div>
 
                 <input
@@ -204,6 +262,7 @@ function ScanPage() {
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) pickFile(f);
+                    e.target.value = "";
                   }}
                 />
                 <input
@@ -215,9 +274,10 @@ function ScanPage() {
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) pickFile(f);
+                    e.target.value = "";
                   }}
                 />
-              </div>
+              </>
             )}
 
             {preview && (
@@ -236,13 +296,23 @@ function ScanPage() {
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <Button
-                  onClick={onAnalyze}
-                  size="lg"
-                  className="h-12 w-full rounded-full text-base"
-                >
-                  Analyze menu
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => cameraRef.current?.click()}
+                    className="rounded-full"
+                  >
+                    <Camera className="h-4 w-4" />
+                    Retake
+                  </Button>
+                  <Button
+                    onClick={onAnalyze}
+                    size="lg"
+                    className="h-12 flex-1 rounded-full text-base"
+                  >
+                    Analyze menu
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -251,14 +321,60 @@ function ScanPage() {
                 {error}
               </p>
             )}
+
+            {!preview && recent.length > 0 && (
+              <section className="mt-12">
+                <div className="mb-4 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Recent scans
+                  </h2>
+                </div>
+                <ul className="space-y-2">
+                  {recent.map((s) => (
+                    <li key={s.id}>
+                      <div className="group flex items-center gap-2 rounded-2xl border border-border/70 bg-card p-3 transition-colors hover:bg-accent/40">
+                        <Link
+                          to="/scan/$id"
+                          params={{ id: s.id }}
+                          className="flex flex-1 items-center gap-3 min-w-0"
+                        >
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                            <ImageUp className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {s.restaurantName || "Untitled menu"}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {s.dishCount} dishes · {s.sourceLanguage} ·{" "}
+                              {formatRelative(s.createdAt)}
+                            </p>
+                          </div>
+                        </Link>
+                        <button
+                          onClick={() => onDeleteRecent(s.id)}
+                          aria-label="Delete scan"
+                          className="rounded-full p-2 text-muted-foreground opacity-0 transition-opacity hover:bg-background hover:text-foreground group-hover:opacity-100"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  Scans stay on this device. Open one to view it instantly — images are
+                  cached too.
+                </p>
+              </section>
+            )}
           </>
         )}
 
         {loading && (
           <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-            <div className="relative">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            </div>
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
             <h2 className="mt-8 text-2xl font-semibold tracking-tight">
               {STAGES[stage]}
             </h2>
