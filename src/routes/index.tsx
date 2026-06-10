@@ -61,7 +61,10 @@ function Landing() {
               className="absolute -inset-6 -z-10 rounded-full opacity-30 blur-2xl"
               style={{ backgroundColor: "var(--secondary)" }}
             />
-            <Camera className="relative h-24 w-24" strokeWidth={1.5} />
+            <Camera className="relative h-16 w-16" strokeWidth={1.5} />
+            <span className="relative mt-2 text-xl font-semibold tracking-tight">
+              Scan Menu
+            </span>
           </Link>
 
           <Link
