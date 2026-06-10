@@ -72,9 +72,9 @@ const ApiDishImageRoute = ApiDishImageRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const RestaurantsSlugEditRoute = RestaurantsSlugEditRouteImport.update({
-  id: '/$slug/edit',
-  path: '/$slug/edit',
-  getParentRoute: () => RestaurantsRoute,
+  id: '/restaurants/$slug/edit',
+  path: '/restaurants/$slug/edit',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -170,6 +170,7 @@ export interface RootRouteChildren {
   RestaurantsNewRoute: typeof RestaurantsNewRoute
   ScanIdRoute: typeof ScanIdRoute
   RestaurantsIndexRoute: typeof RestaurantsIndexRoute
+  RestaurantsSlugEditRoute: typeof RestaurantsSlugEditRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -246,10 +247,10 @@ declare module '@tanstack/react-router' {
     }
     '/restaurants/$slug/edit': {
       id: '/restaurants/$slug/edit'
-      path: '/$slug/edit'
+      path: '/restaurants/$slug/edit'
       fullPath: '/restaurants/$slug/edit'
       preLoaderRoute: typeof RestaurantsSlugEditRouteImport
-      parentRoute: typeof RestaurantsRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -265,17 +266,8 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantsNewRoute: RestaurantsNewRoute,
   ScanIdRoute: ScanIdRoute,
   RestaurantsIndexRoute: RestaurantsIndexRoute,
+  RestaurantsSlugEditRoute: RestaurantsSlugEditRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

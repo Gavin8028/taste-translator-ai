@@ -65,7 +65,7 @@ function RestaurantsLanding() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-5xl px-5 py-16">
+      <section id="how-it-works" className="mx-auto w-full max-w-5xl px-5 py-16 scroll-mt-20">
         <div className="grid gap-5 md:grid-cols-3">
           {[
             {
