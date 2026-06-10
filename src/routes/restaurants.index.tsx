@@ -3,7 +3,7 @@ import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Camera, Share2, Globe, Sparkles } from "lucide-react";
 
-export const Route = createFileRoute("/restaurants/")({
+export const Route = createFileRoute("/restaurants")({
   head: () => ({
     meta: [
       { title: "For restaurants — MenuVision AI" },
