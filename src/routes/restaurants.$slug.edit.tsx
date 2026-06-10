@@ -21,6 +21,7 @@ import {
   verifyEditToken,
 } from "@/lib/restaurant.functions";
 import { forgetOwner, getOwnerToken, rememberOwner } from "@/lib/owner-store";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 
 export const Route = createFileRoute("/restaurants/$slug/edit")({
   head: () => ({
@@ -59,11 +60,13 @@ async function fileToDataUrl(file: File): Promise<string> {
 function EditMenuPage() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
+  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const [phase, setPhase] = useState<"loading" | "need-token" | "ready">("loading");
   const [token, setToken] = useState("");
   const [tokenInput, setTokenInput] = useState("");
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
+  const [paid, setPaid] = useState(false);
 
   const [name, setName] = useState("");
   const [savingName, setSavingName] = useState(false);
@@ -95,6 +98,7 @@ function EditMenuPage() {
           setToken(saved);
           setName(res.menu.name);
           setLanguage(res.menu.targetLanguage);
+          setPaid(res.menu.paid);
           setPhase("ready");
         } else {
           setPhase("need-token");
@@ -121,6 +125,7 @@ function EditMenuPage() {
       setToken(tokenInput.trim());
       setName(res.menu.name);
       setLanguage(res.menu.targetLanguage);
+      setPaid(res.menu.paid);
       setPhase("ready");
     } catch (err) {
       setVerifyError(err instanceof Error ? err.message : "Something went wrong.");
@@ -282,6 +287,47 @@ function EditMenuPage() {
             {publicUrl}
           </a>
         </p>
+
+        {/* Publish / paywall */}
+        {!paid ? (
+          <section className="mt-8 rounded-2xl border-2 border-primary/40 bg-primary/5 p-5">
+            <h2 className="text-lg font-semibold">Publish your menu</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your menu is ready, but the public link is locked. Pay a one-time
+              $39 to publish it and unlock your QR code for guests.
+            </p>
+            <Button
+              onClick={() =>
+                openCheckout({
+                  priceId: "publish_menu_one_time",
+                  customData: { slug },
+                  successUrl: `${window.location.origin}/restaurants/${slug}/edit?published=1`,
+                })
+              }
+              disabled={checkoutLoading}
+              className="mt-4 h-11 rounded-full px-6 text-base"
+            >
+              {checkoutLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : null}
+              Publish for $39
+            </Button>
+            <p className="mt-3 text-xs text-muted-foreground">
+              One-time payment. No subscriptions. After payment your menu is
+              live forever.
+            </p>
+          </section>
+        ) : (
+          <section className="mt-8 rounded-2xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm">
+            <p className="font-medium text-emerald-700 dark:text-emerald-400">
+              ✓ Published
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              Your menu is live at the link above.
+            </p>
+          </section>
+        )}
+
 
         {/* QR */}
         <section className="mt-8 grid gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-[auto,1fr] sm:items-center">

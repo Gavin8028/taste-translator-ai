@@ -123,7 +123,7 @@ export const getRestaurantMenu = createServerFn({ method: "GET" })
 
     const { data: menu, error } = await supabaseAdmin
       .from("restaurant_menus")
-      .select("id, slug, name, target_language, source_language, created_at")
+      .select("id, slug, name, target_language, source_language, created_at, paid")
       .eq("slug", data.slug)
       .maybeSingle();
 
@@ -146,6 +146,7 @@ export const getRestaurantMenu = createServerFn({ method: "GET" })
       targetLanguage: menu.target_language,
       sourceLanguage: menu.source_language,
       createdAt: menu.created_at,
+      paid: menu.paid ?? false,
       dishes: (dishes ?? []).map((d) => ({
         nameOriginal: d.name_original,
         nameTranslated: d.name_translated,
@@ -303,7 +304,7 @@ export const verifyEditToken = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: menu } = await supabaseAdmin
       .from("restaurant_menus")
-      .select("name, slug, edit_token, target_language")
+      .select("name, slug, edit_token, target_language, paid")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!menu) return { ok: false as const, reason: "not_found" as const };
@@ -315,6 +316,7 @@ export const verifyEditToken = createServerFn({ method: "POST" })
         name: menu.name,
         slug: menu.slug,
         targetLanguage: menu.target_language,
+        paid: menu.paid ?? false,
       },
     };
   });

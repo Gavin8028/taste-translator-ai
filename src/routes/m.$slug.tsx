@@ -76,6 +76,38 @@ function MenuPage() {
   // data is non-null here because the loader throws notFound() otherwise
   const menu = data!;
 
+  if (!menu.paid) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <SiteHeader />
+        <main className="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-5 py-16 text-center">
+          <p className="text-sm font-medium text-primary">Coming soon</p>
+          <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-5xl">
+            {menu.name}
+          </h1>
+          <p className="mt-4 text-muted-foreground">
+            This menu isn't live yet. The owner is finishing setup — please check
+            back in a bit.
+          </p>
+          <Button asChild className="mt-8 rounded-full">
+            <Link to="/">Back to home</Link>
+          </Button>
+          <p className="mt-10 text-xs text-muted-foreground">
+            Are you the owner?{" "}
+            <Link
+              to="/restaurants/$slug/edit"
+              params={{ slug }}
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              Manage this menu
+            </Link>
+          </p>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
   const dishes: Dish[] = useMemo(
     () =>
       menu.dishes.map((d) => ({

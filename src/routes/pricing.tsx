@@ -19,34 +19,35 @@ export const Route = createFileRoute("/pricing")({
 
 const tiers = [
   {
-    name: "Free",
-    price: "$0",
-    cadence: "forever",
+    name: "For diners",
+    price: "Free",
+    cadence: "always",
     features: [
-      "5 menu scans per month",
+      "Scan any menu with your phone",
       "Translation to 50+ languages",
-      "Pictures for every dish",
-      "Search and filters",
+      "AI-generated pictures for every dish",
+      "Search, filter, and dietary info",
     ],
-    cta: "Start scanning",
-    ctaTo: "/scan",
+    cta: "Scan a menu",
+    ctaTo: "/scan" as const,
     featured: false,
   },
   {
-    name: "Premium",
-    price: "$4.79",
-    cadence: "per month",
+    name: "For restaurants",
+    price: "$39",
+    cadence: "one-time",
     features: [
-      "Unlimited menu scans",
-      "Priority dish image generation",
-      "Higher-resolution dish photos",
-      "No ads, ever",
+      "Permanent public menu page",
+      "Printable QR code for tables",
+      "Translation to 50+ languages",
+      "Edit or replace your menu anytime",
     ],
-    cta: "Coming soon",
-    ctaTo: null,
+    cta: "Create your menu page",
+    ctaTo: "/restaurants/new" as const,
     featured: true,
   },
 ];
+
 
 function PricingPage() {
   return (
@@ -94,15 +95,9 @@ function PricingPage() {
                 ))}
               </ul>
               <div className="mt-8">
-                {t.ctaTo ? (
-                  <Button asChild className="h-11 w-full rounded-full">
-                    <Link to={t.ctaTo}>{t.cta}</Link>
-                  </Button>
-                ) : (
-                  <Button disabled className="h-11 w-full rounded-full">
-                    {t.cta}
-                  </Button>
-                )}
+                <Button asChild className="h-11 w-full rounded-full">
+                  <Link to={t.ctaTo}>{t.cta}</Link>
+                </Button>
               </div>
             </div>
           ))}
