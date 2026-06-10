@@ -84,10 +84,13 @@ function formatRelative(ts: number): string {
   return `${d}d ago`;
 }
 
+const MAX_PHOTOS = 8;
+
+type PageItem = { file: File; previewUrl: string };
+
 function ScanPage() {
   const navigate = useNavigate();
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [pages, setPages] = useState<PageItem[]>([]);
   const [language, setLanguage] = useState("English");
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
@@ -101,32 +104,59 @@ function ScanPage() {
     setRecent(listRecentScans());
   }, []);
 
+  useEffect(() => {
+    return () => {
+      pages.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function validate(f: File): string | null {
     if (!f.type.startsWith("image/")) return "Please pick an image file.";
     if (f.size > 20 * 1024 * 1024) return "That photo is over 20 MB. Try a smaller one.";
     return null;
   }
 
-  function pickFile(f: File) {
-    const err = validate(f);
-    if (err) {
-      setError(err);
+  function addFiles(files: FileList | File[]) {
+    setError(null);
+    const arr = Array.from(files);
+    const room = MAX_PHOTOS - pages.length;
+    if (room <= 0) {
+      setError(`You can scan up to ${MAX_PHOTOS} photos at a time.`);
       return;
     }
-    setError(null);
-    setFile(f);
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(URL.createObjectURL(f));
+    const next: PageItem[] = [];
+    for (const f of arr.slice(0, room)) {
+      const err = validate(f);
+      if (err) {
+        setError(err);
+        continue;
+      }
+      next.push({ file: f, previewUrl: URL.createObjectURL(f) });
+    }
+    if (arr.length > room) {
+      setError(
+        `Only the first ${room} ${room === 1 ? "photo was" : "photos were"} added (max ${MAX_PHOTOS} per menu).`,
+      );
+    }
+    if (next.length) setPages((prev) => [...prev, ...next]);
   }
 
-  function clearFile() {
-    setFile(null);
-    if (preview) URL.revokeObjectURL(preview);
-    setPreview(null);
+  function removePage(idx: number) {
+    setPages((prev) => {
+      const removed = prev[idx];
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return prev.filter((_, i) => i !== idx);
+    });
+  }
+
+  function clearAll() {
+    pages.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+    setPages([]);
   }
 
   async function onAnalyze() {
-    if (!file) return;
+    if (!pages.length) return;
     setLoading(true);
     setStage(0);
     setError(null);
@@ -134,13 +164,13 @@ function ScanPage() {
       setStage((s) => Math.min(s + 1, STAGES.length - 1));
     }, 2200);
     try {
-      const dataUrl = await fileToDataUrl(file);
+      const dataUrls = await Promise.all(pages.map((p) => fileToDataUrl(p.file)));
       const result = await analyzeMenu({
-        data: { imageDataUrl: dataUrl, targetLanguage: language },
+        data: { imageDataUrls: dataUrls, targetLanguage: language },
       });
       if (!result.dishes?.length) {
         throw new Error(
-          "We couldn't find any dishes in that photo. Try a clearer, closer shot of the menu.",
+          "We couldn't find any dishes in those photos. Try clearer, closer shots of the menu.",
         );
       }
       const id = newScanId();
