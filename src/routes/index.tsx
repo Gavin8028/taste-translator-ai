@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
-import { Camera, Globe, Sparkles, Eye, Check } from "lucide-react";
+import { Camera, Globe, Sparkles, Eye, Check, Languages, Zap, Leaf, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -129,6 +129,56 @@ function Landing() {
           <div className="mt-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Sparkles className="h-4 w-4 text-primary" />
             Works on menus from anywhere in the world
+          </div>
+        </div>
+      </section>
+
+      {/* Value props */}
+      <section className="border-t border-border/60">
+        <div className="mx-auto max-w-5xl px-5 py-16">
+          <div className="text-center">
+            <p className="text-sm font-medium text-primary">Why MenuVision</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+              Built for travelers and curious eaters.
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                icon: Languages,
+                title: "50+ languages",
+                body: "From Japanese kanji to Greek script — we read it all.",
+              },
+              {
+                icon: UserX,
+                title: "No sign-up",
+                body: "Open the app, snap a menu, get answers. That's it.",
+              },
+              {
+                icon: Leaf,
+                title: "Dietary tags",
+                body: "Vegetarian, vegan, and gluten-free flags when we can spot them.",
+              },
+              {
+                icon: Zap,
+                title: "Fast results",
+                body: "Most menus are translated and illustrated in under 20 seconds.",
+              },
+            ].map((v) => (
+              <div
+                key={v.title}
+                className="rounded-2xl border border-border/70 bg-card p-5 shadow-sm"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                  <v.icon className="h-5 w-5" />
+                </span>
+                <h3 className="mt-4 font-semibold">{v.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                  {v.body}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
