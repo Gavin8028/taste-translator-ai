@@ -1,9 +1,12 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, ImageUp, Loader2, X, Check, Copy } from "lucide-react";
+import { Camera, ImageUp, Loader2, X, Check, Copy, Pencil } from "lucide-react";
 import { createRestaurantMenu } from "@/lib/restaurant.functions";
+import { rememberOwner } from "@/lib/owner-store";
+import { QrCode } from "@/components/qr-code";
+
 
 export const Route = createFileRoute("/restaurants/new")({
   head: () => ({
