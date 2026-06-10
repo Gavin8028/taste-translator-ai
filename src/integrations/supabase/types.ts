@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      menu_dishes: {
+        Row: {
+          created_at: string
+          cuisine: string
+          description: string
+          dietary: string[]
+          id: string
+          ingredients: string[]
+          menu_id: string
+          name_original: string
+          name_translated: string
+          position: number
+          price_text: string | null
+          spice_level: number
+        }
+        Insert: {
+          created_at?: string
+          cuisine?: string
+          description?: string
+          dietary?: string[]
+          id?: string
+          ingredients?: string[]
+          menu_id: string
+          name_original: string
+          name_translated: string
+          position?: number
+          price_text?: string | null
+          spice_level?: number
+        }
+        Update: {
+          created_at?: string
+          cuisine?: string
+          description?: string
+          dietary?: string[]
+          id?: string
+          ingredients?: string[]
+          menu_id?: string
+          name_original?: string
+          name_translated?: string
+          position?: number
+          price_text?: string | null
+          spice_level?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_dishes_menu_id_fkey"
+            columns: ["menu_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      restaurant_menus: {
+        Row: {
+          created_at: string
+          edit_token: string
+          id: string
+          name: string
+          slug: string
+          source_language: string | null
+          target_language: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          edit_token: string
+          id?: string
+          name: string
+          slug: string
+          source_language?: string | null
+          target_language?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          edit_token?: string
+          id?: string
+          name?: string
+          slug?: string
+          source_language?: string | null
+          target_language?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
