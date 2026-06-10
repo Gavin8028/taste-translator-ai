@@ -152,12 +152,35 @@ function NewRestaurantMenu() {
             <Check className="h-7 w-7" />
           </div>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">
-            Your menu is live.
+            Menu ready — one last step.
           </h1>
           <p className="mt-3 text-muted-foreground">
-            Share this link with your guests. The dish photos generate the first time
-            someone opens the page — give it a few seconds the first visit.
+            We've translated your dishes and reserved your link. Pay a one-time
+            $39 to publish your menu page and unlock it for guests.
           </p>
+
+          <div className="mt-6 rounded-2xl border-2 border-primary/40 bg-primary/5 p-5">
+            <p className="text-sm font-medium">Publish your menu page</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              One-time payment. No subscriptions. Yours forever.
+            </p>
+            <Button
+              onClick={() =>
+                openCheckout({
+                  priceId: "publish_menu_one_time",
+                  customData: { slug: result.slug },
+                  successUrl: `${window.location.origin}/restaurants/${result.slug}/edit?published=1`,
+                })
+              }
+              disabled={checkoutLoading}
+              className="mt-4 h-12 rounded-full px-6 text-base"
+            >
+              {checkoutLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : null}
+              Publish for $39
+            </Button>
+          </div>
 
           <div className="mt-8 rounded-2xl border border-border bg-card p-5">
             <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
