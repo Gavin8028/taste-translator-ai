@@ -304,7 +304,7 @@ export const verifyEditToken = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: menu } = await supabaseAdmin
       .from("restaurant_menus")
-      .select("name, slug, edit_token, target_language")
+      .select("name, slug, edit_token, target_language, paid")
       .eq("slug", data.slug)
       .maybeSingle();
     if (!menu) return { ok: false as const, reason: "not_found" as const };
@@ -316,6 +316,7 @@ export const verifyEditToken = createServerFn({ method: "POST" })
         name: menu.name,
         slug: menu.slug,
         targetLanguage: menu.target_language,
+        paid: menu.paid ?? false,
       },
     };
   });
