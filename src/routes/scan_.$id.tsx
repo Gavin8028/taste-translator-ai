@@ -128,65 +128,83 @@ function ResultsPage() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="mt-7 space-y-3">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search dishes, ingredients, cuisines…"
-              className="w-full rounded-full border border-border bg-card py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+        {/* Filters — premium only */}
+        {isPremium ? (
+          <div className="mt-7 space-y-3">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search dishes, ingredients, cuisines…"
+                className="w-full rounded-full border border-border bg-card py-3 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
 
-          <div className="flex flex-wrap gap-2">
-            {cuisines.map((c) => (
-              <Chip
-                key={c}
-                label={c}
-                active={cuisine === c}
-                onClick={() => setCuisine(cuisine === c ? null : c)}
-              />
-            ))}
-            {diets.map((d) => (
-              <Chip
-                key={d}
-                label={d}
-                active={diet === d}
-                onClick={() => setDiet(diet === d ? null : d)}
-              />
-            ))}
-            {[1, 2, 3].map((s) => (
-              <Chip
-                key={s}
-                active={spice === s}
-                onClick={() => setSpice(spice === s ? null : s)}
-                label={
-                  <span className="inline-flex items-center gap-1">
-                    {Array.from({ length: s }).map((_, i) => (
-                      <Flame key={i} className="h-3 w-3" />
-                    ))}
-                    {s === 1 ? "Mild" : s === 2 ? "Medium" : "Hot"}
-                  </span>
-                }
-              />
-            ))}
-            {(cuisine || diet || spice !== null || query) && (
-              <button
-                onClick={() => {
-                  setCuisine(null);
-                  setDiet(null);
-                  setSpice(null);
-                  setQuery("");
-                }}
-                className="rounded-full px-3 py-1.5 text-xs text-muted-foreground underline-offset-2 hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {cuisines.map((c) => (
+                <Chip
+                  key={c}
+                  label={c}
+                  active={cuisine === c}
+                  onClick={() => setCuisine(cuisine === c ? null : c)}
+                />
+              ))}
+              {diets.map((d) => (
+                <Chip
+                  key={d}
+                  label={d}
+                  active={diet === d}
+                  onClick={() => setDiet(diet === d ? null : d)}
+                />
+              ))}
+              {[1, 2, 3].map((s) => (
+                <Chip
+                  key={s}
+                  active={spice === s}
+                  onClick={() => setSpice(spice === s ? null : s)}
+                  label={
+                    <span className="inline-flex items-center gap-1">
+                      {Array.from({ length: s }).map((_, i) => (
+                        <Flame key={i} className="h-3 w-3" />
+                      ))}
+                      {s === 1 ? "Mild" : s === 2 ? "Medium" : "Hot"}
+                    </span>
+                  }
+                />
+              ))}
+              {(cuisine || diet || spice !== null || query) && (
+                <button
+                  onClick={() => {
+                    setCuisine(null);
+                    setDiet(null);
+                    setSpice(null);
+                    setQuery("");
+                  }}
+                  className="rounded-full px-3 py-1.5 text-xs text-muted-foreground underline-offset-2 hover:underline"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <Link
+            to="/pricing"
+            className="mt-7 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-5 py-4 text-sm transition hover:bg-muted"
+          >
+            <span className="flex items-center gap-3">
+              <Lock className="h-4 w-4 text-primary" />
+              <span>
+                <span className="font-medium text-foreground">
+                  Search, filters, dietary info & dish photos
+                </span>{" "}
+                <span className="text-muted-foreground">— unlock with Premium</span>
+              </span>
+            </span>
+            <Sparkles className="h-4 w-4 text-primary" />
+          </Link>
+        )}
 
         {/* Grid */}
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -195,6 +213,7 @@ function ResultsPage() {
               key={`${dish.nameOriginal}-${i}`}
               dish={dish}
               onClick={() => setActive(dish)}
+              allowAi={isPremium}
             />
           ))}
           {filtered.length === 0 && (
@@ -205,7 +224,11 @@ function ResultsPage() {
         </div>
       </main>
 
-      <DishDetailSheet dish={active} onClose={() => setActive(null)} />
+      <DishDetailSheet
+        dish={active}
+        onClose={() => setActive(null)}
+        allowAi={isPremium}
+      />
 
       <SiteFooter />
     </div>
