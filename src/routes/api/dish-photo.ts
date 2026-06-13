@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/dish-photo")({
         };
         const key = process.env.SERPAPI_API_KEY;
         if (!key) {
-          return Response.json({ url: null, error: "missing_key" });
+          return Response.json({ urls: [], url: null, error: "missing_key" });
         }
 
         const q = [dish, cuisine, "food dish"].filter(Boolean).join(" ");
@@ -59,19 +59,24 @@ export const Route = createFileRoute("/api/dish-photo")({
           const data = (await res.json()) as { images_results?: SerpImageResult[] };
           const candidates = data.images_results ?? [];
 
-          for (const c of candidates.slice(0, 12)) {
-            if (isUsable(c.original)) {
-              return Response.json({ url: c.original, source: c.source ?? null });
+          const urls: string[] = [];
+          const seen = new Set<string>();
+          for (const c of candidates.slice(0, 25)) {
+            if (urls.length >= 5) break;
+            const pick = isUsable(c.original)
+              ? c.original
+              : isUsable(c.thumbnail)
+                ? c.thumbnail
+                : null;
+            if (pick && !seen.has(pick)) {
+              seen.add(pick);
+              urls.push(pick);
             }
           }
-          for (const c of candidates.slice(0, 12)) {
-            if (isUsable(c.thumbnail)) {
-              return Response.json({ url: c.thumbnail, source: c.source ?? null });
-            }
-          }
-          return Response.json({ url: null });
+          return Response.json({ urls, url: urls[0] ?? null });
         } catch (err) {
           return Response.json({
+            urls: [],
             url: null,
             error: err instanceof Error ? err.message : "unknown",
           });

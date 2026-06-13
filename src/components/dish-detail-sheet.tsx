@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Flame } from "lucide-react";
 import type { Dish } from "@/lib/menu.functions";
-import { fetchDishImage } from "@/lib/fetch-dish-image";
+import { fetchDishImages } from "@/lib/fetch-dish-image";
 
 export function DishDetailSheet({
   dish,
@@ -12,19 +12,19 @@ export function DishDetailSheet({
   onClose: () => void;
   allowAi?: boolean;
 }) {
-  const [src, setSrc] = useState<string | null>(null);
+  const [srcs, setSrcs] = useState<string[]>([]);
   const [isFinal, setIsFinal] = useState(false);
 
   useEffect(() => {
     if (!dish) return;
-    setSrc(null);
+    setSrcs([]);
     setIsFinal(false);
     const ac = new AbortController();
-    fetchDishImage(
+    fetchDishImages(
       dish.nameOriginal,
       dish.cuisine,
-      (s, final) => {
-        setSrc(s);
+      (list, final) => {
+        setSrcs(list);
         if (final) setIsFinal(true);
       },
       ac.signal,
@@ -62,18 +62,30 @@ export function DishDetailSheet({
         >
           <X className="h-4 w-4" />
         </button>
-        <div className="aspect-[16/10] w-full overflow-hidden bg-muted">
-          {src ? (
-            <img
-              src={src}
-              alt={dish.nameTranslated}
-              className={`h-full w-full object-cover transition-[filter] duration-500 ${
-                isFinal ? "blur-0" : "blur-2xl"
-              }`}
-            />
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+          {srcs.length > 0 ? (
+            <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth">
+              {srcs.map((s, i) => (
+                <img
+                  key={s + i}
+                  src={s}
+                  alt={`${dish.nameTranslated} ${i + 1}`}
+                  className={`h-full w-full flex-none snap-center object-cover transition-[filter] duration-500 ${
+                    isFinal ? "blur-0" : "blur-2xl"
+                  }`}
+                />
+              ))}
+            </div>
           ) : (
             <div className="flex h-full w-full items-center justify-center">
               <div className="h-10 w-10 animate-pulse rounded-full bg-border" />
+            </div>
+          )}
+          {srcs.length > 1 && (
+            <div className="pointer-events-none absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1 rounded-full bg-background/70 px-2 py-1 backdrop-blur">
+              {srcs.map((_, i) => (
+                <span key={i} className="h-1.5 w-1.5 rounded-full bg-foreground/50" />
+              ))}
             </div>
           )}
         </div>

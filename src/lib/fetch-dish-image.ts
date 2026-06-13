@@ -14,12 +14,10 @@ const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40
 </svg>`;
 export const DISH_PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(PLACEHOLDER_SVG)}`;
 
+export const MAX_DISH_IMAGES = 5;
+
 /**
- * Returns a usable image src for a dish.
- *   1. IndexedDB cache (instant)
- *   2. Real photo via SerpAPI (/api/dish-photo)
- *   3. AI-generated fallback (streamed) — ONLY when allowAi is true
- *   4. Static placeholder when AI isn't allowed
+ * Returns a usable image src for a dish (single image — kept for back-compat).
  */
 export async function fetchDishImage(
   dish: string,
@@ -28,11 +26,52 @@ export async function fetchDishImage(
   signal?: AbortSignal,
   allowAi: boolean = false,
 ): Promise<void> {
-  const key = dishKey(dish, cuisine);
+  await fetchDishImages(
+    dish,
+    cuisine,
+    (urls, isFinal) => {
+      if (urls.length > 0) onFrame(urls[0], isFinal);
+      else if (isFinal) onFrame(DISH_PLACEHOLDER, true);
+    },
+    signal,
+    allowAi,
+  );
+}
 
-  const cached = await getCachedImage(key);
-  if (cached) {
-    onFrame(cached, true);
+/**
+ * Returns up to MAX_DISH_IMAGES image srcs for a dish.
+ *   1. IndexedDB cache (instant)
+ *   2. Real photos via SerpAPI (/api/dish-photo)
+ *   3. AI-generated fallback (streamed, single image) — ONLY when allowAi
+ *   4. Static placeholder when AI isn't allowed
+ */
+export async function fetchDishImages(
+  dish: string,
+  cuisine: string | undefined,
+  onFrame: (urls: string[], isFinal: boolean) => void,
+  signal?: AbortSignal,
+  allowAi: boolean = false,
+): Promise<void> {
+  const key = dishKey(dish, cuisine);
+  const multiKey = key + "||multi";
+
+  const cachedMulti = await getCachedImage(multiKey);
+  if (cachedMulti) {
+    try {
+      const arr = JSON.parse(cachedMulti) as string[];
+      if (Array.isArray(arr) && arr.length > 0) {
+        onFrame(arr.slice(0, MAX_DISH_IMAGES), true);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+  }
+  // legacy single-image cache fallback
+  const cachedSingle = await getCachedImage(key);
+  if (cachedSingle) {
+    onFrame([cachedSingle], true);
+    // continue and try to upgrade to multi in background? skip to keep simple
     return;
   }
   if (signal?.aborted) return;
@@ -45,12 +84,15 @@ export async function fetchDishImage(
       signal,
     });
     if (res.ok) {
-      const { url } = (await res.json()) as { url: string | null };
-      if (url) {
-        const ok = await preload(url, signal);
-        if (ok) {
-          onFrame(url, true);
-          setCachedImage(key, url).catch(() => {});
+      const { urls } = (await res.json()) as { urls?: string[]; url?: string | null };
+      const list = (urls ?? []).slice(0, MAX_DISH_IMAGES);
+      if (list.length > 0) {
+        // Preload in parallel; keep the ones that load successfully.
+        const results = await Promise.all(list.map((u) => preload(u, signal)));
+        const good = list.filter((_, i) => results[i]);
+        if (good.length > 0) {
+          onFrame(good, true);
+          setCachedImage(multiKey, JSON.stringify(good)).catch(() => {});
           return;
         }
       }
@@ -61,15 +103,18 @@ export async function fetchDishImage(
   if (signal?.aborted) return;
 
   if (!allowAi) {
-    onFrame(DISH_PLACEHOLDER, true);
+    onFrame([DISH_PLACEHOLDER], true);
     return;
   }
 
   await streamDishImage(
     { dish, cuisine },
     (dataUrl, isFinal) => {
-      onFrame(dataUrl, isFinal);
-      if (isFinal) setCachedImage(key, dataUrl).catch(() => {});
+      onFrame([dataUrl], isFinal);
+      if (isFinal) {
+        setCachedImage(key, dataUrl).catch(() => {});
+        setCachedImage(multiKey, JSON.stringify([dataUrl])).catch(() => {});
+      }
     },
     signal,
   );

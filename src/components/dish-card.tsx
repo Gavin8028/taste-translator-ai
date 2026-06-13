@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Flame, Leaf } from "lucide-react";
 import type { Dish } from "@/lib/menu.functions";
-import { fetchDishImage } from "@/lib/fetch-dish-image";
+import { fetchDishImages } from "@/lib/fetch-dish-image";
 
 export function DishCard({
   dish,
@@ -12,9 +12,9 @@ export function DishCard({
   onClick: () => void;
   allowAi?: boolean;
 }) {
-  const [src, setSrc] = useState<string | null>(null);
+  const [srcs, setSrcs] = useState<string[]>([]);
   const [isFinal, setIsFinal] = useState(false);
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const started = useRef(false);
 
   useEffect(() => {
@@ -29,11 +29,11 @@ export function DishCard({
             obs.disconnect();
 
             const ac = new AbortController();
-            fetchDishImage(
+            fetchDishImages(
               dish.nameOriginal,
               dish.cuisine,
-              (s, final) => {
-                setSrc(s);
+              (list, final) => {
+                setSrcs(list);
                 if (final) setIsFinal(true);
               },
               ac.signal,
@@ -49,32 +49,59 @@ export function DishCard({
   }, [dish.nameOriginal, dish.cuisine, allowAi]);
 
   return (
-    <button
+    <div
       ref={ref}
-      onClick={onClick}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-within:ring-2 focus-within:ring-ring"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-        {src ? (
-          <img
-            src={src}
-            alt={dish.nameTranslated}
-            className={`h-full w-full object-cover transition-[filter,transform] duration-500 group-hover:scale-[1.02] ${
-              isFinal ? "blur-0" : "blur-2xl"
-            }`}
-          />
+        {srcs.length > 0 ? (
+          <div className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth">
+            {srcs.map((s, i) => (
+              <button
+                key={s + i}
+                type="button"
+                onClick={onClick}
+                className="relative h-full w-full flex-none snap-center"
+                aria-label={`${dish.nameTranslated} photo ${i + 1}`}
+              >
+                <img
+                  src={s}
+                  alt={dish.nameTranslated}
+                  className={`h-full w-full object-cover transition-[filter,transform] duration-500 group-hover:scale-[1.02] ${
+                    isFinal ? "blur-0" : "blur-2xl"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
+          <button
+            type="button"
+            onClick={onClick}
+            className="flex h-full w-full items-center justify-center"
+            aria-label={dish.nameTranslated}
+          >
             <div className="h-8 w-8 animate-pulse rounded-full bg-border" />
+          </button>
+        )}
+        {srcs.length > 1 && (
+          <div className="pointer-events-none absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1 rounded-full bg-background/70 px-2 py-1 backdrop-blur">
+            {srcs.map((_, i) => (
+              <span key={i} className="h-1 w-1 rounded-full bg-foreground/50" />
+            ))}
           </div>
         )}
         {dish.priceText && (
-          <span className="absolute right-2 top-2 rounded-full bg-background/85 px-2.5 py-1 text-xs font-medium backdrop-blur">
+          <span className="pointer-events-none absolute right-2 top-2 rounded-full bg-background/85 px-2.5 py-1 text-xs font-medium backdrop-blur">
             {dish.priceText}
           </span>
         )}
       </div>
-      <div className="flex flex-1 flex-col p-4">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex flex-1 flex-col p-4 text-left focus:outline-none"
+      >
         <h3 className="text-base font-semibold leading-tight">{dish.nameTranslated}</h3>
         {dish.nameOriginal !== dish.nameTranslated && (
           <p className="mt-0.5 text-xs italic text-muted-foreground">
@@ -109,7 +136,7 @@ export function DishCard({
             </span>
           )}
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }
