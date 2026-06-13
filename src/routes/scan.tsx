@@ -91,6 +91,7 @@ type PageItem = { file: File; previewUrl: string };
 
 function ScanPage() {
   const navigate = useNavigate();
+  const isPremium = useDinerPremium();
   const [pages, setPages] = useState<PageItem[]>([]);
   const [language, setLanguage] = useState("English");
   const [loading, setLoading] = useState(false);
