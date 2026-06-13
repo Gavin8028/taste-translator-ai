@@ -168,7 +168,10 @@ function ScanPage() {
     try {
       const dataUrls = await Promise.all(pages.map((p) => fileToDataUrl(p.file)));
       const result = await analyzeMenu({
-        data: { imageDataUrls: dataUrls, targetLanguage: language },
+        data: {
+          imageDataUrls: dataUrls,
+          targetLanguage: isPremium ? language : "English",
+        },
       });
       if (!result.dishes?.length) {
         throw new Error(
