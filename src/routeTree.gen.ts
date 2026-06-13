@@ -18,6 +18,7 @@ import { Route as RestaurantsIndexRouteImport } from './routes/restaurants.index
 import { Route as ScanIdRouteImport } from './routes/scan_.$id'
 import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
 import { Route as MSlugRouteImport } from './routes/m.$slug'
+import { Route as ApiDishPhotoRouteImport } from './routes/api/dish-photo'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
@@ -67,6 +68,11 @@ const MSlugRoute = MSlugRouteImport.update({
   path: '/m/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiDishPhotoRoute = ApiDishPhotoRouteImport.update({
+  id: '/api/dish-photo',
+  path: '/api/dish-photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDishImageRoute = ApiDishImageRouteImport.update({
   id: '/api/dish-image',
   path: '/api/dish-image',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/api/dish-photo': typeof ApiDishPhotoRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/api/dish-photo': typeof ApiDishPhotoRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
+  '/api/dish-photo': typeof ApiDishPhotoRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/scan'
     | '/api/dish-image'
+    | '/api/dish-photo'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/scan'
     | '/api/dish-image'
+    | '/api/dish-photo'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/scan'
     | '/api/dish-image'
+    | '/api/dish-photo'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan_/$id'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ScanRoute: typeof ScanRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
+  ApiDishPhotoRoute: typeof ApiDishPhotoRoute
   MSlugRoute: typeof MSlugRoute
   RestaurantsNewRoute: typeof RestaurantsNewRoute
   ScanIdRoute: typeof ScanIdRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/dish-photo': {
+      id: '/api/dish-photo'
+      path: '/api/dish-photo'
+      fullPath: '/api/dish-photo'
+      preLoaderRoute: typeof ApiDishPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/dish-image': {
       id: '/api/dish-image'
       path: '/api/dish-image'
@@ -283,6 +303,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ScanRoute: ScanRoute,
   ApiDishImageRoute: ApiDishImageRoute,
+  ApiDishPhotoRoute: ApiDishPhotoRoute,
   MSlugRoute: MSlugRoute,
   RestaurantsNewRoute: RestaurantsNewRoute,
   ScanIdRoute: ScanIdRoute,
