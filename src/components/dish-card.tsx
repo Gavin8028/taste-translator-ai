@@ -3,7 +3,15 @@ import { Flame, Leaf } from "lucide-react";
 import type { Dish } from "@/lib/menu.functions";
 import { fetchDishImage } from "@/lib/fetch-dish-image";
 
-export function DishCard({ dish, onClick }: { dish: Dish; onClick: () => void }) {
+export function DishCard({
+  dish,
+  onClick,
+  allowAi = false,
+}: {
+  dish: Dish;
+  onClick: () => void;
+  allowAi?: boolean;
+}) {
   const [src, setSrc] = useState<string | null>(null);
   const [isFinal, setIsFinal] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
@@ -29,6 +37,7 @@ export function DishCard({ dish, onClick }: { dish: Dish; onClick: () => void })
                 if (final) setIsFinal(true);
               },
               ac.signal,
+              allowAi,
             ).catch((err) => console.warn("dish image failed:", err));
           }
         }
@@ -37,7 +46,7 @@ export function DishCard({ dish, onClick }: { dish: Dish; onClick: () => void })
     );
     obs.observe(node);
     return () => obs.disconnect();
-  }, [dish.nameOriginal, dish.cuisine]);
+  }, [dish.nameOriginal, dish.cuisine, allowAi]);
 
   return (
     <button

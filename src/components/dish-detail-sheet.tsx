@@ -6,9 +6,11 @@ import { fetchDishImage } from "@/lib/fetch-dish-image";
 export function DishDetailSheet({
   dish,
   onClose,
+  allowAi = false,
 }: {
   dish: Dish | null;
   onClose: () => void;
+  allowAi?: boolean;
 }) {
   const [src, setSrc] = useState<string | null>(null);
   const [isFinal, setIsFinal] = useState(false);
@@ -26,9 +28,10 @@ export function DishDetailSheet({
         if (final) setIsFinal(true);
       },
       ac.signal,
+      allowAi,
     ).catch(() => {});
     return () => ac.abort();
-  }, [dish]);
+  }, [dish, allowAi]);
 
   useEffect(() => {
     if (!dish) return;
