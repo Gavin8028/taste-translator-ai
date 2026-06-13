@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, ImageUp, Loader2, X, Clock, Trash2 } from "lucide-react";
+import { Camera, ImageUp, Loader2, X, Clock, Trash2, Lock } from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
 import {
   newScanId,
@@ -11,6 +11,7 @@ import {
   deleteScan,
   type RecentScan,
 } from "@/lib/scan-store";
+import { useDinerPremium } from "@/lib/premium-store";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
