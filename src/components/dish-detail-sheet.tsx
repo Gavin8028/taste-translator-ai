@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Flame } from "lucide-react";
 import type { Dish } from "@/lib/menu.functions";
-import { fetchDishImage } from "@/lib/fetch-dish-image";
+import { fetchDishImages } from "@/lib/fetch-dish-image";
 
 export function DishDetailSheet({
   dish,
@@ -12,19 +12,19 @@ export function DishDetailSheet({
   onClose: () => void;
   allowAi?: boolean;
 }) {
-  const [src, setSrc] = useState<string | null>(null);
+  const [srcs, setSrcs] = useState<string[]>([]);
   const [isFinal, setIsFinal] = useState(false);
 
   useEffect(() => {
     if (!dish) return;
-    setSrc(null);
+    setSrcs([]);
     setIsFinal(false);
     const ac = new AbortController();
-    fetchDishImage(
+    fetchDishImages(
       dish.nameOriginal,
       dish.cuisine,
-      (s, final) => {
-        setSrc(s);
+      (list, final) => {
+        setSrcs(list);
         if (final) setIsFinal(true);
       },
       ac.signal,
