@@ -21,6 +21,7 @@ export const Route = createFileRoute("/scan_/$id")({
 
 function ResultsPage() {
   const { id } = Route.useParams();
+  const isPremium = useDinerPremium();
   const [data, setData] = useState<MenuResult | null>(null);
   const [missing, setMissing] = useState(false);
   const [query, setQuery] = useState("");
