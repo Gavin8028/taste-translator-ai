@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Flame } from "lucide-react";
 import type { Dish } from "@/lib/menu.functions";
-import { streamDishImage } from "@/lib/stream-image";
+import { fetchDishImage } from "@/lib/fetch-dish-image";
 
 export function DishDetailSheet({
   dish,
@@ -18,10 +18,11 @@ export function DishDetailSheet({
     setSrc(null);
     setIsFinal(false);
     const ac = new AbortController();
-    streamDishImage(
-      { dish: dish.nameOriginal, cuisine: dish.cuisine },
-      (dataUrl, final) => {
-        setSrc(dataUrl);
+    fetchDishImage(
+      dish.nameOriginal,
+      dish.cuisine,
+      (s, final) => {
+        setSrc(s);
         if (final) setIsFinal(true);
       },
       ac.signal,
