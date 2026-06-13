@@ -18,6 +18,7 @@ import { Route as RestaurantsIndexRouteImport } from './routes/restaurants.index
 import { Route as ScanIdRouteImport } from './routes/scan_.$id'
 import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
 import { Route as MSlugRouteImport } from './routes/m.$slug'
+import { Route as CheckoutPremiumSuccessRouteImport } from './routes/checkout.premium-success'
 import { Route as ApiDishPhotoRouteImport } from './routes/api/dish-photo'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
@@ -68,6 +69,11 @@ const MSlugRoute = MSlugRouteImport.update({
   path: '/m/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutPremiumSuccessRoute = CheckoutPremiumSuccessRouteImport.update({
+  id: '/checkout/premium-success',
+  path: '/checkout/premium-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDishPhotoRoute = ApiDishPhotoRouteImport.update({
   id: '/api/dish-photo',
   path: '/api/dish-photo',
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
+  '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
+  '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/scan': typeof ScanRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
+  '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
@@ -146,6 +155,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/api/dish-image'
     | '/api/dish-photo'
+    | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/api/dish-image'
     | '/api/dish-photo'
+    | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/api/dish-image'
     | '/api/dish-photo'
+    | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan_/$id'
@@ -192,6 +204,7 @@ export interface RootRouteChildren {
   ScanRoute: typeof ScanRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
   ApiDishPhotoRoute: typeof ApiDishPhotoRoute
+  CheckoutPremiumSuccessRoute: typeof CheckoutPremiumSuccessRoute
   MSlugRoute: typeof MSlugRoute
   RestaurantsNewRoute: typeof RestaurantsNewRoute
   ScanIdRoute: typeof ScanIdRoute
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/premium-success': {
+      id: '/checkout/premium-success'
+      path: '/checkout/premium-success'
+      fullPath: '/checkout/premium-success'
+      preLoaderRoute: typeof CheckoutPremiumSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/dish-photo': {
       id: '/api/dish-photo'
       path: '/api/dish-photo'
@@ -304,6 +324,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScanRoute: ScanRoute,
   ApiDishImageRoute: ApiDishImageRoute,
   ApiDishPhotoRoute: ApiDishPhotoRoute,
+  CheckoutPremiumSuccessRoute: CheckoutPremiumSuccessRoute,
   MSlugRoute: MSlugRoute,
   RestaurantsNewRoute: RestaurantsNewRoute,
   ScanIdRoute: ScanIdRoute,
