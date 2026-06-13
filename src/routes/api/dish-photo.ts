@@ -76,6 +76,7 @@ export const Route = createFileRoute("/api/dish-photo")({
           return Response.json({ urls, url: urls[0] ?? null });
         } catch (err) {
           return Response.json({
+            urls: [],
             url: null,
             error: err instanceof Error ? err.message : "unknown",
           });
