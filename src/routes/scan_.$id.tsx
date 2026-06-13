@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Flame, Search } from "lucide-react";
+import { ArrowLeft, Flame, Search, Lock, Sparkles } from "lucide-react";
 import { loadScan } from "@/lib/scan-store";
 import type { Dish, MenuResult } from "@/lib/menu.functions";
 import { DishCard } from "@/components/dish-card";
 import { DishDetailSheet } from "@/components/dish-detail-sheet";
+import { useDinerPremium } from "@/lib/premium-store";
 
 export const Route = createFileRoute("/scan_/$id")({
   head: () => ({
