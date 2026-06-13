@@ -1,59 +1,46 @@
+## Add back the Diner Premium tier ($4.79/mo)
 
-## Goal
+The pricing page currently shows only two cards (Free for diners, $39 one-time for restaurants), but the page's meta description still references a "$4.79/month Premium" plan. The third tier was never wired up as a card. This plan adds it back.
 
-Replace the current AI-only dish image flow with real photos pulled from Google Images via SerpAPI. If SerpAPI returns no usable result (or fails), fall back to the existing AI image generator so every dish still gets an image.
+### Pricing layout
 
-## What changes
+Switch the grid from 2 columns to 3 on desktop. New middle tier:
 
-### 1. SerpAPI key
-Add `SERPAPI_API_KEY` as a project secret (I'll request it from you when we start building). SerpAPI gives 100 free searches/month; beyond that it's paid. We cache aggressively so the same dish is never re-searched.
+- **Name:** Diner Premium
+- **Price:** $4.79 / month
+- **Marked:** "Best value" badge moves here (it's the upsell); restaurants card keeps its own styling but loses the badge
+- **Features:**
+  - Unlimited menu scans
+  - Faster, higher-quality dish photos (real photos + AI fallback)
+  - Save favorite dishes and menus
+  - Translation to 50+ languages
+- **CTA:** "Go Premium" → opens Paddle checkout
 
-### 2. New server endpoint: `/api/dish-photo`
-- Input: `{ dish, cuisine }`
-- Calls SerpAPI `engine=google_images` with a query like `"<dish> <cuisine> food"`, safe search on.
-- Picks the first result whose image URL looks usable (https, reasonable dimensions, not a known blocked host).
-- Returns `{ url, source }` on success, or `{ url: null }` if nothing usable was found.
-- Server-side: no SerpAPI key ever reaches the browser.
+Free tier copy is trimmed so the upgrade reason is clear (e.g. remove "AI-generated pictures for every dish" from Free, since that's the Premium hook).
 
-### 3. New client helper: `fetchDishImage(dish, cuisine)`
-Replaces the streaming AI call as the primary path:
+### Payments wiring
 
-```
-1. Check IndexedDB cache (existing image-cache.ts) — return instantly if hit.
-2. Call /api/dish-photo. If it returns a URL:
-     - preload the image (new Image()) to verify it actually loads
-     - on success: cache the URL string and display it
-3. If step 2 fails or returns null:
-     - fall back to streamDishImage (existing AI generator)
-     - cache the resulting data URL as today
-```
+- Create a Paddle product `diner_premium` with price `diner_premium_monthly` at $4.79 USD recurring monthly (single-purchase quantity 1/1).
+- Add a `useDinerPremium` check that reads from the existing `subscriptions` table filtered by `price_id = 'diner_premium_monthly'` and active status (env-filtered, per the existing subscription pattern).
+- The "Go Premium" button uses the existing `usePaddleCheckout` hook with `priceId: 'diner_premium_monthly'` and `customData: { userId }`.
 
-The cache key stays `dish|cuisine`, so existing cached AI images continue to work — only new lookups go through SerpAPI first.
+### Gating real photos + AI for premium diners
 
-### 4. Component updates
-- `src/components/dish-card.tsx` — swap the `streamDishImage` call inside the IntersectionObserver for the new `fetchDishImage` helper. Keep the blur-up animation only for the AI fallback path (real photos load atomically, no progressive frames).
-- `src/components/dish-detail-sheet.tsx` — same swap for the larger preview.
+Today `fetchDishImage(..., allowAi)` is `true` only on `/m/<slug>` (paid published menus). Extend it: on `/scan/<id>` routes, pass `allowAi = isDinerPremium`. So:
 
-### 5. Keep the AI route
-`/api/dish-image` and `streamDishImage` stay exactly as they are — used only as the fallback now.
+- Free diners on `/scan/...` → cache → real photo → placeholder (unchanged)
+- Premium diners on `/scan/...` → cache → real photo → AI fallback
+- Published menus → unchanged (always premium)
 
-## Technical details
+### Files touched
 
-- Cache hits remain instant from IndexedDB (no network).
-- For real photos we store the remote URL string in IndexedDB; for AI fallbacks we keep storing the data URL (unchanged).
-- We rate-limit ourselves implicitly via the cache: each unique dish is fetched at most once per browser.
-- Network failures, 429s, and empty SerpAPI results all transparently fall back to AI.
-- No DB schema changes. No UI redesign — only the image source changes.
+- `src/routes/pricing.tsx` — third tier card, 3-col grid, updated copy, checkout CTA
+- `src/hooks/use-diner-premium.ts` (new) — subscription check
+- `src/routes/scan.$id.tsx` (or equivalent) — pass `allowAi={isDinerPremium}` to `DishCard` / `DishDetailSheet`
+- Paddle catalog — `diner_premium` product + `diner_premium_monthly` price via the create tools
 
-## Files touched
+### Out of scope
 
-- new: `src/routes/api/dish-photo.ts`
-- new: `src/lib/fetch-dish-image.ts` (the orchestrator: cache → SerpAPI → AI)
-- edit: `src/components/dish-card.tsx`
-- edit: `src/components/dish-detail-sheet.tsx`
-- secret: add `SERPAPI_API_KEY`
-
-## Out of scope
-
-- Bulk pre-fetching at menu-analysis time (we'd hit SerpAPI quota fast). Images still load lazily as cards scroll into view.
-- Letting users manually pick/replace an image — can be added later.
+- No changes to the restaurant $39 flow
+- No annual plan, no free trial — can add later if you want
+- No paywall modal on the scan page itself yet (just a soft "Upgrade" link near the placeholder); say the word and I'll add a proper upsell sheet
