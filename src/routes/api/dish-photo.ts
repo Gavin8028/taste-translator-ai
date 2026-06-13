@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/dish-photo")({
         };
         const key = process.env.SERPAPI_API_KEY;
         if (!key) {
-          return Response.json({ url: null, error: "missing_key" });
+          return Response.json({ urls: [], url: null, error: "missing_key" });
         }
 
         const q = [dish, cuisine, "food dish"].filter(Boolean).join(" ");
