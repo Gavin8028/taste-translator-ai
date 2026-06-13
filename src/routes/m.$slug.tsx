@@ -222,6 +222,7 @@ function MenuPage() {
                 key={dish.nameOriginal + dish.nameTranslated}
                 dish={dish}
                 onClick={() => setActive(dish)}
+                allowAi
               />
             ))}
           </div>
@@ -235,7 +236,7 @@ function MenuPage() {
         </p>
       </main>
 
-      <DishDetailSheet dish={active} onClose={() => setActive(null)} />
+      <DishDetailSheet dish={active} onClose={() => setActive(null)} allowAi />
       <SiteFooter />
     </div>
   );
