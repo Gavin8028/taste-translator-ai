@@ -68,12 +68,13 @@ function Landing() {
             </span>
           </Link>
 
-          <Link
-            to="/pricing"
-            className="mt-8 text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          <Button
+            asChild
+            variant="outline"
+            className="mt-8 h-11 rounded-full px-6"
           >
-            See pricing
-          </Link>
+            <Link to="/pricing">See pricing</Link>
+          </Button>
 
           <p className="mt-4 text-xs text-muted-foreground">
             Free · No sign-up · 50+ languages
