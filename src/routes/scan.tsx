@@ -408,11 +408,21 @@ function ScanPage() {
 
             {pages.length === 0 && recent.length > 0 && (
               <section className="mt-12">
-                <div className="mb-4 flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Recent scans
-                  </h2>
+                <div className="mb-4 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                    <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                      Recent scans
+                    </h2>
+                  </div>
+                  {isPremium && (
+                    <Link
+                      to="/history"
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      View all
+                    </Link>
+                  )}
                 </div>
                 <ul className="space-y-2">
                   {recent.map((s) => (

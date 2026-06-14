@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "./theme-toggle";
 import { Utensils } from "lucide-react";
+import { useDinerPremium } from "@/lib/premium-store";
 
 export function SiteHeader() {
+  const isPremium = useDinerPremium();
   return (
     <header className="sticky top-0 z-30 w-full border-b border-border/60 bg-background/75 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
@@ -23,6 +25,15 @@ export function SiteHeader() {
           >
             Scan
           </Link>
+          {isPremium && (
+            <Link
+              to="/history"
+              className="rounded-md px-3 py-1.5 hover:text-foreground"
+              activeProps={{ className: "text-foreground" }}
+            >
+              History
+            </Link>
+          )}
           <Link
             to="/restaurants"
             className="rounded-md px-3 py-1.5 hover:text-foreground"
