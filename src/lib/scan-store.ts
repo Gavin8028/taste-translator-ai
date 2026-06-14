@@ -70,7 +70,7 @@ export function saveScan(id: string, data: MenuResult) {
   };
   const next = [entry, ...readIndex().filter((s) => s.id !== id)].slice(
     0,
-    MAX_RECENT,
+    getMaxRecent(),
   );
   writeIndex(next);
 }
