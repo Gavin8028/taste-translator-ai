@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -25,9 +27,19 @@ import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundsRoute = RefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -108,7 +120,9 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
+  '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
@@ -125,7 +139,9 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
+  '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
@@ -143,7 +159,9 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
+  '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
@@ -162,7 +180,9 @@ export interface FileRouteTypes {
     | '/history'
     | '/pricing'
     | '/privacy'
+    | '/refunds'
     | '/scan'
+    | '/terms'
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/checkout/premium-success'
@@ -179,7 +199,9 @@ export interface FileRouteTypes {
     | '/history'
     | '/pricing'
     | '/privacy'
+    | '/refunds'
     | '/scan'
+    | '/terms'
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/checkout/premium-success'
@@ -196,7 +218,9 @@ export interface FileRouteTypes {
     | '/history'
     | '/pricing'
     | '/privacy'
+    | '/refunds'
     | '/scan'
+    | '/terms'
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/checkout/premium-success'
@@ -214,7 +238,9 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  RefundsRoute: typeof RefundsRoute
   ScanRoute: typeof ScanRoute
+  TermsRoute: typeof TermsRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
   ApiDishPhotoRoute: typeof ApiDishPhotoRoute
   CheckoutPremiumSuccessRoute: typeof CheckoutPremiumSuccessRoute
@@ -228,11 +254,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scan': {
       id: '/scan'
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refunds': {
+      id: '/refunds'
+      path: '/refunds'
+      fullPath: '/refunds'
+      preLoaderRoute: typeof RefundsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -342,7 +382,9 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  RefundsRoute: RefundsRoute,
   ScanRoute: ScanRoute,
+  TermsRoute: TermsRoute,
   ApiDishImageRoute: ApiDishImageRoute,
   ApiDishPhotoRoute: ApiDishPhotoRoute,
   CheckoutPremiumSuccessRoute: CheckoutPremiumSuccessRoute,

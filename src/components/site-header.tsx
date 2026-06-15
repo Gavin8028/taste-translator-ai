@@ -67,15 +67,21 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 bg-background">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-muted-foreground sm:flex-row">
         <p>© {new Date().getFullYear()} MenuVision AI</p>
-        <div className="flex gap-5">
+        <div className="flex flex-wrap justify-center gap-5">
           <Link to="/about" className="hover:text-foreground">
             About
+          </Link>
+          <Link to="/pricing" className="hover:text-foreground">
+            Pricing
           </Link>
           <Link to="/privacy" className="hover:text-foreground">
             Privacy
           </Link>
-          <Link to="/pricing" className="hover:text-foreground">
-            Pricing
+          <Link to="/terms" className="hover:text-foreground">
+            Terms
+          </Link>
+          <Link to="/refunds" className="hover:text-foreground">
+            Refunds
           </Link>
         </div>
       </div>
