@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ScanRouteImport } from './routes/scan'
+import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as HistoryRouteImport } from './routes/history'
@@ -34,6 +35,11 @@ const TermsRoute = TermsRouteImport.update({
 const ScanRoute = ScanRouteImport.update({
   id: '/scan',
   path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundsRoute = RefundsRouteImport.update({
+  id: '/refunds',
+  path: '/refunds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof HistoryRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
   '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/history': typeof HistoryRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
   '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/history': typeof HistoryRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
   '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/pricing'
     | '/privacy'
+    | '/refunds'
     | '/scan'
     | '/terms'
     | '/api/dish-image'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/pricing'
     | '/privacy'
+    | '/refunds'
     | '/scan'
     | '/terms'
     | '/api/dish-image'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/pricing'
     | '/privacy'
+    | '/refunds'
     | '/scan'
     | '/terms'
     | '/api/dish-image'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  RefundsRoute: typeof RefundsRoute
   ScanRoute: typeof ScanRoute
   TermsRoute: typeof TermsRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
@@ -253,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/scan'
       fullPath: '/scan'
       preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refunds': {
+      id: '/refunds'
+      path: '/refunds'
+      fullPath: '/refunds'
+      preLoaderRoute: typeof RefundsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -362,6 +382,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  RefundsRoute: RefundsRoute,
   ScanRoute: ScanRoute,
   TermsRoute: TermsRoute,
   ApiDishImageRoute: ApiDishImageRoute,
