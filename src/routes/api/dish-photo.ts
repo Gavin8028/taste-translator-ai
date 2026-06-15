@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isSameOriginRequest, sanitizeShortText } from "@/lib/api-guard";
 
 type SerpImageResult = {
   original?: string;
