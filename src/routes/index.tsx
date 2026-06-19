@@ -100,13 +100,13 @@ function Landing() {
                 icon: Globe,
                 title: "Translate",
                 body: "We detect the language and translate every dish into yours.",
-                tint: "var(--secondary)",
+                tint: "var(--primary)",
               },
               {
                 icon: Eye,
                 title: "See it",
                 body: "A picture, ingredients, and a short description for each dish.",
-                tint: "var(--accent)",
+                tint: "var(--primary)",
               },
             ].map((step) => (
               <div
