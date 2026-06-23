@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, ImageUp, Loader2, X, Clock, Trash2, Lock } from "lucide-react";
+import { Camera, ImageUp, Loader2, X, Clock, Trash2 } from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
 import {
   newScanId,
@@ -11,7 +11,6 @@ import {
   deleteScan,
   type RecentScan,
 } from "@/lib/scan-store";
-import { useDinerPremium } from "@/lib/premium-store";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -91,7 +90,6 @@ type PageItem = { file: File; previewUrl: string };
 
 function ScanPage() {
   const navigate = useNavigate();
-  const isPremium = useDinerPremium();
   const [pages, setPages] = useState<PageItem[]>([]);
   const [language, setLanguage] = useState("English");
   const [loading, setLoading] = useState(false);
@@ -170,7 +168,7 @@ function ScanPage() {
       const result = await analyzeMenu({
         data: {
           imageDataUrls: dataUrls,
-          targetLanguage: isPremium ? language : "English",
+          targetLanguage: language,
         },
       });
       if (!result.dishes?.length) {
@@ -213,25 +211,15 @@ function ScanPage() {
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <label className="text-sm text-muted-foreground">Translate to</label>
-              {isPremium ? (
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="rounded-full border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  {LANGUAGES.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-              ) : (
-                <Link
-                  to="/pricing"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                  <Lock className="h-3.5 w-3.5" />
-                  English only — Go Premium for 50+ languages
-                </Link>
-              )}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="rounded-full border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                {LANGUAGES.map((l) => (
+                  <option key={l}>{l}</option>
+                ))}
+              </select>
             </div>
 
             {pages.length === 0 && (
@@ -415,14 +403,12 @@ function ScanPage() {
                       Recent scans
                     </h2>
                   </div>
-                  {isPremium && (
-                    <Link
-                      to="/history"
-                      className="text-xs font-medium text-primary hover:underline"
-                    >
-                      View all
-                    </Link>
-                  )}
+                  <Link
+                    to="/history"
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    View all
+                  </Link>
                 </div>
                 <ul className="space-y-2">
                   {recent.map((s) => (
