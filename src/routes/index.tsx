@@ -200,15 +200,15 @@ function Landing() {
                 name: "Free",
                 price: "$0",
                 cadence: "forever",
-                features: ["5 scans per month", "50+ languages", "Pictures for every dish"],
-                featured: false,
+                features: ["Unlimited menu scans", "50+ languages", "Pictures for every dish"],
+                featured: true,
               },
               {
-                name: "Premium",
-                price: "$4.79",
-                cadence: "per month",
-                features: ["Unlimited scans", "Priority image generation", "Higher-resolution photos"],
-                featured: true,
+                name: "Restaurants",
+                price: "$39",
+                cadence: "one-time",
+                features: ["Permanent menu page", "Printable QR code", "Edit anytime"],
+                featured: false,
               },
             ].map((t) => (
               <div

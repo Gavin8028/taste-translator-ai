@@ -2,8 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
-import { useDinerPremium } from "@/lib/premium-store";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -12,7 +10,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "MenuVision AI is free to try. Go Premium for $4.79/month for unlimited scans, translations, filters, and rich dish photos.",
+          "MenuVision AI includes free unlimited menu scans for diners and a one-time restaurant menu publishing option.",
       },
     ],
   }),
@@ -20,16 +18,6 @@ export const Route = createFileRoute("/pricing")({
 });
 
 function PricingPage() {
-  const { openCheckout, loading } = usePaddleCheckout();
-  const isPremium = useDinerPremium();
-
-  const handleGoPremium = () => {
-    openCheckout({
-      priceId: "diner_premium_monthly",
-      successUrl: `${window.location.origin}/checkout/premium-success`,
-    });
-  };
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
@@ -40,20 +28,20 @@ function PricingPage() {
             Simple, honest pricing.
           </h1>
           <p className="mt-4 text-muted-foreground">
-            Start free. Upgrade when you find yourself scanning every menu you see.
+            Scan menus for free. Restaurants can publish a permanent QR menu page.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {/* Free diner tier */}
+        <div className="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
           <TierCard
             name="For diners"
             price="Free"
             cadence="always"
             features={[
-              "Scan any menu with your phone",
-              "See the dishes and prices",
-              "Keep your last few scans on this device",
+              "Unlimited menu scans",
+              "Translation to 50+ languages",
+              "Search, filters, dietary info, and dish photos",
+              "Menu history saved on this device",
             ]}
             cta={
               <Button asChild className="h-11 w-full rounded-full" variant="outline">
@@ -62,39 +50,6 @@ function PricingPage() {
             }
           />
 
-          {/* Premium diner tier */}
-          <TierCard
-            name="Diner Premium"
-            price="$4.79"
-            cadence="/month"
-            badge="Best value"
-            featured
-            features={[
-              "Everything in Free",
-              "Unlimited menu scans",
-              "Translation to 50+ languages",
-              "Search, filter, and dietary info",
-              "Real photos + AI-generated dish images",
-            ]}
-            cta={
-              isPremium ? (
-                <Button asChild className="h-11 w-full rounded-full">
-                  <Link to="/scan">Scan a menu</Link>
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleGoPremium}
-                  disabled={loading}
-                  className="h-11 w-full rounded-full"
-                >
-                  {loading ? "Loading…" : "Go Premium"}
-                </Button>
-              )
-            }
-            footnote={isPremium ? "You're already Premium on this device." : undefined}
-          />
-
-          {/* Restaurants tier */}
           <TierCard
             name="For restaurants"
             price="$39"

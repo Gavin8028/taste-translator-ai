@@ -2,19 +2,6 @@ import type { MenuResult } from "./menu.functions";
 
 const PREFIX = "menuvision:scan:";
 const INDEX_KEY = "menuvision:scans:index";
-const MAX_RECENT_FREE = 8;
-const MAX_RECENT_PREMIUM = 50;
-
-function getMaxRecent(): number {
-  if (typeof window === "undefined") return MAX_RECENT_FREE;
-  try {
-    const raw = localStorage.getItem("menuvision:diner-premium");
-    if (raw && JSON.parse(raw)?.active === true) return MAX_RECENT_PREMIUM;
-  } catch {
-    // ignore
-  }
-  return MAX_RECENT_FREE;
-}
 
 export type RecentScan = {
   id: string;
@@ -68,10 +55,7 @@ export function saveScan(id: string, data: MenuResult) {
     sourceLanguage: data.sourceLanguage,
     createdAt: Date.now(),
   };
-  const next = [entry, ...readIndex().filter((s) => s.id !== id)].slice(
-    0,
-    getMaxRecent(),
-  );
+  const next = [entry, ...readIndex().filter((s) => s.id !== id)];
   writeIndex(next);
 }
 
