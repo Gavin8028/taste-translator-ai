@@ -92,19 +92,31 @@ Also return sourceLanguage (the detected language of the menu) and restaurantNam
 
 Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes that are not visible.${pagesNote}`;
 
-    const { object } = await generateObject({
-      model: gateway("google/gemini-3-flash-preview"),
-      schema: MenuSchema,
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: prompt },
-            ...images.map((img) => ({ type: "image" as const, image: img })),
-          ],
-        },
-      ],
-    });
-
-    return object;
+    try {
+      const { object } = await generateObject({
+        model: gateway("google/gemini-3-flash-preview"),
+        schema: MenuSchema,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              ...images.map((img) => ({ type: "image" as const, image: img })),
+            ],
+          },
+        ],
+      });
+      return object;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (/402|payment required|insufficient.*credit|quota/i.test(msg)) {
+        throw new Error(
+          "MenuVision is temporarily over its daily AI usage limit. Please try again later — this isn't a charge to you.",
+        );
+      }
+      if (/429|rate limit/i.test(msg)) {
+        throw new Error("Too many scans right now. Please try again in a minute.");
+      }
+      throw err;
+    }
   });
