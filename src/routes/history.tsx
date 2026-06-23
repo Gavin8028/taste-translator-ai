@@ -2,13 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Clock, ImageUp, Trash2, Lock, Sparkles } from "lucide-react";
+import { Clock, ImageUp, Trash2 } from "lucide-react";
 import {
   listRecentScans,
   deleteScan,
   type RecentScan,
 } from "@/lib/scan-store";
-import { useDinerPremium } from "@/lib/premium-store";
 
 export const Route = createFileRoute("/history")({
   head: () => ({
@@ -17,7 +16,7 @@ export const Route = createFileRoute("/history")({
       {
         name: "description",
         content:
-          "Your saved menu scans, organized in one place. A Premium feature on MenuVision AI.",
+          "Your saved menu scans, organized in one place on this device.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -37,7 +36,6 @@ function formatRelative(ts: number): string {
 }
 
 function HistoryPage() {
-  const isPremium = useDinerPremium();
   const [scans, setScans] = useState<RecentScan[]>([]);
 
   useEffect(() => {
@@ -61,41 +59,7 @@ function HistoryPage() {
           Your scanned menus
         </h1>
 
-        {!isPremium ? (
-          <div className="mt-10 rounded-3xl border border-primary/40 bg-card p-8 ring-1 ring-primary/20">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary">
-              <Lock className="h-5 w-5" />
-            </span>
-            <h2 className="mt-5 text-2xl font-semibold tracking-tight">
-              Menu history is a Premium feature
-            </h2>
-            <p className="mt-2 max-w-md text-muted-foreground">
-              Keep every menu you've ever scanned in one place. Go back to a
-              dish you loved, share a translated menu with a friend, or revisit
-              that trip you took last spring.
-            </p>
-            <ul className="mt-5 space-y-2 text-sm">
-              {[
-                "Up to 50 saved menus on this device",
-                "Open any past scan instantly — images stay cached",
-                "Search, filter, and translate to 50+ languages",
-              ].map((f) => (
-                <li key={f} className="flex items-start gap-2">
-                  <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-7 flex flex-wrap gap-2">
-              <Button asChild className="h-11 rounded-full">
-                <Link to="/pricing">Go Premium</Link>
-              </Button>
-              <Button asChild variant="outline" className="h-11 rounded-full">
-                <Link to="/scan">Scan a menu</Link>
-              </Button>
-            </div>
-          </div>
-        ) : scans.length === 0 ? (
+        {scans.length === 0 ? (
           <div className="mt-10 rounded-3xl border border-border bg-card p-10 text-center">
             <p className="text-muted-foreground">
               You haven't scanned any menus yet.
