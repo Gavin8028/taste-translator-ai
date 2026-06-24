@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
+import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { PRICING_PLANS } from "@/lib/pricing-plans";
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
@@ -18,6 +20,8 @@ export const Route = createFileRoute("/pricing")({
 });
 
 function PricingPage() {
+  const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
@@ -32,40 +36,43 @@ function PricingPage() {
           </p>
         </div>
 
-        <div className="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
-          <TierCard
-            name="For diners"
-            price="Free"
-            cadence="always"
-            features={[
-              "Unlimited menu scans",
-              "Translation to 50+ languages",
-              "Search, filters, dietary info, and dish photos",
-              "Menu history saved on this device",
-            ]}
-            cta={
-              <Button asChild className="h-11 w-full rounded-full" variant="outline">
-                <Link to="/scan">Scan a menu</Link>
-              </Button>
-            }
-          />
-
-          <TierCard
-            name="For restaurants"
-            price="$39"
-            cadence="one-time"
-            features={[
-              "Permanent public menu page",
-              "Printable QR code for tables",
-              "Translation to 50+ languages",
-              "Edit or replace your menu anytime",
-            ]}
-            cta={
-              <Button asChild className="h-11 w-full rounded-full" variant="outline">
-                <Link to="/restaurants/new">Create your menu page</Link>
-              </Button>
-            }
-          />
+        <div className="mx-auto mt-12 grid max-w-6xl gap-6 lg:grid-cols-3">
+          {PRICING_PLANS.map((plan) => (
+            <TierCard
+              key={plan.id}
+              name={plan.name}
+              price={plan.price}
+              cadence={plan.cadence}
+              features={plan.features}
+              badge={plan.badge}
+              featured={plan.featured}
+              cta={
+                plan.id === "diner_premium_monthly" ? (
+                  <Button
+                    className="h-11 w-full rounded-full"
+                    disabled={checkoutLoading}
+                    onClick={() =>
+                      openCheckout({
+                        priceId: "diner_premium_monthly",
+                        successUrl: `${window.location.origin}/checkout/premium-success`,
+                      })
+                    }
+                  >
+                    {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    Get Premium
+                  </Button>
+                ) : plan.id === "restaurant_publish" ? (
+                  <Button asChild className="h-11 w-full rounded-full" variant="outline">
+                    <Link to="/restaurants/new">Create your menu page</Link>
+                  </Button>
+                ) : (
+                  <Button asChild className="h-11 w-full rounded-full" variant="outline">
+                    <Link to="/scan">Scan a menu</Link>
+                  </Button>
+                )
+              }
+            />
+          ))}
         </div>
       </main>
       <SiteFooter />
