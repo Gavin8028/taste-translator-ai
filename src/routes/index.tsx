@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Camera, Globe, Sparkles, Eye, Check, Languages, Zap, Leaf, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { HOME_PRICING_PLANS } from "@/lib/pricing-plans";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -194,25 +195,10 @@ function Landing() {
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            {[
-              {
-                name: "Free",
-                price: "$0",
-                cadence: "forever",
-                features: ["Unlimited menu scans", "50+ languages", "Pictures for every dish"],
-                featured: true,
-              },
-              {
-                name: "Restaurants",
-                price: "$39",
-                cadence: "one-time",
-                features: ["Permanent menu page", "Printable QR code", "Edit anytime"],
-                featured: false,
-              },
-            ].map((t) => (
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {HOME_PRICING_PLANS.map((t) => (
               <div
-                key={t.name}
+                key={t.id}
                 className={`flex flex-col rounded-3xl border p-7 shadow-sm ${
                   t.featured
                     ? "border-primary/60 bg-card ring-1 ring-primary/30"
@@ -221,9 +207,9 @@ function Landing() {
               >
                 <div className="flex items-baseline justify-between">
                   <h3 className="text-lg font-semibold">{t.name}</h3>
-                  {t.featured && (
+                  {t.badge && (
                     <span className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
-                      Best value
+                      {t.badge}
                     </span>
                   )}
                 </div>
