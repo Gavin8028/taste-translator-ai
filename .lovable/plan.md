@@ -1,5 +1,5 @@
-In `src/routes/index.tsx` (lines ~92-110), the three "How it works" cards each use a different `tint` for the icon badge background (`--primary`, `--secondary`, `--accent`).
+The orange "test mode" banner is rendered by `PaymentTestModeBanner` in `src/routes/__root.tsx`. To hide it while keeping test payments enabled:
 
-Change: set all three `tint` values to `var(--primary)` so the Snap, Translate, and See it icon badges share the same color.
+1. Modify `src/components/PaymentTestModeBanner.tsx` to always return `null` (or remove the `<PaymentTestModeBanner />` usage from `src/routes/__root.tsx`).
 
-No other styling, copy, or layout changes.
+Either approach hides the banner without affecting the Paddle sandbox environment or test payment flow.
