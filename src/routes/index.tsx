@@ -103,60 +103,13 @@ function Landing() {
           <p className="mt-4 text-xs text-muted-foreground">
             Free · No sign-up · 50+ languages
           </p>
+
+          <TrustStrip className="mt-8 w-full max-w-xl" />
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="border-t border-border/60 bg-surface">
-        <div className="mx-auto max-w-5xl px-5 py-16">
-          <h2 className="text-center text-2xl font-semibold tracking-tight sm:text-3xl">
-            Three taps. One great meal.
-          </h2>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {[
-              {
-                icon: Camera,
-                title: "Snap",
-                body: "Take a photo of any menu — printed, handwritten, or chalkboard.",
-                tint: "var(--primary)",
-              },
-              {
-                icon: Globe,
-                title: "Translate",
-                body: "We detect the language and translate every dish into yours.",
-                tint: "var(--primary)",
-              },
-              {
-                icon: Eye,
-                title: "See it",
-                body: "A picture, ingredients, and a short description for each dish.",
-                tint: "var(--primary)",
-              },
-            ].map((step) => (
-              <div
-                key={step.title}
-                className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm"
-              >
-                <span
-                  className="flex h-11 w-11 items-center justify-center rounded-xl text-primary-foreground"
-                  style={{ backgroundColor: step.tint }}
-                >
-                  <step.icon className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 text-lg font-semibold">{step.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {step.body}
-                </p>
-              </div>
-            ))}
-          </div>
+      <HowItWorks variant="diner" title="Three taps. One great meal." />
 
-          <div className="mt-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Sparkles className="h-4 w-4 text-primary" />
-            Works on menus from anywhere in the world
-          </div>
-        </div>
-      </section>
 
       {/* Value props */}
       <section className="border-t border-border/60">
