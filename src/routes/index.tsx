@@ -231,6 +231,10 @@ function Landing() {
         </div>
       </section>
 
+      <SocialProof />
+
+      <FaqTeaser items={HOME_FAQ} />
+
       <SiteFooter />
     </div>
   );
