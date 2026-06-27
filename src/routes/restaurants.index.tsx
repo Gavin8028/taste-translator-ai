@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, Share2, Globe, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
+import { TrustStrip } from "@/components/trust-strip";
+import { HowItWorks } from "@/components/how-it-works";
+import { FaqTeaser } from "@/components/faq-teaser";
 
 export const Route = createFileRoute("/restaurants/")({
   head: () => ({
@@ -22,6 +25,34 @@ export const Route = createFileRoute("/restaurants/")({
   }),
   component: RestaurantsLanding,
 });
+
+const INCLUDED = [
+  "Permanent public menu page",
+  "Printable QR code for tables",
+  "Translations in 50+ languages",
+  "Rich dish photos from the web",
+  "Edit or re-scan anytime",
+  "No app required for your guests",
+];
+
+const RESTAURANT_FAQ = [
+  {
+    q: "How much does it cost?",
+    a: "A one-time $39 fee per menu page. No subscription, no per-scan fees.",
+  },
+  {
+    q: "Can I update the menu later?",
+    a: "Yes. Use your edit link to rename, re-scan, or replace the menu — the public link stays the same.",
+  },
+  {
+    q: "Do guests need an app?",
+    a: "No. They scan the QR code and the menu opens in any phone's browser.",
+  },
+  {
+    q: "Which languages do you translate to?",
+    a: "Over 50, including Spanish, French, Japanese, Chinese, Arabic, German, and more.",
+  },
+];
 
 function RestaurantsLanding() {
   return (
@@ -59,53 +90,50 @@ function RestaurantsLanding() {
               size="lg"
               className="h-12 rounded-full px-6 text-base"
             >
-              <a href="#how-it-works">See how it works</a>
+              <Link to="/demo">Try the live demo</Link>
+            </Button>
+          </div>
+          <TrustStrip className="mx-auto mt-8 max-w-xl" />
+        </div>
+      </section>
+
+      <HowItWorks variant="restaurant" title="From printed menu to QR code in minutes" />
+
+      {/* What you get */}
+      <section id="how-it-works" className="border-t border-border/60 scroll-mt-20">
+        <div className="mx-auto max-w-5xl px-5 py-16">
+          <div className="text-center">
+            <p className="text-sm font-medium text-primary">$39 one-time</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+              What you get
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              One price. No subscription. Your menu, hosted forever.
+            </p>
+          </div>
+          <ul className="mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-2">
+            {INCLUDED.map((item) => (
+              <li
+                key={item}
+                className="flex items-start gap-3 rounded-2xl border border-border/70 bg-card p-4 shadow-sm"
+              >
+                <Check className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <span className="text-sm">{item}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 text-center">
+            <Button asChild size="lg" className="h-12 rounded-full px-6 text-base">
+              <Link to="/restaurants/new">Create your menu page</Link>
             </Button>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" className="mx-auto w-full max-w-5xl px-5 py-16 scroll-mt-20">
-        <div className="grid gap-5 md:grid-cols-3">
-          {[
-            {
-              icon: Camera,
-              title: "Snap once",
-              body: "Take a photo of your menu. We extract every dish in seconds.",
-            },
-            {
-              icon: Globe,
-              title: "Translate everything",
-              body: "Pick your guests' language. Names, descriptions, ingredients — all of it.",
-            },
-            {
-              icon: Share2,
-              title: "Share one link",
-              body: "Print a QR code, add it to your website, or send it in a DM. The link never expires.",
-            },
-          ].map((f) => (
-            <div
-              key={f.title}
-              className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
-                <f.icon className="h-5 w-5" />
-              </span>
-              <h3 className="mt-4 text-lg font-semibold">{f.title}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                {f.body}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Sparkles className="h-4 w-4 text-primary" />
-          Free during preview — no card required.
-        </div>
-      </section>
+      <FaqTeaser items={RESTAURANT_FAQ} heading="Restaurant owner FAQs" />
 
       <SiteFooter />
     </div>
   );
 }
+
