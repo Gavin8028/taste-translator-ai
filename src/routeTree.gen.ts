@@ -17,16 +17,20 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DemoRouteImport } from './routes/demo'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RestaurantsIndexRouteImport } from './routes/restaurants.index'
 import { Route as ScanIdRouteImport } from './routes/scan_.$id'
 import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
 import { Route as MSlugRouteImport } from './routes/m.$slug'
 import { Route as CheckoutPremiumSuccessRouteImport } from './routes/checkout.premium-success'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiDishPhotoRouteImport } from './routes/api/dish-photo'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
+import { Route as AuthenticatedRestaurantsMineRouteImport } from './routes/_authenticated/restaurants.mine'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const TermsRoute = TermsRouteImport.update({
@@ -69,9 +73,18 @@ const DemoRoute = DemoRouteImport.update({
   path: '/demo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -104,6 +117,11 @@ const CheckoutPremiumSuccessRoute = CheckoutPremiumSuccessRouteImport.update({
   path: '/checkout/premium-success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 const ApiDishPhotoRoute = ApiDishPhotoRouteImport.update({
   id: '/api/dish-photo',
   path: '/api/dish-photo',
@@ -119,6 +137,12 @@ const RestaurantsSlugEditRoute = RestaurantsSlugEditRouteImport.update({
   path: '/restaurants/$slug/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRestaurantsMineRoute =
+  AuthenticatedRestaurantsMineRouteImport.update({
+    id: '/restaurants/mine',
+    path: '/restaurants/mine',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -129,6 +153,7 @@ const ApiPublicPaymentsWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/demo': typeof DemoRoute
   '/faq': typeof FaqRoute
   '/history': typeof HistoryRoute
@@ -139,17 +164,20 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/demo': typeof DemoRoute
   '/faq': typeof FaqRoute
   '/history': typeof HistoryRoute
@@ -160,18 +188,22 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants': typeof RestaurantsIndexRoute
+  '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/auth': typeof AuthRouteWithChildren
   '/demo': typeof DemoRoute
   '/faq': typeof FaqRoute
   '/history': typeof HistoryRoute
@@ -182,11 +214,13 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/_authenticated/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -195,6 +229,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/auth'
     | '/demo'
     | '/faq'
     | '/history'
@@ -205,17 +240,20 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/dish-image'
     | '/api/dish-photo'
+    | '/auth/callback'
     | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants/'
+    | '/restaurants/mine'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/auth'
     | '/demo'
     | '/faq'
     | '/history'
@@ -226,17 +264,21 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/dish-image'
     | '/api/dish-photo'
+    | '/auth/callback'
     | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants'
+    | '/restaurants/mine'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/about'
+    | '/auth'
     | '/demo'
     | '/faq'
     | '/history'
@@ -247,18 +289,22 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/dish-image'
     | '/api/dish-photo'
+    | '/auth/callback'
     | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan_/$id'
     | '/restaurants/'
+    | '/_authenticated/restaurants/mine'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AuthRoute: typeof AuthRouteWithChildren
   DemoRoute: typeof DemoRoute
   FaqRoute: typeof FaqRoute
   HistoryRoute: typeof HistoryRoute
@@ -336,11 +382,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DemoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -385,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutPremiumSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/api/dish-photo': {
       id: '/api/dish-photo'
       path: '/api/dish-photo'
@@ -406,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsSlugEditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/restaurants/mine': {
+      id: '/_authenticated/restaurants/mine'
+      path: '/restaurants/mine'
+      fullPath: '/restaurants/mine'
+      preLoaderRoute: typeof AuthenticatedRestaurantsMineRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -416,9 +490,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedRestaurantsMineRoute: typeof AuthenticatedRestaurantsMineRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedRestaurantsMineRoute: AuthenticatedRestaurantsMineRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AboutRoute: AboutRoute,
+  AuthRoute: AuthRouteWithChildren,
   DemoRoute: DemoRoute,
   FaqRoute: FaqRoute,
   HistoryRoute: HistoryRoute,

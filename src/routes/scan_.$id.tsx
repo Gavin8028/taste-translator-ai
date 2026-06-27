@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Flame, Search } from "lucide-react";
-import { loadScan } from "@/lib/scan-store";
+import { loadScan, saveScan as saveLocal } from "@/lib/scan-store";
+import { loadMyScan } from "@/lib/scan-sync.functions";
+import { useAuth } from "@/hooks/use-auth";
 import type { Dish, MenuResult } from "@/lib/menu.functions";
 import { DishCard } from "@/components/dish-card";
 import { DishDetailSheet } from "@/components/dish-detail-sheet";
@@ -27,12 +29,42 @@ function ResultsPage() {
   const [diet, setDiet] = useState<string | null>(null);
   const [spice, setSpice] = useState<number | null>(null);
   const [active, setActive] = useState<Dish | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
+    let cancelled = false;
     const d = loadScan(id);
-    if (!d) setMissing(true);
-    else setData(d);
-  }, [id]);
+    if (d) {
+      setData(d);
+      return;
+    }
+    if (!user) {
+      setMissing(true);
+      return;
+    }
+    loadMyScan({ data: { clientId: id } })
+      .then((payload) => {
+        if (cancelled) return;
+        if (payload) {
+          const result = payload as MenuResult;
+          setData(result);
+          // backfill local cache for next time
+          try {
+            saveLocal(id, result);
+          } catch {
+            // ignore
+          }
+        } else {
+          setMissing(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setMissing(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, user]);
 
   const cuisines = useMemo(
     () =>

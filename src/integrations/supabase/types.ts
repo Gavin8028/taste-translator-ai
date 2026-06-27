@@ -73,12 +73,40 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       restaurant_menus: {
         Row: {
           created_at: string
           edit_token: string
           id: string
           name: string
+          owner_id: string | null
           paddle_transaction_id: string | null
           paid: boolean
           paid_at: string | null
@@ -92,6 +120,7 @@ export type Database = {
           edit_token: string
           id?: string
           name: string
+          owner_id?: string | null
           paddle_transaction_id?: string | null
           paid?: boolean
           paid_at?: string | null
@@ -105,6 +134,7 @@ export type Database = {
           edit_token?: string
           id?: string
           name?: string
+          owner_id?: string | null
           paddle_transaction_id?: string | null
           paid?: boolean
           paid_at?: string | null
@@ -112,6 +142,42 @@ export type Database = {
           source_language?: string | null
           target_language?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      scans: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          dish_count: number
+          id: string
+          payload: Json
+          source_language: string | null
+          target_language: string | null
+          title: string | null
+          user_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          dish_count?: number
+          id?: string
+          payload: Json
+          source_language?: string | null
+          target_language?: string | null
+          title?: string | null
+          user_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          dish_count?: number
+          id?: string
+          payload?: Json
+          source_language?: string | null
+          target_language?: string | null
+          title?: string | null
+          user_id?: string
         }
         Relationships: []
       }

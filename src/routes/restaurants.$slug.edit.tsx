@@ -20,8 +20,10 @@ import {
   updateRestaurantMenu,
   verifyEditToken,
 } from "@/lib/restaurant.functions";
+import { ownerCanEdit, claimMenuOwnership } from "@/lib/restaurant-owner.functions";
 import { forgetOwner, getOwnerToken, rememberOwner } from "@/lib/owner-store";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/restaurants/$slug/edit")({
   head: () => ({
@@ -61,6 +63,7 @@ function EditMenuPage() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+  const { user } = useAuth();
   const [phase, setPhase] = useState<"loading" | "need-token" | "ready">("loading");
   const [token, setToken] = useState("");
   const [tokenInput, setTokenInput] = useState("");
@@ -85,27 +88,62 @@ function EditMenuPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
-  // On mount: try to verify with the token saved in localStorage.
+  // On mount: if signed in and owns the menu → use server-provided token.
+  // Otherwise, try the token saved in localStorage.
   useEffect(() => {
-    const saved = getOwnerToken(slug);
-    if (!saved) {
-      setPhase("need-token");
-      return;
-    }
-    verifyEditToken({ data: { slug, editToken: saved } })
-      .then((res) => {
+    let cancelled = false;
+    async function init() {
+      if (user) {
+        try {
+          const res = await ownerCanEdit({ data: { slug } });
+          if (cancelled) return;
+          if (res.ok) {
+            setToken(res.menu.editToken);
+            setName(res.menu.name);
+            setLanguage(res.menu.targetLanguage);
+            setPaid(res.menu.paid);
+            rememberOwner(slug, { editToken: res.menu.editToken, name: res.menu.name });
+            setPhase("ready");
+            return;
+          }
+        } catch {
+          // fall through
+        }
+      }
+      const saved = getOwnerToken(slug);
+      if (!saved) {
+        setPhase("need-token");
+        return;
+      }
+      try {
+        const res = await verifyEditToken({ data: { slug, editToken: saved } });
+        if (cancelled) return;
         if (res.ok) {
           setToken(saved);
           setName(res.menu.name);
           setLanguage(res.menu.targetLanguage);
           setPaid(res.menu.paid);
+          // If signed in, link this menu to the account now.
+          if (user) {
+            try {
+              await claimMenuOwnership({ data: { slug, editToken: saved } });
+            } catch {
+              // ignore
+            }
+          }
           setPhase("ready");
         } else {
           setPhase("need-token");
         }
-      })
-      .catch(() => setPhase("need-token"));
-  }, [slug]);
+      } catch {
+        if (!cancelled) setPhase("need-token");
+      }
+    }
+    void init();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, user]);
 
   async function submitToken(e: React.FormEvent) {
     e.preventDefault();

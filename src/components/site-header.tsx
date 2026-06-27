@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ThemeToggle } from "./theme-toggle";
-import { Utensils, Menu as MenuIcon, X } from "lucide-react";
+import { Utensils, Menu as MenuIcon, X, LogOut, LogIn, Store } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -10,6 +10,7 @@ import {
   SheetTrigger,
   SheetClose,
 } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/use-auth";
 
 const NAV_LINKS = [
   { to: "/scan", label: "Scan a menu" },
@@ -23,6 +24,13 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const initial =
+    user?.user_metadata?.full_name?.[0] ??
+    user?.user_metadata?.name?.[0] ??
+    user?.email?.[0]?.toUpperCase() ??
+    "?";
+
   return (
     <header className="sticky top-0 z-30 w-full border-b border-border/60 bg-background/75 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
@@ -45,7 +53,13 @@ export function SiteHeader() {
                 aria-label="Open menu"
                 className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                <MenuIcon className="h-5 w-5" />
+                {user ? (
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
+                    {initial}
+                  </span>
+                ) : (
+                  <MenuIcon className="h-5 w-5" />
+                )}
               </button>
             </SheetTrigger>
             <SheetContent side="right" className="w-72 p-0">
@@ -61,6 +75,33 @@ export function SiteHeader() {
                   </button>
                 </SheetClose>
               </SheetHeader>
+
+              {/* Account block */}
+              <div className="border-b border-border/60 px-5 py-4">
+                {user ? (
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
+                      {initial}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {user.user_metadata?.full_name ?? user.email}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    to="/auth"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Sign in with Google
+                  </Link>
+                )}
+              </div>
+
               <nav className="flex flex-col px-2 py-3">
                 {NAV_LINKS.map((link) => (
                   <Link
@@ -73,6 +114,30 @@ export function SiteHeader() {
                     {link.label}
                   </Link>
                 ))}
+                {user && (
+                  <Link
+                    to="/restaurants/mine"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center gap-2 rounded-lg px-3 py-3 text-base font-medium text-foreground hover:bg-muted"
+                    activeProps={{ className: "bg-muted text-primary" }}
+                  >
+                    <Store className="h-4 w-4" />
+                    My menus
+                  </Link>
+                )}
+                {user && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      void signOut();
+                    }}
+                    className="mt-2 flex items-center gap-2 rounded-lg px-3 py-3 text-left text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </button>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

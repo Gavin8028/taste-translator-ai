@@ -11,6 +11,8 @@ import {
   deleteScan,
   type RecentScan,
 } from "@/lib/scan-store";
+import { saveScan as saveScanRemote } from "@/lib/scan-sync.functions";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -90,6 +92,7 @@ type PageItem = { file: File; previewUrl: string };
 
 function ScanPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [pages, setPages] = useState<PageItem[]>([]);
   const [language, setLanguage] = useState("English");
   const [loading, setLoading] = useState(false);
@@ -178,6 +181,18 @@ function ScanPage() {
       }
       const id = newScanId();
       saveScan(id, result);
+      if (user) {
+        void saveScanRemote({
+          data: {
+            clientId: id,
+            title: result.restaurantName ?? null,
+            sourceLanguage: result.sourceLanguage ?? null,
+            targetLanguage: language,
+            dishCount: result.dishes.length,
+            payload: result,
+          },
+        }).catch(() => {});
+      }
       window.clearInterval(stageTimer);
       navigate({ to: "/scan/$id", params: { id } });
     } catch (e) {

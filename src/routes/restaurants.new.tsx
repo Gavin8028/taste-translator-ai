@@ -4,9 +4,11 @@ import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Camera, ImageUp, Loader2, X, Check, Copy, Pencil } from "lucide-react";
 import { createRestaurantMenu } from "@/lib/restaurant.functions";
+import { setMenuOwnerOnCreate } from "@/lib/restaurant-owner.functions";
 import { rememberOwner } from "@/lib/owner-store";
 import { QrCode } from "@/components/qr-code";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { useAuth } from "@/hooks/use-auth";
 
 
 
@@ -81,6 +83,7 @@ function NewRestaurantMenu() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+  const { user } = useAuth();
 
   function pickFile(f: File) {
     if (!f.type.startsWith("image/")) {
@@ -128,6 +131,13 @@ function NewRestaurantMenu() {
         name: name.trim(),
         createdAt: new Date().toISOString(),
       });
+      if (user) {
+        try {
+          await setMenuOwnerOnCreate({ data: { slug: res.slug } });
+        } catch {
+          // non-fatal — the edit token still works
+        }
+      }
       setResult({ slug: res.slug, editToken: res.editToken });
 
     } catch (e) {
