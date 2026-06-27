@@ -175,7 +175,7 @@ function DemoPage() {
   const [query, setQuery] = useState("");
   const [cuisine, setCuisine] = useState<string | null>(null);
   const [diet, setDiet] = useState<string | null>(null);
-  const [active, setActive] = useState<Dish | null>(null);
+  const [active, setActive] = useState<DemoDish | null>(null);
 
   const cuisines = useMemo(
     () => Array.from(new Set(DEMO_DISHES.map((d) => d.cuisine))),
@@ -283,7 +283,7 @@ function DemoPage() {
                 key={dish.nameOriginal}
                 dish={dish}
                 onClick={() => setActive(dish)}
-                allowAi
+                presetImages={dish.images}
               />
             ))}
           </div>
@@ -304,7 +304,11 @@ function DemoPage() {
         </div>
       </main>
 
-      <DishDetailSheet dish={active} onClose={() => setActive(null)} allowAi />
+      <DishDetailSheet
+        dish={active}
+        onClose={() => setActive(null)}
+        presetImages={active?.images}
+      />
       <SiteFooter />
     </div>
   );
