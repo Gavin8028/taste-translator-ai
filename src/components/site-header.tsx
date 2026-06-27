@@ -85,27 +85,28 @@ export function SiteHeader() {
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-background">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-8 text-sm text-muted-foreground sm:flex-row">
-        <p>© {new Date().getFullYear()} MenuVision AI</p>
-        <div className="flex flex-wrap justify-center gap-5">
-          <Link to="/about" className="hover:text-foreground">
-            About
-          </Link>
-          <Link to="/faq" className="hover:text-foreground">
-            FAQ
-          </Link>
-          <Link to="/pricing" className="hover:text-foreground">
-            Pricing
-          </Link>
-          <Link to="/privacy" className="hover:text-foreground">
-            Privacy
-          </Link>
-          <Link to="/terms" className="hover:text-foreground">
-            Terms
-          </Link>
-          <Link to="/refunds" className="hover:text-foreground">
-            Refunds
-          </Link>
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-5 py-8 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> No app download
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> 50+ languages
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Works on any phone
+          </span>
+        </div>
+        <div className="flex w-full flex-col items-center justify-between gap-3 border-t border-border/60 pt-4 sm:flex-row">
+          <p>© {new Date().getFullYear()} MenuVision AI</p>
+          <div className="flex flex-wrap justify-center gap-5">
+            <Link to="/about" className="hover:text-foreground">About</Link>
+            <Link to="/faq" className="hover:text-foreground">FAQ</Link>
+            <Link to="/pricing" className="hover:text-foreground">Pricing</Link>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
+            <Link to="/refunds" className="hover:text-foreground">Refunds</Link>
+          </div>
         </div>
       </div>
     </footer>
