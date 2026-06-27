@@ -1,8 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
-import { Camera, Globe, Sparkles, Eye, Check, Languages, Zap, Leaf, UserX } from "lucide-react";
+import { Camera, Check, Languages, Zap, Leaf, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HOME_PRICING_PLANS } from "@/lib/pricing-plans";
+import { TrustStrip } from "@/components/trust-strip";
+import { HowItWorks } from "@/components/how-it-works";
+import { SocialProof } from "@/components/social-proof";
+import { FaqTeaser } from "@/components/faq-teaser";
+
+const HOME_FAQ = [
+  {
+    q: "Do I need to download an app?",
+    a: "No. MenuVision runs in your browser — open the site, snap a menu, get answers.",
+  },
+  {
+    q: "Is it really free?",
+    a: "Yes. Diner scans, translations, search, and history are free and unlimited.",
+  },
+  {
+    q: "What languages do you support?",
+    a: "Over 50, including Japanese, Chinese, Arabic, Spanish, French, German, and more.",
+  },
+  {
+    q: "How long does a scan take?",
+    a: "Usually under 20 seconds, including translation and finding real dish photos.",
+  },
+];
 
 export const Route = createFileRoute("/")({
   head: () => ({
