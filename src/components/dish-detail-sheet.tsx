@@ -7,16 +7,23 @@ export function DishDetailSheet({
   dish,
   onClose,
   allowAi = false,
+  presetImages,
 }: {
   dish: Dish | null;
   onClose: () => void;
   allowAi?: boolean;
+  presetImages?: string[];
 }) {
   const [srcs, setSrcs] = useState<string[]>([]);
   const [isFinal, setIsFinal] = useState(false);
 
   useEffect(() => {
     if (!dish) return;
+    if (presetImages?.length) {
+      setSrcs(presetImages);
+      setIsFinal(true);
+      return;
+    }
     setSrcs([]);
     setIsFinal(false);
     const ac = new AbortController();
@@ -31,7 +38,7 @@ export function DishDetailSheet({
       allowAi,
     ).catch(() => {});
     return () => ac.abort();
-  }, [dish, allowAi]);
+  }, [dish, allowAi, presetImages]);
 
   useEffect(() => {
     if (!dish) return;

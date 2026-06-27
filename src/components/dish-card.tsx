@@ -7,17 +7,20 @@ export function DishCard({
   dish,
   onClick,
   allowAi = false,
+  presetImages,
 }: {
   dish: Dish;
   onClick: () => void;
   allowAi?: boolean;
+  presetImages?: string[];
 }) {
-  const [srcs, setSrcs] = useState<string[]>([]);
-  const [isFinal, setIsFinal] = useState(false);
+  const [srcs, setSrcs] = useState<string[]>(presetImages ?? []);
+  const [isFinal, setIsFinal] = useState(!!presetImages?.length);
   const ref = useRef<HTMLDivElement>(null);
-  const started = useRef(false);
+  const started = useRef(!!presetImages?.length);
 
   useEffect(() => {
+    if (presetImages?.length) return;
     if (!ref.current || started.current) return;
     const node = ref.current;
 
@@ -46,7 +49,7 @@ export function DishCard({
     );
     obs.observe(node);
     return () => obs.disconnect();
-  }, [dish.nameOriginal, dish.cuisine, allowAi]);
+  }, [dish.nameOriginal, dish.cuisine, allowAi, presetImages]);
 
   return (
     <div
