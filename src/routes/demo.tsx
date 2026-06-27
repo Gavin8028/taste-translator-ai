@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Search, Sparkles } from "lucide-react";
 import type { Dish } from "@/lib/menu.functions";
 
-const DEMO_DISHES: Dish[] = [
+const U = (id: string) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=80`;
+
+type DemoDish = Dish & { images: string[] };
+
+const DEMO_DISHES: DemoDish[] = [
   {
     nameOriginal: "Margherita Pizza",
     nameTranslated: "Margherita Pizza",
@@ -19,6 +24,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: ["Vegetarian"],
     priceText: "$14",
     translations: null,
+    images: [
+      U("photo-1574071318508-1cdbab80d002"),
+      U("photo-1565299624946-b28f40a0ae38"),
+      U("photo-1513104890138-7c749659a591"),
+    ],
   },
   {
     nameOriginal: "Spaghetti Carbonara",
@@ -31,6 +41,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: [],
     priceText: "$17",
     translations: null,
+    images: [
+      U("photo-1612874742237-6526221588e3"),
+      U("photo-1551183053-bf91a1d81141"),
+      U("photo-1473093295043-cdd812d0e601"),
+    ],
   },
   {
     nameOriginal: "Tonkotsu Ramen",
@@ -43,6 +58,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: [],
     priceText: "$16",
     translations: null,
+    images: [
+      U("photo-1569718212165-3a8278d5f624"),
+      U("photo-1591814468924-caf88d1232e1"),
+      U("photo-1557872943-16a5ac26437e"),
+    ],
   },
   {
     nameOriginal: "Pad Thai",
@@ -55,6 +75,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: [],
     priceText: "$15",
     translations: null,
+    images: [
+      U("photo-1559314809-0d155014e29e"),
+      U("photo-1637806930600-37fa8892069d"),
+      U("photo-1626804475297-41608ea09aeb"),
+    ],
   },
   {
     nameOriginal: "Tacos al Pastor",
@@ -67,6 +92,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: [],
     priceText: "$4 each",
     translations: null,
+    images: [
+      U("photo-1565299585323-38d6b0865b47"),
+      U("photo-1551504734-5ee1c4a1479b"),
+      U("photo-1599974579688-8dbdd335c77f"),
+    ],
   },
   {
     nameOriginal: "Falafel Plate",
@@ -79,6 +109,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: ["Vegetarian", "Vegan"],
     priceText: "$13",
     translations: null,
+    images: [
+      U("photo-1593504049359-74330189a345"),
+      U("photo-1540713434306-58505cf1b6fc"),
+      U("photo-1633321702518-7feccafb94d5"),
+    ],
   },
   {
     nameOriginal: "Caesar Salad",
@@ -91,6 +126,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: [],
     priceText: "$11",
     translations: null,
+    images: [
+      U("photo-1546793665-c74683f339c1"),
+      U("photo-1550304943-4f24f54ddde9"),
+      U("photo-1551248429-40975aa4de74"),
+    ],
   },
   {
     nameOriginal: "Tiramisu",
@@ -103,6 +143,11 @@ const DEMO_DISHES: Dish[] = [
     dietary: ["Vegetarian"],
     priceText: "$9",
     translations: null,
+    images: [
+      U("photo-1571877227200-a0d98ea607e9"),
+      U("photo-1606313564200-e75d5e30476c"),
+      U("photo-1542124292-6c8638e74cf2"),
+    ],
   },
 ];
 
