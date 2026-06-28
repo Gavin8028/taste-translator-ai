@@ -199,12 +199,16 @@ function ScanPage() {
     if (!pages.length) return;
     setLoading(true);
     setStage(0);
+    setElapsed(0);
     setError(null);
     const startedAt = Date.now();
     track("scan_started", { photos: pages.length, language });
     const stageTimer = window.setInterval(() => {
       setStage((s) => Math.min(s + 1, STAGES.length - 1));
     }, 2200);
+    const elapsedTimer = window.setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    }, 250);
     try {
       const dataUrls = await Promise.all(pages.map((p) => fileToDataUrl(p.file)));
       const result = await analyzeMenu({
@@ -238,16 +242,15 @@ function ScanPage() {
         }).catch(() => {});
       }
       window.clearInterval(stageTimer);
+      window.clearInterval(elapsedTimer);
       navigate({ to: "/scan/$id", params: { id } });
     } catch (e) {
       window.clearInterval(stageTimer);
+      window.clearInterval(elapsedTimer);
       console.error(e);
-      track("scan_failed", {
-        message: e instanceof Error ? e.message.slice(0, 200) : "unknown",
-      });
-      setError(
-        e instanceof Error ? e.message : "Something went wrong analyzing your menu.",
-      );
+      const raw = e instanceof Error ? e.message : "unknown";
+      track("scan_failed", { message: raw.slice(0, 200) });
+      setError(friendlyError(raw));
       setLoading(false);
     }
   }
