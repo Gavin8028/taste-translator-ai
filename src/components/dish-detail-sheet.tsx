@@ -8,11 +8,13 @@ export function DishDetailSheet({
   onClose,
   allowAi = false,
   presetImages,
+  hideDietary = false,
 }: {
   dish: Dish | null;
   onClose: () => void;
   allowAi?: boolean;
   presetImages?: string[];
+  hideDietary?: boolean;
 }) {
   const [srcs, setSrcs] = useState<string[]>([]);
   const [isFinal, setIsFinal] = useState(false);
