@@ -515,24 +515,36 @@ function ScanPage() {
 
         {loading && (
           <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <div className="relative">
+              <Loader2 className="h-14 w-14 animate-spin text-primary" />
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold tabular-nums text-primary">
+                {elapsed}s
+              </span>
+            </div>
             <h2 className="mt-8 text-2xl font-semibold tracking-tight">
-              {STAGES[stage]}
+              {STAGES[stage].label}
             </h2>
-            <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Hang tight — we're reading every line, translating, and writing fresh
-              descriptions. This usually takes 10–20 seconds.
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              {STAGES[stage].hint}
             </p>
-            <div className="mt-8 flex gap-1.5">
-              {STAGES.map((_, i) => (
+            <div className="mt-6 flex gap-1.5" aria-label="Progress">
+              {STAGES.map((s, i) => (
                 <span
-                  key={i}
+                  key={s.label}
                   className={`h-1.5 w-8 rounded-full transition-colors ${
-                    i <= stage ? "bg-primary" : "bg-border"
+                    i < stage
+                      ? "bg-primary"
+                      : i === stage
+                        ? "bg-primary/60 animate-pulse"
+                        : "bg-border"
                   }`}
                 />
               ))}
             </div>
+            <p className="mt-6 text-xs text-muted-foreground">
+              Usually 10–20 seconds · {pages.length}{" "}
+              {pages.length === 1 ? "page" : "pages"}
+            </p>
           </div>
         )}
       </main>
