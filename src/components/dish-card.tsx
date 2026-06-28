@@ -8,11 +8,13 @@ export function DishCard({
   onClick,
   allowAi = false,
   presetImages,
+  hideDietary = false,
 }: {
   dish: Dish;
   onClick: () => void;
   allowAi?: boolean;
   presetImages?: string[];
+  hideDietary?: boolean;
 }) {
   const [srcs, setSrcs] = useState<string[]>(presetImages ?? []);
   const [isFinal, setIsFinal] = useState(!!presetImages?.length);
