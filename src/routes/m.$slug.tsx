@@ -21,8 +21,9 @@ export const Route = createFileRoute("/m/$slug")({
     if (!data) throw notFound();
     return data;
   },
-  head: ({ loaderData }) => ({
-    meta: loaderData
+  head: ({ params, loaderData }) => {
+    const url = `https://menuvisionai.live/m/${params.slug}`;
+    const meta = loaderData
       ? [
           { title: `${loaderData.name} — Menu` },
           {
@@ -34,9 +35,39 @@ export const Route = createFileRoute("/m/$slug")({
             property: "og:description",
             content: `Translated menu with pictures of every dish.`,
           },
+          { property: "og:url", content: url },
         ]
-      : [{ title: "Menu — MenuVision AI" }],
-  }),
+      : [{ title: "Menu — MenuVision AI" }, { property: "og:url", content: url }];
+
+    const restaurantLd = loaderData
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Restaurant",
+          name: loaderData.name,
+          url,
+          hasMenu: {
+            "@type": "Menu",
+            hasMenuSection: {
+              "@type": "MenuSection",
+              name: "Menu",
+              hasMenuItem: loaderData.dishes.slice(0, 20).map((d) => ({
+                "@type": "MenuItem",
+                name: d.nameTranslated,
+                description: d.description,
+              })),
+            },
+          },
+        }
+      : null;
+
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+      scripts: restaurantLd
+        ? [{ type: "application/ld+json", children: JSON.stringify(restaurantLd) }]
+        : [],
+    };
+  },
   component: MenuPage,
   notFoundComponent: () => (
     <div className="flex min-h-screen flex-col bg-background">
