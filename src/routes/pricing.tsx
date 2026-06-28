@@ -76,15 +76,10 @@ function PricingPage() {
                   <Button
                     className="h-11 w-full rounded-full"
                     disabled={checkoutLoading}
-                    onClick={() =>
-                      openCheckout({
-                        priceId: "diner_premium_monthly",
-                        successUrl: `${window.location.origin}/checkout/premium-success`,
-                      })
-                    }
+                    onClick={handlePremium}
                   >
                     {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Get Premium
+                    {user ? "Get Premium" : "Sign in to subscribe"}
                   </Button>
                 ) : plan.id === "restaurant_publish" ? (
                   <Button asChild className="h-11 w-full rounded-full" variant="outline">
