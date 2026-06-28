@@ -10,6 +10,8 @@ import type { Dish, MenuResult } from "@/lib/menu.functions";
 import { DishCard } from "@/components/dish-card";
 import { DishDetailSheet } from "@/components/dish-detail-sheet";
 import { ShareButton } from "@/components/share-button";
+import { useDinerPremium } from "@/lib/premium-store";
+import { Lock } from "lucide-react";
 
 export const Route = createFileRoute("/scan_/$id")({
   head: () => ({
