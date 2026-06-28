@@ -8,11 +8,13 @@ export function DishCard({
   onClick,
   allowAi = false,
   presetImages,
+  hideDietary = false,
 }: {
   dish: Dish;
   onClick: () => void;
   allowAi?: boolean;
   presetImages?: string[];
+  hideDietary?: boolean;
 }) {
   const [srcs, setSrcs] = useState<string[]>(presetImages ?? []);
   const [isFinal, setIsFinal] = useState(!!presetImages?.length);
@@ -127,13 +129,13 @@ export function DishCard({
               ))}
             </span>
           )}
-          {dish.dietary.includes("vegetarian") && (
+          {!hideDietary && dish.dietary.includes("vegetarian") && (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700 dark:text-emerald-300">
               <Leaf className="h-3 w-3" />
               Veg
             </span>
           )}
-          {dish.dietary.includes("vegan") && (
+          {!hideDietary && dish.dietary.includes("vegan") && (
             <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-700 dark:text-emerald-300">
               Vegan
             </span>

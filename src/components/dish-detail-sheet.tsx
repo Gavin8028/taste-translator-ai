@@ -8,11 +8,13 @@ export function DishDetailSheet({
   onClose,
   allowAi = false,
   presetImages,
+  hideDietary = false,
 }: {
   dish: Dish | null;
   onClose: () => void;
   allowAi?: boolean;
   presetImages?: string[];
+  hideDietary?: boolean;
 }) {
   const [srcs, setSrcs] = useState<string[]>([]);
   const [isFinal, setIsFinal] = useState(false);
@@ -117,7 +119,7 @@ export function DishDetailSheet({
                 {dish.spiceLevel === 1 ? "Mild" : dish.spiceLevel === 2 ? "Medium" : "Hot"}
               </span>
             )}
-            {dish.dietary.map((d) => (
+            {!hideDietary && dish.dietary.map((d) => (
               <span
                 key={d}
                 className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground"
