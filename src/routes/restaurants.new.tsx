@@ -91,7 +91,7 @@ function NewRestaurantMenu() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
-  const { user } = useAuth();
+  
 
   function pickFile(f: File) {
     if (!f.type.startsWith("image/")) {
