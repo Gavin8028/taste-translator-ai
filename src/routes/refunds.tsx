@@ -56,10 +56,14 @@ function RefundsPage() {
             >
               paddle.net
             </a>{" "}
-            and use the order details from your purchase receipt, or contact us using
-            the details on our{" "}
-            <a href="/about" className="underline hover:text-foreground">About</a>{" "}
-            page and we will pass the request to Paddle.
+            and use the order details from your purchase receipt, or email{" "}
+            <a
+              href="mailto:support@menuvisionai.live"
+              className="underline hover:text-foreground"
+            >
+              support@menuvisionai.live
+            </a>{" "}
+            and we will pass the request to Paddle.
           </p>
 
           <h2 className="text-xl font-semibold text-foreground">After the 30 days</h2>
@@ -81,7 +85,14 @@ function RefundsPage() {
           <h2 className="text-xl font-semibold text-foreground">Questions</h2>
           <p>
             If you have questions about a charge, a refund, or your subscription,
-            contact us using the details on the About page and we will help you.
+            email{" "}
+            <a
+              href="mailto:support@menuvisionai.live"
+              className="underline hover:text-foreground"
+            >
+              support@menuvisionai.live
+            </a>{" "}
+            and we will help you.
           </p>
         </div>
       </main>

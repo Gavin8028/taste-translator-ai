@@ -131,13 +131,25 @@ function HistoryPage() {
         {loading ? (
           <p className="mt-10 text-sm text-muted-foreground">Loading…</p>
         ) : items.length === 0 ? (
-          <div className="mt-10 rounded-3xl border border-border bg-card p-10 text-center">
-            <p className="text-muted-foreground">
-              You haven't scanned any menus yet.
+          <div className="mt-10 rounded-3xl border border-dashed border-border bg-card p-10 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <ImageUp className="h-6 w-6" />
+            </div>
+            <h2 className="mt-5 text-xl font-semibold tracking-tight">
+              No menus here yet
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Scan your first menu — translations, photos, and ingredients show up
+              here automatically.
             </p>
-            <Button asChild className="mt-5 h-11 rounded-full">
-              <Link to="/scan">Scan your first menu</Link>
-            </Button>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              <Button asChild className="h-11 rounded-full">
+                <Link to="/scan">Scan your first menu</Link>
+              </Button>
+              <Button asChild variant="outline" className="h-11 rounded-full">
+                <Link to="/demo">See a live example</Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <>

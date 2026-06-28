@@ -1,63 +1,54 @@
-## Goal
-Track real usage of MenuVision so you can see what's working: visits, scans, menu views, and paid conversions.
+# Final Polish Before Launch
 
-## Approach: Self-hosted event tracking (no external service, no cookies)
+You're 95% there. Core flows (scan, restaurant menus, payments, auth, history, analytics, SEO, sharing) are all live. Here are the last touches that separate "working" from "ready to share with real users."
 
-We already have Lovable Cloud (database + server functions), so instead of paying for a third-party analytics service, we'll log events to our own database. Privacy-friendly (no cookies, no PII), GDPR-safe, and fits the legal pages you already published.
+## 1. Pre-launch verification (no new features, just check)
 
-## What gets tracked
+- Run a fresh **security scan** and clear any criticals.
+- Run a fresh **SEO scan** and fix anything new it flags.
+- **Paddle**: confirm the seller name shows as "MenuVision AI" on a real test checkout, webhook signature verification works end-to-end, and a $39 menu actually unlocks after payment.
+- **Google sign-in**: test full round-trip on the live domain (`menuvisionai.live`), including the `redirect=` param after login.
+- **Mobile pass**: walk the scan → results → share flow on a real phone in both portrait and one-handed use.
 
-**Page views (auto)**
-- Every route change → path, referrer, country (from CF header), device type, anonymous session id (random, rotates daily)
+## 2. Empty states & edge cases
 
-**Key events (manual)**
-- `scan_started` — user uploaded photos on /scan
-- `scan_completed` — AI returned dishes (with dish count + duration)
-- `scan_failed` — error during processing
-- `menu_published` — restaurant paid the $39 fee
-- `menu_viewed` — someone opened a public `/m/$slug`
-- `premium_subscribed` — Diner Premium checkout completed
-- `signin_completed` — Google sign-in succeeded
+- `/history` when signed-in but zero scans → friendly empty card with a "Scan your first menu" CTA.
+- `/restaurants/mine` when signed-in with no menus → same treatment.
+- `/m/$slug` when the menu was deleted → 404 with a link back home (instead of a blank screen).
+- Network-offline state on `/scan` → inline banner, disable Analyze button.
 
-## Implementation
+## 3. Trust & polish on the homepage
 
-**1. Database (one migration)**
-- `analytics_events` table: `id, event_name, path, session_id, country, device, props (jsonb), created_at`
-- Indexes on `event_name` and `created_at` for fast aggregation
-- RLS: deny all client access; only `service_role` writes (via server fn)
-- No PII stored — session_id is a random per-day hash
+- Add a small **"As seen / Works with"** strip or **logo wall of demo restaurants** below the hero (even 3–4 stylized cards is enough).
+- Add **one real testimonial-style quote** or a short numeric proof point ("50+ languages · ~12s per menu").
+- Make sure the homepage `og:image` is a real branded preview, not a generic one.
 
-**2. Server function** `src/lib/analytics.functions.ts`
-- `trackEvent({ name, path, props })` — inserts via `supabaseAdmin`
-- Pulls country from `cf-ipcountry` header, parses user-agent for device type
-- Rate-limited per session_id to prevent abuse
+## 4. Onboarding nudges
 
-**3. Client helper** `src/lib/analytics.ts`
-- `track(name, props?)` — calls the server fn fire-and-forget
-- `usePageViewTracking()` hook in `__root.tsx` — fires on every router location change
-- Session id stored in `sessionStorage` (rotates per tab/day)
+- After a diner's **first successful scan**, show a one-time toast: "Sign in to save this scan forever" (skippable, never blocks).
+- After a restaurant owner **publishes** their first menu, show a success screen with: QR download, share link, and "Add another page" CTA.
 
-**4. Instrument the key flows**
-- `/scan` → `scan_started`, `scan_completed`, `scan_failed`
-- `/restaurants/new` payment success → `menu_published`
-- `/m/$slug` loader → `menu_viewed`
-- Pricing checkout success → `premium_subscribed`
-- Google auth callback → `signin_completed`
+## 5. Legal & contact
 
-**5. Owner dashboard** `/admin/analytics`
-- Protected by sign-in + email check against your account
-- Cards: total visits (7d/30d), scans completed, menus published, premium subs, top referrers, top countries, conversion funnel (visit → scan → publish)
-- Simple charts using Recharts (already in stack)
-- Server fn aggregates with SQL `count(*) group by …` — no heavy client work
+- Add a real **support email** (e.g. `support@menuvisionai.live`) to `/privacy`, `/terms`, `/refunds`, and the footer. Paddle requires a reachable contact for disputes.
+- Confirm Privacy/Terms/Refund pages all use the same seller name consistently.
 
-## What you'll be able to answer
-- "How many people scanned a menu yesterday?"
-- "What % of restaurant landing-page visitors actually publish?"
-- "Where is my traffic coming from?"
-- "Is Diner Premium converting?"
+## 6. Performance quick wins
 
-## Out of scope (can add later if you want)
-- Heatmaps / session replay
-- A/B testing
-- Email reports
-- Integrating Google Analytics 4 (would require cookie banner)
+- Lazy-load the dish image carousel images below the fold on `/m/$slug` and `/scan/$id`.
+- Add `loading="lazy"` and explicit width/height to all `<img>` tags to stop layout shift.
+- Preconnect to Google Images / Paddle in `__root.tsx` head.
+
+## 7. Nice-to-haves (skip if you want to launch now)
+
+- lop;"Report an issue" link on results pages.
+- Email receipt copy customization in Paddle.
+- A `/changelog` page (1 line per shipped change) — cheap trust signal.
+
+---
+
+### My recommendation
+
+Do **#1, #2, #5** before publishing publicly — those are launch blockers. **#3 and #4** can ship the same week as small follow-ups. **#6 and #7** are post-launch.
+
+Want me to start with the launch-blocker set (verify + empty states + contact email)?

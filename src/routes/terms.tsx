@@ -225,6 +225,22 @@ function TermsPage() {
               law gives you the right to bring proceedings elsewhere.
             </p>
           </section>
+
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-foreground">
+              14. Contact
+            </h2>
+            <p>
+              Questions about these terms? Email{" "}
+              <a
+                href="mailto:support@menuvisionai.live"
+                className="underline hover:text-foreground"
+              >
+                support@menuvisionai.live
+              </a>
+              .
+            </p>
+          </section>
         </div>
       </main>
       <SiteFooter />

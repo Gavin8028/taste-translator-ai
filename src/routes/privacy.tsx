@@ -42,9 +42,14 @@ function PrivacyPage() {
               MenuVision AI is operated by Gavin McKinney (&ldquo;we&rdquo;,
               &ldquo;us&rdquo;, &ldquo;our&rdquo;), trading as MenuVision AI. We act as
               the data controller for the personal data described in this notice. You
-              can contact us about privacy matters at the email address shown on our{" "}
-              <a href="/about" className="underline hover:text-foreground">About</a>{" "}
-              page.
+              can contact us about privacy matters at{" "}
+              <a
+                href="mailto:support@menuvisionai.live"
+                className="underline hover:text-foreground"
+              >
+                support@menuvisionai.live
+              </a>
+              .
             </p>
           </section>
 
@@ -184,8 +189,14 @@ function PrivacyPage() {
               object to processing; request portability of data you provided; and
               withdraw any consent you previously gave. You also have the right to
               lodge a complaint with your local data protection supervisory authority.
-              To exercise any of these rights, contact us using the details on the
-              About page. We aim to respond within one month.
+              To exercise any of these rights, email{" "}
+              <a
+                href="mailto:support@menuvisionai.live"
+                className="underline hover:text-foreground"
+              >
+                support@menuvisionai.live
+              </a>
+              . We aim to respond within one month.
             </p>
           </section>
 
