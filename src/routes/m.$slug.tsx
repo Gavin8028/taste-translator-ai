@@ -203,6 +203,12 @@ function MenuPage() {
             {dishes.length} dishes · translated to {menu.targetLanguage}
             {menu.sourceLanguage ? ` from ${menu.sourceLanguage}` : ""}
           </p>
+          <div className="mt-5 flex justify-center">
+            <ShareButton
+              url={typeof window !== "undefined" ? window.location.href : `https://menuvisionai.live/m/${menu.slug ?? ""}`}
+              title={`${menu.name} — Menu`}
+            />
+          </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
