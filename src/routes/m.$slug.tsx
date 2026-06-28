@@ -205,7 +205,7 @@ function MenuPage() {
           </p>
           <div className="mt-5 flex justify-center">
             <ShareButton
-              url={typeof window !== "undefined" ? window.location.href : `https://menuvisionai.live/m/${menu.slug ?? ""}`}
+              url={typeof window !== "undefined" ? window.location.href : ""}
               title={`${menu.name} — Menu`}
             />
           </div>
