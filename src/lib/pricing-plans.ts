@@ -31,7 +31,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       "Unlimited menu scans",
       "Unlimited translations",
-      "Search, filters, dietary info, and dish photos",
+      "Search, and dish photos",
       "Premium unlock saved on this device",
     ],
   },
