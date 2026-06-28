@@ -1,0 +1,21 @@
+# MenuVision AI
+
+> Snap a photo of any menu and instantly see what every dish looks like — translated into your language, with ingredients and dietary tags.
+
+MenuVision AI is a web app for travelers and curious eaters. Open the site, take a photo of a menu, and get every dish explained in your language with real food photos. No app download, no sign-up required.
+
+For restaurant owners, MenuVision AI turns a printed menu into a permanent, shareable, translated menu page with a QR code. Guests scan the code and browse dishes in their own language with photos.
+
+## Pages
+
+- [Home](/): Scan a menu instantly. Free. No sign-up.
+- [Scan](/scan): Upload or snap a photo of any menu to translate and see dish photos.
+- [Pricing](/pricing): Free diner scans and a one-time $39 restaurant menu publishing option.
+- [For Restaurants](/restaurants): Create a permanent, translated, illustrated menu page for your guests.
+- [Demo](/demo): Try a live demo of a translated restaurant menu.
+- [FAQ](/faq): Common questions about scanning, languages, pricing, and privacy.
+- [History](/history): Your saved menu scans.
+- [About](/about): What MenuVision AI is and who built it.
+- [Privacy](/privacy): How data is collected, used, and protected.
+- [Terms](/terms): Terms of service.
+- [Refunds](/refunds): Refund policy.

@@ -23,7 +23,15 @@ export const Route = createFileRoute("/scan")({
         content:
           "Upload a photo of any menu and instantly see translations, descriptions, and pictures of every dish.",
       },
+      { property: "og:title", content: "Scan a menu — MenuVision AI" },
+      {
+        property: "og:description",
+        content:
+          "Upload a photo of any menu and instantly see translations, descriptions, and pictures of every dish.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/scan" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/scan" }],
   }),
   component: ScanPage,
 });

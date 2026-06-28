@@ -14,7 +14,15 @@ export const Route = createFileRoute("/pricing")({
         content:
           "MenuVision AI includes free unlimited menu scans for diners and a one-time restaurant menu publishing option.",
       },
+      { property: "og:title", content: "Pricing — MenuVision AI" },
+      {
+        property: "og:description",
+        content:
+          "Free unlimited menu scans for diners. One-time $39 to publish a translated restaurant menu page.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/pricing" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/pricing" }],
   }),
   component: PricingPage,
 });

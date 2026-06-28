@@ -21,7 +21,9 @@ export const Route = createFileRoute("/restaurants/")({
         content:
           "Snap your menu once. Get a permanent link with translations and dish photos.",
       },
+      { property: "og:url", content: "https://menuvisionai.live/restaurants" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/restaurants" }],
   }),
   component: RestaurantsLanding,
 });

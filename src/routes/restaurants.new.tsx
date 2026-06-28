@@ -21,7 +21,15 @@ export const Route = createFileRoute("/restaurants/new")({
         content:
           "Snap a photo of your menu and get a permanent shareable link in under a minute.",
       },
+      { property: "og:title", content: "Create your menu page — MenuVision AI" },
+      {
+        property: "og:description",
+        content:
+          "Snap a photo of your menu and get a permanent shareable link in under a minute.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/restaurants/new" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/restaurants/new" }],
   }),
   component: NewRestaurantMenu,
 });

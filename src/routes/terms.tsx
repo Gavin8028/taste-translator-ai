@@ -10,7 +10,15 @@ export const Route = createFileRoute("/terms")({
         content:
           "The terms under which Gavin McKinney (MenuVision AI) provides the MenuVision AI service.",
       },
+      { property: "og:title", content: "Terms & Conditions — MenuVision AI" },
+      {
+        property: "og:description",
+        content:
+          "The terms under which MenuVision AI provides its service.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/terms" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/terms" }],
   }),
   component: TermsPage,
 });
