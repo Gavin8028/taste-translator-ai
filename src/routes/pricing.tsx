@@ -30,6 +30,22 @@ export const Route = createFileRoute("/pricing")({
 
 function PricingPage() {
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  function handlePremium() {
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: "/pricing" } });
+      return;
+    }
+    openCheckout({
+      priceId: "diner_premium_monthly",
+      customerEmail: user.email,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/checkout/premium-success`,
+    });
+  }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
