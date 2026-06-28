@@ -1,45 +1,39 @@
-# Phase E: SEO & Content Polish
+# Finish Phase E: SEO & Content Polish
 
-Goal: fix every failing SEO finding and polish the site so it ranks and shares correctly.
+We've shipped sitemap, robots, llms.txt, root metadata, and canonicals on `/`, `/scan`, `/pricing`. Here's what's left to close out Phase E.
 
-## 1. Sitemap + robots + llms.txt
+## 1. Per-route `head()` metadata + canonicals
 
-- Create `src/routes/sitemap[.]xml.ts` (server route) with every public, indexable route: `/`, `/scan`, `/pricing`, `/faq`, `/demo`, `/restaurants`, `/restaurants/new`, `/about`, `/privacy`, `/terms`, `/refunds`, `/history`, plus every published restaurant menu from `restaurant_menus` where `paid = true`.
-- Create `public/robots.txt`: `Allow: /` for all crawlers, reference `/sitemap.xml`.
-- Create `public/llms.txt` with site summary and link list for AI crawlers.
+Add unique title, description, `og:title`, `og:description`, `og:url`, and self-referencing canonical to:
 
-## 2. Fix root metadata
+- `/faq`
+- `/demo`
+- `/restaurants` (index)
+- `/restaurants/new`
+- `/about`
+- `/privacy`
+- `/terms`
+- `/refunds`
+- `/history`
 
-- Update `src/routes/__root.tsx` meta: replace generic "Lovable" / "Menu Vision" branding with MenuVision AI copy.
-- Add Organization + WebSite JSON-LD to `__root.tsx`.
-- Remove root-level `og:image` so leaf routes control their own share previews.
+## 2. Dynamic route metadata
 
-## 3. Per-route metadata & canonicals
+- `/m/$slug` — derive title/description from loader data (menu name + restaurant), add `og:url`, canonical, and `Restaurant` + `Menu` JSON-LD using dish names.
+- `/scan/$id` — derive title from scan payload (e.g. "Menu scan — Spanish → English"), no indexable canonical (these are per-user).
 
-Add `head()` with unique title, description, `og:title`, `og:description`, `og:url`, and self-referencing `canonical` to every public leaf route:
+## 3. Structured data
 
-- `/`, `/scan`, `/pricing`, `/faq`, `/demo`, `/restaurants`, `/restaurants/new`, `/about`, `/privacy`, `/terms`, `/refunds`, `/history`
-- `/m/$slug` (Restaurant): derive from loader data; add Restaurant JSON-LD using menu name + dishes.
-- `/scan/$id` (Scan result): derive from scan payload title + target language.
+- `FAQPage` JSON-LD on `/faq` built from the existing FAQ array.
+- `Restaurant` / `Menu` JSON-LD on `/m/$slug` (see above).
 
-## 4. Structured data
+## 4. Accessibility / content polish
 
-- `Organization` + `WebSite` schemas on root.
-- `FAQPage` schema on `/faq`.
-- `Restaurant` / `Menu` schema on `/m/$slug` using available loader data.
+- Fix heading skip on `/restaurants` (h3 → h2 where appropriate).
+- Replace generic "Learn more" link text on the homepage with descriptive copy.
+- Sweep icon-only buttons for missing `aria-label`.
 
-## 5. Accessibility / content polish
+## 5. Out of scope (ask before doing)
 
-- Fix heading skip on `/restaurants` (h3 → h2).
-- Replace generic "Learn more" link text on the homepage with something descriptive.
-- Verify all icon-only buttons have `aria-label`.
+- Generating new OG share images. Text meta + JSON-LD first; we can add per-route OG images in a follow-up if you want.
 
-## 6. OG image
-
-- Ask before generating any new OG images. For now, fix all text-based meta tags and structured data first.
-
-## Technical notes
-
-- Base URL for canonicals and `og:url`: `https://menuvisionai.live`.
-- No changes to routing, auth, payments, or pricing logic.
-- All changes are additive (new head tags, new files) — no breaking changes.
+No routing, auth, payments, or pricing logic changes. All additive.
