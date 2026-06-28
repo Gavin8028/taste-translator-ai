@@ -2,7 +2,17 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, ImageUp, Loader2, X, Clock, Trash2 } from "lucide-react";
+import {
+  Camera,
+  ImageUp,
+  Loader2,
+  X,
+  Clock,
+  Trash2,
+  Lightbulb,
+  RotateCw,
+  CheckCircle2,
+} from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
 import {
   newScanId,
@@ -38,12 +48,29 @@ export const Route = createFileRoute("/scan")({
 });
 
 const STAGES = [
-  "Reading the menu…",
-  "Detecting language…",
-  "Translating dishes…",
-  "Writing descriptions…",
-  "Almost ready…",
+  { label: "Reading the menu…", hint: "Pulling text from every page." },
+  { label: "Detecting language…", hint: "Figuring out what we're looking at." },
+  { label: "Translating dishes…", hint: "Carefully word by word." },
+  { label: "Writing descriptions…", hint: "So you know what you're ordering." },
+  { label: "Almost ready…", hint: "Finishing touches." },
 ];
+
+function friendlyError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("network") || m.includes("fetch") || m.includes("failed to fetch"))
+    return "We couldn't reach our servers. Check your internet and try again.";
+  if (m.includes("timeout") || m.includes("timed out"))
+    return "That took too long. Try fewer or smaller photos.";
+  if (m.includes("rate") || m.includes("429") || m.includes("too many"))
+    return "We're a little busy right now. Wait a few seconds and try again.";
+  if (m.includes("payment") || m.includes("402"))
+    return "AI credits are temporarily unavailable. Please try again shortly.";
+  if (m.includes("couldn't find") || m.includes("no dishes"))
+    return "We couldn't find any dishes. Try a closer, brighter, less blurry photo.";
+  if (m.includes("too large") || m.includes("size"))
+    return "One of those photos is too big. Try smaller images (under 20 MB each).";
+  return message || "Something went wrong. Please try again.";
+}
 
 const LANGUAGES = [
   "English",
@@ -107,6 +134,7 @@ function ScanPage() {
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [recent, setRecent] = useState<RecentScan[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -171,12 +199,16 @@ function ScanPage() {
     if (!pages.length) return;
     setLoading(true);
     setStage(0);
+    setElapsed(0);
     setError(null);
     const startedAt = Date.now();
     track("scan_started", { photos: pages.length, language });
     const stageTimer = window.setInterval(() => {
       setStage((s) => Math.min(s + 1, STAGES.length - 1));
     }, 2200);
+    const elapsedTimer = window.setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    }, 250);
     try {
       const dataUrls = await Promise.all(pages.map((p) => fileToDataUrl(p.file)));
       const result = await analyzeMenu({
@@ -210,16 +242,15 @@ function ScanPage() {
         }).catch(() => {});
       }
       window.clearInterval(stageTimer);
+      window.clearInterval(elapsedTimer);
       navigate({ to: "/scan/$id", params: { id } });
     } catch (e) {
       window.clearInterval(stageTimer);
+      window.clearInterval(elapsedTimer);
       console.error(e);
-      track("scan_failed", {
-        message: e instanceof Error ? e.message.slice(0, 200) : "unknown",
-      });
-      setError(
-        e instanceof Error ? e.message : "Something went wrong analyzing your menu.",
-      );
+      const raw = e instanceof Error ? e.message : "unknown";
+      track("scan_failed", { message: raw.slice(0, 200) });
+      setError(friendlyError(raw));
       setLoading(false);
     }
   }
@@ -320,6 +351,32 @@ function ScanPage() {
                       Use camera
                     </Button>
                   </div>
+                </div>
+
+                {/* Camera & photo tips */}
+                <div className="mt-6 rounded-2xl border border-border bg-card p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-semibold">Tips for the best results</p>
+                  </div>
+                  <ul className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Hold steady and fill the frame with the menu
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Good light, no big shadows or glare
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Multi-page menus? Add one photo per page
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Keep text level — straight on works best
+                    </li>
+                  </ul>
                 </div>
               </>
             )}
@@ -423,9 +480,33 @@ function ScanPage() {
             )}
 
             {error && (
-              <p className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </p>
+              <div
+                role="alert"
+                className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+              >
+                <p className="font-medium">{error}</p>
+                {pages.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onAnalyze}
+                      className="rounded-full border-destructive/30 bg-background text-foreground"
+                    >
+                      <RotateCw className="h-4 w-4" />
+                      Try again
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={clearAll}
+                      className="rounded-full"
+                    >
+                      Start over
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
 
             {pages.length === 0 && recent.length > 0 && (
@@ -488,24 +569,36 @@ function ScanPage() {
 
         {loading && (
           <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <div className="relative">
+              <Loader2 className="h-14 w-14 animate-spin text-primary" />
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold tabular-nums text-primary">
+                {elapsed}s
+              </span>
+            </div>
             <h2 className="mt-8 text-2xl font-semibold tracking-tight">
-              {STAGES[stage]}
+              {STAGES[stage].label}
             </h2>
-            <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              Hang tight — we're reading every line, translating, and writing fresh
-              descriptions. This usually takes 10–20 seconds.
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              {STAGES[stage].hint}
             </p>
-            <div className="mt-8 flex gap-1.5">
-              {STAGES.map((_, i) => (
+            <div className="mt-6 flex gap-1.5" aria-label="Progress">
+              {STAGES.map((s, i) => (
                 <span
-                  key={i}
+                  key={s.label}
                   className={`h-1.5 w-8 rounded-full transition-colors ${
-                    i <= stage ? "bg-primary" : "bg-border"
+                    i < stage
+                      ? "bg-primary"
+                      : i === stage
+                        ? "bg-primary/60 animate-pulse"
+                        : "bg-border"
                   }`}
                 />
               ))}
             </div>
+            <p className="mt-6 text-xs text-muted-foreground">
+              Usually 10–20 seconds · {pages.length}{" "}
+              {pages.length === 1 ? "page" : "pages"}
+            </p>
           </div>
         )}
       </main>
