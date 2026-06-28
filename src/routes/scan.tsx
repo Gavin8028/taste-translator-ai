@@ -48,12 +48,29 @@ export const Route = createFileRoute("/scan")({
 });
 
 const STAGES = [
-  "Reading the menu…",
-  "Detecting language…",
-  "Translating dishes…",
-  "Writing descriptions…",
-  "Almost ready…",
+  { label: "Reading the menu…", hint: "Pulling text from every page." },
+  { label: "Detecting language…", hint: "Figuring out what we're looking at." },
+  { label: "Translating dishes…", hint: "Carefully word by word." },
+  { label: "Writing descriptions…", hint: "So you know what you're ordering." },
+  { label: "Almost ready…", hint: "Finishing touches." },
 ];
+
+function friendlyError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("network") || m.includes("fetch") || m.includes("failed to fetch"))
+    return "We couldn't reach our servers. Check your internet and try again.";
+  if (m.includes("timeout") || m.includes("timed out"))
+    return "That took too long. Try fewer or smaller photos.";
+  if (m.includes("rate") || m.includes("429") || m.includes("too many"))
+    return "We're a little busy right now. Wait a few seconds and try again.";
+  if (m.includes("payment") || m.includes("402"))
+    return "AI credits are temporarily unavailable. Please try again shortly.";
+  if (m.includes("couldn't find") || m.includes("no dishes"))
+    return "We couldn't find any dishes. Try a closer, brighter, less blurry photo.";
+  if (m.includes("too large") || m.includes("size"))
+    return "One of those photos is too big. Try smaller images (under 20 MB each).";
+  return message || "Something went wrong. Please try again.";
+}
 
 const LANGUAGES = [
   "English",
