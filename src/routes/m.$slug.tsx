@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { DishCard } from "@/components/dish-card";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { getRestaurantMenu } from "@/lib/restaurant.functions";
 import type { Dish } from "@/lib/menu.functions";
+import { track } from "@/lib/analytics";
 
 const menuQueryOptions = (slug: string) =>
   queryOptions({
@@ -106,6 +107,10 @@ function MenuPage() {
 
   // data is non-null here because the loader throws notFound() otherwise
   const menu = data!;
+
+  useEffect(() => {
+    if (menu.paid) track("menu_viewed", { slug, dishCount: menu.dishes.length });
+  }, [slug, menu.paid, menu.dishes.length]);
 
   if (!menu.paid) {
     return (

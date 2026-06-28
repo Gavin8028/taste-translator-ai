@@ -12,6 +12,11 @@ async function markMenuPaid(slug: string, transactionId: string) {
     })
     .eq("slug", slug);
   if (error) console.error("Failed to mark menu paid:", error);
+  await supabaseAdmin.from("analytics_events").insert({
+    event_name: "menu_published",
+    path: `/m/${slug}`,
+    props: { slug, transactionId } as never,
+  });
 }
 
 async function handleWebhook(req: Request, env: PaddleEnv) {

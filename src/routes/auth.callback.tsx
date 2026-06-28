@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
@@ -18,6 +19,7 @@ function AuthCallback() {
         const { data } = await supabase.auth.getUser();
         if (cancelled) return;
         if (data.user) {
+          track("signin_completed");
           navigate({ to: "/", replace: true });
           return;
         }

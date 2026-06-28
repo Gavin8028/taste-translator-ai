@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_emails: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
+      }
+      analytics_events: {
+        Row: {
+          country: string | null
+          created_at: string
+          device: string | null
+          event_name: string
+          id: string
+          path: string | null
+          props: Json
+          referrer: string | null
+          session_id: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          event_name: string
+          id?: string
+          path?: string | null
+          props?: Json
+          referrer?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          event_name?: string
+          id?: string
+          path?: string | null
+          props?: Json
+          referrer?: string | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       menu_dishes: {
         Row: {
           created_at: string

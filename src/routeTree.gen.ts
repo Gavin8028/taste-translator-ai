@@ -32,6 +32,7 @@ import { Route as ApiDishPhotoRouteImport } from './routes/api/dish-photo'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
 import { Route as AuthenticatedRestaurantsMineRouteImport } from './routes/_authenticated/restaurants.mine'
+import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const TermsRoute = TermsRouteImport.update({
@@ -149,6 +150,12 @@ const AuthenticatedRestaurantsMineRoute =
     path: '/restaurants/mine',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminAnalyticsRoute =
+  AuthenticatedAdminAnalyticsRouteImport.update({
+    id: '/admin/analytics',
+    path: '/admin/analytics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -202,6 +210,7 @@ export interface FileRoutesByTo {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants': typeof RestaurantsIndexRoute
+  '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -229,6 +238,7 @@ export interface FileRoutesById {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants/'
+    | '/admin/analytics'
     | '/restaurants/mine'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
@@ -281,6 +292,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants'
+    | '/admin/analytics'
     | '/restaurants/mine'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
@@ -307,6 +319,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan_/$id'
     | '/restaurants/'
+    | '/_authenticated/admin/analytics'
     | '/_authenticated/restaurants/mine'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
@@ -500,6 +513,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRestaurantsMineRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/analytics': {
+      id: '/_authenticated/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -511,10 +531,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminAnalyticsRoute: typeof AuthenticatedAdminAnalyticsRoute
   AuthenticatedRestaurantsMineRoute: typeof AuthenticatedRestaurantsMineRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminAnalyticsRoute: AuthenticatedAdminAnalyticsRoute,
   AuthenticatedRestaurantsMineRoute: AuthenticatedRestaurantsMineRoute,
 }
 
