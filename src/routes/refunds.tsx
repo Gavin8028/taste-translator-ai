@@ -85,7 +85,14 @@ function RefundsPage() {
           <h2 className="text-xl font-semibold text-foreground">Questions</h2>
           <p>
             If you have questions about a charge, a refund, or your subscription,
-            contact us using the details on the About page and we will help you.
+            email{" "}
+            <a
+              href="mailto:support@menuvisionai.live"
+              className="underline hover:text-foreground"
+            >
+              support@menuvisionai.live
+            </a>{" "}
+            and we will help you.
           </p>
         </div>
       </main>
