@@ -480,9 +480,33 @@ function ScanPage() {
             )}
 
             {error && (
-              <p className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-                {error}
-              </p>
+              <div
+                role="alert"
+                className="mt-6 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+              >
+                <p className="font-medium">{error}</p>
+                {pages.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onAnalyze}
+                      className="rounded-full border-destructive/30 bg-background text-foreground"
+                    >
+                      <RotateCw className="h-4 w-4" />
+                      Try again
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={clearAll}
+                      className="rounded-full"
+                    >
+                      Start over
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
 
             {pages.length === 0 && recent.length > 0 && (
