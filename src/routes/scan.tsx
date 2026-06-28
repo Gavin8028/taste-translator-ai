@@ -2,7 +2,17 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { Camera, ImageUp, Loader2, X, Clock, Trash2 } from "lucide-react";
+import {
+  Camera,
+  ImageUp,
+  Loader2,
+  X,
+  Clock,
+  Trash2,
+  Lightbulb,
+  RotateCw,
+  CheckCircle2,
+} from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
 import {
   newScanId,
