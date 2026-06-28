@@ -4,6 +4,7 @@ import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { setDinerPremium } from "@/lib/premium-store";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/checkout/premium-success")({
   head: () => ({
@@ -23,6 +24,7 @@ function PremiumSuccessPage() {
       params.get("transaction_id") ||
       undefined;
     setDinerPremium(txnId);
+    track("premium_subscribed", { txnId: txnId ?? null });
   }, []);
 
   return (
