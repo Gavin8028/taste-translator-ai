@@ -10,7 +10,15 @@ export const Route = createFileRoute("/privacy")({
         content:
           "How Gavin McKinney (MenuVision AI) collects, uses, shares, and protects your personal data.",
       },
+      { property: "og:title", content: "Privacy Notice — MenuVision AI" },
+      {
+        property: "og:description",
+        content:
+          "How MenuVision AI collects, uses, shares, and protects your personal data.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/privacy" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/privacy" }],
   }),
   component: PrivacyPage,
 });
