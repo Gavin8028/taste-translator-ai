@@ -13,6 +13,7 @@ import {
 } from "@/lib/scan-store";
 import { saveScan as saveScanRemote } from "@/lib/scan-sync.functions";
 import { useAuth } from "@/hooks/use-auth";
+import { track } from "@/lib/analytics";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -171,6 +172,8 @@ function ScanPage() {
     setLoading(true);
     setStage(0);
     setError(null);
+    const startedAt = Date.now();
+    track("scan_started", { photos: pages.length, language });
     const stageTimer = window.setInterval(() => {
       setStage((s) => Math.min(s + 1, STAGES.length - 1));
     }, 2200);
@@ -189,6 +192,11 @@ function ScanPage() {
       }
       const id = newScanId();
       saveScan(id, result);
+      track("scan_completed", {
+        dishCount: result.dishes.length,
+        durationMs: Date.now() - startedAt,
+        language,
+      });
       if (user) {
         void saveScanRemote({
           data: {
@@ -206,6 +214,9 @@ function ScanPage() {
     } catch (e) {
       window.clearInterval(stageTimer);
       console.error(e);
+      track("scan_failed", {
+        message: e instanceof Error ? e.message.slice(0, 200) : "unknown",
+      });
       setError(
         e instanceof Error ? e.message : "Something went wrong analyzing your menu.",
       );
