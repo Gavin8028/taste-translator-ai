@@ -17,7 +17,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       "Menu scans included",
       "Translation to 50+ languages",
-      "Search, filters, dietary info, and dish photos",
+      "Search, and dish photos",
       "Menu history saved on this device",
     ],
   },
@@ -31,7 +31,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       "Unlimited menu scans",
       "Unlimited translations",
-      "Search, filters, dietary info, and dish photos",
+      "Search, and dish photos",
       "Premium unlock saved on this device",
     ],
   },
