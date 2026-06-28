@@ -279,16 +279,21 @@ function DemoPage() {
             No dishes match your filters.
           </p>
         ) : (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map((dish) => (
-              <DishCard
-                key={dish.nameOriginal}
-                dish={dish}
-                onClick={() => setActive(dish)}
-                presetImages={dish.images}
-              />
-            ))}
-          </div>
+          <section aria-labelledby="demo-menu-heading">
+            <h2 id="demo-menu-heading" className="sr-only">
+              Our menu
+            </h2>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((dish) => (
+                <DishCard
+                  key={dish.nameOriginal}
+                  dish={dish}
+                  onClick={() => setActive(dish)}
+                  presetImages={dish.images}
+                />
+              ))}
+            </div>
+          </section>
         )}
 
         <div className="mt-12 flex flex-col items-center gap-3 text-center">
