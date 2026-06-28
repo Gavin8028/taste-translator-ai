@@ -51,6 +51,19 @@ const FAQS = [
   },
 ];
 
+const FAQ_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((item) => ({
+    "@type": "Question",
+    name: item.q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.a,
+    },
+  })),
+};
+
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
@@ -65,6 +78,14 @@ export const Route = createFileRoute("/faq")({
         property: "og:description",
         content:
           "Quick answers about MenuVision AI: scanning, languages, photos, and pricing.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/faq" },
+    ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/faq" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(FAQ_SCHEMA),
       },
     ],
   }),
