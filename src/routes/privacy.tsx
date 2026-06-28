@@ -189,8 +189,14 @@ function PrivacyPage() {
               object to processing; request portability of data you provided; and
               withdraw any consent you previously gave. You also have the right to
               lodge a complaint with your local data protection supervisory authority.
-              To exercise any of these rights, contact us using the details on the
-              About page. We aim to respond within one month.
+              To exercise any of these rights, email{" "}
+              <a
+                href="mailto:support@menuvisionai.live"
+                className="underline hover:text-foreground"
+              >
+                support@menuvisionai.live
+              </a>
+              . We aim to respond within one month.
             </p>
           </section>
 
