@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import type { Dish, MenuResult } from "@/lib/menu.functions";
 import { DishCard } from "@/components/dish-card";
 import { DishDetailSheet } from "@/components/dish-detail-sheet";
+import { ShareButton } from "@/components/share-button";
 
 export const Route = createFileRoute("/scan_/$id")({
   head: () => ({
