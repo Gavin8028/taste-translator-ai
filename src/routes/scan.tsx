@@ -134,6 +134,7 @@ function ScanPage() {
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const [recent, setRecent] = useState<RecentScan[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
