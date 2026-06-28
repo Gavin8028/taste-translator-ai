@@ -352,6 +352,32 @@ function ScanPage() {
                     </Button>
                   </div>
                 </div>
+
+                {/* Camera & photo tips */}
+                <div className="mt-6 rounded-2xl border border-border bg-card p-4">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-semibold">Tips for the best results</p>
+                  </div>
+                  <ul className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Hold steady and fill the frame with the menu
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Good light, no big shadows or glare
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Multi-page menus? Add one photo per page
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      Keep text level — straight on works best
+                    </li>
+                  </ul>
+                </div>
               </>
             )}
 
