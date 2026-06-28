@@ -237,7 +237,7 @@ function Landing() {
             </p>
           </div>
           <Button asChild className="rounded-full">
-            <Link to="/restaurants">Learn more</Link>
+            <Link to="/restaurants">Get a menu page for your restaurant</Link>
           </Button>
         </div>
       </section>
