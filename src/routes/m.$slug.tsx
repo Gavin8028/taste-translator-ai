@@ -6,6 +6,7 @@ import { DishCard } from "@/components/dish-card";
 import { DishDetailSheet } from "@/components/dish-detail-sheet";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { ShareButton } from "@/components/share-button";
 import { getRestaurantMenu } from "@/lib/restaurant.functions";
 import type { Dish } from "@/lib/menu.functions";
 import { track } from "@/lib/analytics";
