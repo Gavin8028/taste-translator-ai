@@ -73,23 +73,58 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+const organizationLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "MenuVision AI",
+  url: "https://menuvisionai.live",
+  description:
+    "Snap a photo of any menu and instantly see what every dish looks like — translated into your language, with photos and ingredients.",
+};
+
+const websiteLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "MenuVision AI",
+  url: "https://menuvisionai.live",
+};
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Menu Vision" },
-      { name: "description", content: "See what you're ordering on a menu before you order it" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Menu Vision" },
-      { property: "og:description", content: "See what you're ordering on a menu before you order it" },
+      { title: "MenuVision AI — See every dish before you order" },
+      {
+        name: "description",
+        content:
+          "Snap a photo of any menu and instantly see what every dish looks like — translated into your language, with photos and ingredients.",
+      },
+      {
+        property: "og:title",
+        content: "MenuVision AI — See every dish before you order",
+      },
+      {
+        property: "og:description",
+        content:
+          "Snap a photo of any menu and instantly see what every dish looks like — translated into your language, with photos and ingredients.",
+      },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Menu Vision" },
-      { name: "twitter:description", content: "See what you're ordering on a menu before you order it" },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/7da25ae2-113b-41cd-a7bd-ba36ae89a9cd" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/7da25ae2-113b-41cd-a7bd-ba36ae89a9cd" },
+      { property: "og:site_name", content: "MenuVision AI" },
+      { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:title",
+        content: "MenuVision AI — See every dish before you order",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "Snap a photo of any menu and instantly see what every dish looks like — translated into your language, with photos and ingredients.",
+      },
+    ],
+    scripts: [
+      { type: "application/ld+json", children: JSON.stringify(organizationLd) },
+      { type: "application/ld+json", children: JSON.stringify(websiteLd) },
     ],
     links: [
       {
