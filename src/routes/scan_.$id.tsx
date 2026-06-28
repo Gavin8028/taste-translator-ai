@@ -37,6 +37,7 @@ function ResultsPage() {
   const [spice, setSpice] = useState<number | null>(null);
   const [active, setActive] = useState<Dish | null>(null);
   const { user } = useAuth();
+  const isPremium = useDinerPremium();
 
   useEffect(() => {
     let cancelled = false;
