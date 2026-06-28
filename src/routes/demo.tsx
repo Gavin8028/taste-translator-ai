@@ -166,7 +166,9 @@ export const Route = createFileRoute("/demo")({
         content:
           "See exactly what guests see: every dish with a photo, description, and dietary tags.",
       },
+      { property: "og:url", content: "https://menuvisionai.live/demo" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/demo" }],
   }),
   component: DemoPage,
 });
