@@ -256,6 +256,7 @@ function ResultsPage() {
               dish={dish}
               onClick={() => setActive(dish)}
               allowAi
+              hideDietary={!isPremium}
             />
           ))}
           {filtered.length === 0 && (
@@ -270,6 +271,7 @@ function ResultsPage() {
         dish={active}
         onClose={() => setActive(null)}
         allowAi
+        hideDietary={!isPremium}
       />
 
       <SiteFooter />
