@@ -14,6 +14,10 @@ export const Route = createFileRoute("/scan_/$id")({
   head: () => ({
     meta: [
       { title: "Your menu — MenuVision AI" },
+      {
+        name: "description",
+        content: "Your scanned menu results on MenuVision AI.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
