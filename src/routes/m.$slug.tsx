@@ -6,6 +6,7 @@ import { DishCard } from "@/components/dish-card";
 import { DishDetailSheet } from "@/components/dish-detail-sheet";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { ShareButton } from "@/components/share-button";
 import { getRestaurantMenu } from "@/lib/restaurant.functions";
 import type { Dish } from "@/lib/menu.functions";
 import { track } from "@/lib/analytics";
@@ -202,6 +203,12 @@ function MenuPage() {
             {dishes.length} dishes · translated to {menu.targetLanguage}
             {menu.sourceLanguage ? ` from ${menu.sourceLanguage}` : ""}
           </p>
+          <div className="mt-5 flex justify-center">
+            <ShareButton
+              url={typeof window !== "undefined" ? window.location.href : ""}
+              title={`${menu.name} — Menu`}
+            />
+          </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">

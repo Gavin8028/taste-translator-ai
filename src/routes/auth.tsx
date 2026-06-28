@@ -1,12 +1,18 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { lovable } from "@/integrations/lovable";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+const authSearchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: authSearchSchema,
   head: () => ({
     meta: [
       { title: "Sign in — MenuVision AI" },
@@ -16,21 +22,30 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+function safeRedirect(target: string | undefined): string {
+  if (!target) return "/";
+  // Only allow same-origin relative paths.
+  if (target.startsWith("/") && !target.startsWith("//")) return target;
+  return "/";
+}
+
 function AuthPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const search = useSearch({ from: "/auth" });
+  const dest = safeRedirect(search.redirect);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/", replace: true });
+      if (data.user) navigate({ to: dest, replace: true });
     });
-  }, [navigate]);
+  }, [navigate, dest]);
 
   async function handleGoogle() {
     setLoading(true);
     try {
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin + "/auth/callback",
+        redirect_uri: window.location.origin + "/auth/callback" + (search.redirect ? `?redirect=${encodeURIComponent(search.redirect)}` : ""),
       });
       if (result.error) {
         toast.error("Sign-in failed", { description: String(result.error.message ?? result.error) });
@@ -38,8 +53,7 @@ function AuthPage() {
         return;
       }
       if (result.redirected) return;
-      // tokens already set
-      navigate({ to: "/", replace: true });
+      navigate({ to: dest, replace: true });
     } catch (err) {
       toast.error("Sign-in failed", { description: err instanceof Error ? err.message : String(err) });
       setLoading(false);
@@ -52,7 +66,7 @@ function AuthPage() {
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-5 py-16 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Sign in</h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          Sync your scan history across devices and manage restaurant menus without an edit code.
+          Sign in to publish or manage a restaurant menu, or to sync your scan history across devices.
         </p>
         <Button
           onClick={handleGoogle}
@@ -64,8 +78,8 @@ function AuthPage() {
           {loading ? "Connecting…" : "Continue with Google"}
         </Button>
         <p className="mt-6 text-xs text-muted-foreground">
-          You can still use MenuVision without signing in.{" "}
-          <Link to="/" className="underline hover:text-foreground">Go back home</Link>.
+          You can still scan menus without signing in.{" "}
+          <Link to="/" className="underline hover:text-foreground">Go home</Link>.
         </p>
       </div>
       <SiteFooter />

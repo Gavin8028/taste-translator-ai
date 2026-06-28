@@ -1,26 +1,39 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { track } from "@/lib/analytics";
 
+const callbackSearchSchema = z.object({
+  redirect: z.string().optional(),
+});
+
 export const Route = createFileRoute("/auth/callback")({
+  validateSearch: callbackSearchSchema,
   component: AuthCallback,
 });
 
+function safeRedirect(target: string | undefined): string {
+  if (!target) return "/";
+  if (target.startsWith("/") && !target.startsWith("//")) return target;
+  return "/";
+}
+
 function AuthCallback() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
+  const dest = safeRedirect(redirect);
 
   useEffect(() => {
     let cancelled = false;
     async function go() {
-      // Wait briefly for the session to hydrate after the OAuth redirect.
       for (let i = 0; i < 20; i++) {
         const { data } = await supabase.auth.getUser();
         if (cancelled) return;
         if (data.user) {
           track("signin_completed");
-          navigate({ to: "/", replace: true });
+          window.location.replace(dest);
           return;
         }
         await new Promise((r) => setTimeout(r, 150));
@@ -31,7 +44,7 @@ function AuthCallback() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, dest]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">

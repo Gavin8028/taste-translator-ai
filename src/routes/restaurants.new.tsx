@@ -91,7 +91,7 @@ function NewRestaurantMenu() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
-  const { user } = useAuth();
+  
 
   function pickFile(f: File) {
     if (!f.type.startsWith("image/")) {
@@ -186,7 +186,8 @@ function NewRestaurantMenu() {
               onClick={() =>
                 openCheckout({
                   priceId: "publish_menu_one_time",
-                  customData: { slug: result.slug },
+                  customerEmail: user?.email,
+                  customData: { slug: result.slug, userId: user?.id ?? "" },
                   successUrl: `${window.location.origin}/restaurants/${result.slug}/edit?published=1`,
                 })
               }
@@ -277,6 +278,49 @@ function NewRestaurantMenu() {
     );
   }
 
+  const { user, loading: authLoading } = useAuth();
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <SiteHeader />
+        <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-16">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background">
+        <SiteHeader />
+        <main className="mx-auto w-full max-w-xl flex-1 px-5 py-16">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+            Sign in to publish your menu
+          </h1>
+          <p className="mt-3 text-muted-foreground">
+            A free Google account keeps your $39 menu safe — you'll be able to edit, re-scan,
+            or remove it from any device.
+          </p>
+          <Button asChild size="lg" className="mt-8 h-12 rounded-full px-6 text-base">
+            <Link
+              to="/auth"
+              search={{ redirect: "/restaurants/new" }}
+            >
+              Continue with Google
+            </Link>
+          </Button>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Diners don't need an account — only restaurant owners do.
+          </p>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
@@ -287,8 +331,9 @@ function NewRestaurantMenu() {
               Create your menu page
             </h1>
             <p className="mt-3 text-muted-foreground">
-              Takes about a minute. No sign-up.
+              Takes about a minute. Signed in as {user.email}.
             </p>
+
 
             <form onSubmit={onSubmit} className="mt-8 space-y-6">
               <div>

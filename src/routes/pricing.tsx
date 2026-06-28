@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
+import { useAuth } from "@/hooks/use-auth";
 import { PRICING_PLANS } from "@/lib/pricing-plans";
 
 export const Route = createFileRoute("/pricing")({
@@ -29,6 +30,22 @@ export const Route = createFileRoute("/pricing")({
 
 function PricingPage() {
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  function handlePremium() {
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: "/pricing" } });
+      return;
+    }
+    openCheckout({
+      priceId: "diner_premium_monthly",
+      customerEmail: user.email,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/checkout/premium-success`,
+    });
+  }
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -59,15 +76,10 @@ function PricingPage() {
                   <Button
                     className="h-11 w-full rounded-full"
                     disabled={checkoutLoading}
-                    onClick={() =>
-                      openCheckout({
-                        priceId: "diner_premium_monthly",
-                        successUrl: `${window.location.origin}/checkout/premium-success`,
-                      })
-                    }
+                    onClick={handlePremium}
                   >
                     {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    Get Premium
+                    {user ? "Get Premium" : "Sign in to subscribe"}
                   </Button>
                 ) : plan.id === "restaurant_publish" ? (
                   <Button asChild className="h-11 w-full rounded-full" variant="outline">

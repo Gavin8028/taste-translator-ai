@@ -6,6 +6,7 @@ export function usePaddleCheckout() {
 
   const openCheckout = async (options: {
     priceId: string;
+    customerEmail?: string;
     customData?: Record<string, string>;
     successUrl?: string;
   }) => {
@@ -16,6 +17,7 @@ export function usePaddleCheckout() {
 
       window.Paddle.Checkout.open({
         items: [{ priceId: paddlePriceId, quantity: 1 }],
+        customer: options.customerEmail ? { email: options.customerEmail } : undefined,
         customData: options.customData,
         settings: {
           displayMode: "overlay",
