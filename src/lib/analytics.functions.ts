@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeader } from "@tanstack/react-start/server";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -23,8 +23,9 @@ export const trackEvent = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => TrackInput.parse(input))
   .handler(async ({ data }) => {
     try {
-      const country = getRequestHeader("cf-ipcountry") ?? null;
-      const ua = getRequestHeader("user-agent") ?? null;
+      const req = getRequest();
+      const country = req.headers.get("cf-ipcountry");
+      const ua = req.headers.get("user-agent");
       const device = detectDevice(ua);
 
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
