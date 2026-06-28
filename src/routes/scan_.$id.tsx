@@ -160,7 +160,17 @@ function ResultsPage() {
               {data.dishes.length} dishes · detected language:{" "}
               <span className="text-foreground">{data.sourceLanguage}</span>
             </p>
+          <div className="shrink-0">
+            <ShareButton
+              url="https://menuvisionai.live/scan"
+              title={
+                data.restaurantName
+                  ? `${data.restaurantName} — translated with MenuVision AI`
+                  : "Translate any menu with MenuVision AI"
+              }
+            />
           </div>
+        </div>
         </div>
 
         <div className="mt-7 space-y-3">
