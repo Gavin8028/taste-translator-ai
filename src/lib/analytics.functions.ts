@@ -47,9 +47,9 @@ export const trackEvent = createServerFn({ method: "POST" })
 
 // ---- Admin dashboard queries ----
 
-async function assertAdmin(context: { supabase: ReturnType<typeof Object>; userId: string }) {
+async function assertAdmin(userId: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(context.userId);
+  const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(userId);
   const email = userRes?.user?.email?.toLowerCase() ?? null;
   if (!email) throw new Error("Forbidden");
 
@@ -74,7 +74,7 @@ async function assertAdmin(context: { supabase: ReturnType<typeof Object>; userI
 export const getAnalyticsSummary = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { admin } = await assertAdmin(context as never);
+    const { admin } = await assertAdmin(context.userId);
 
     const since7 = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const since30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
