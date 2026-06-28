@@ -41,11 +41,15 @@ export function track(name: string, props?: Record<string, unknown>): void {
 export function usePageViewTracking(): void {
   const router = useRouter();
   useEffect(() => {
-    // Initial view
-    track("page_view");
-    const unsub = router.subscribe("onResolved", () => {
+    let lastPath = "";
+    const fire = () => {
+      const path = window.location.pathname;
+      if (path === lastPath) return;
+      lastPath = path;
       track("page_view");
-    });
+    };
+    fire();
+    const unsub = router.subscribe("onResolved", fire);
     return () => unsub();
   }, [router]);
 }
