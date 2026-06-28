@@ -36,7 +36,18 @@ export const Route = createFileRoute("/")({
         content:
           "Snap a photo of any menu. See what every dish looks like, instantly.",
       },
+      {
+        property: "og:title",
+        content: "MenuVision AI — See every dish before you order",
+      },
+      {
+        property: "og:description",
+        content:
+          "Snap a photo of any menu. See what every dish looks like, instantly.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/" }],
   }),
   component: Landing,
 });
