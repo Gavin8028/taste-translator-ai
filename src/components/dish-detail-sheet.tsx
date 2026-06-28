@@ -119,7 +119,7 @@ export function DishDetailSheet({
                 {dish.spiceLevel === 1 ? "Mild" : dish.spiceLevel === 2 ? "Medium" : "Hot"}
               </span>
             )}
-            {dish.dietary.map((d) => (
+            {!hideDietary && dish.dietary.map((d) => (
               <span
                 key={d}
                 className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground"
