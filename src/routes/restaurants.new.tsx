@@ -186,7 +186,8 @@ function NewRestaurantMenu() {
               onClick={() =>
                 openCheckout({
                   priceId: "publish_menu_one_time",
-                  customData: { slug: result.slug },
+                  customerEmail: user?.email,
+                  customData: { slug: result.slug, userId: user?.id ?? "" },
                   successUrl: `${window.location.origin}/restaurants/${result.slug}/edit?published=1`,
                 })
               }
