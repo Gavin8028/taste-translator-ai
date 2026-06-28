@@ -187,52 +187,65 @@ function ResultsPage() {
             />
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {cuisines.map((c) => (
-              <Chip
-                key={c}
-                label={c}
-                active={cuisine === c}
-                onClick={() => setCuisine(cuisine === c ? null : c)}
-              />
-            ))}
-            {diets.map((d) => (
-              <Chip
-                key={d}
-                label={d}
-                active={diet === d}
-                onClick={() => setDiet(diet === d ? null : d)}
-              />
-            ))}
-            {[1, 2, 3].map((s) => (
-              <Chip
-                key={s}
-                active={spice === s}
-                onClick={() => setSpice(spice === s ? null : s)}
-                label={
-                  <span className="inline-flex items-center gap-1">
-                    {Array.from({ length: s }).map((_, i) => (
-                      <Flame key={i} className="h-3 w-3" />
-                    ))}
-                    {s === 1 ? "Mild" : s === 2 ? "Medium" : "Hot"}
-                  </span>
-                }
-              />
-            ))}
-            {(cuisine || diet || spice !== null || query) && (
-              <button
-                onClick={() => {
-                  setCuisine(null);
-                  setDiet(null);
-                  setSpice(null);
-                  setQuery("");
-                }}
-                className="rounded-full px-3 py-1.5 text-xs text-muted-foreground underline-offset-2 hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
+          {isPremium ? (
+            <div className="flex flex-wrap gap-2">
+              {cuisines.map((c) => (
+                <Chip
+                  key={c}
+                  label={c}
+                  active={cuisine === c}
+                  onClick={() => setCuisine(cuisine === c ? null : c)}
+                />
+              ))}
+              {diets.map((d) => (
+                <Chip
+                  key={d}
+                  label={d}
+                  active={diet === d}
+                  onClick={() => setDiet(diet === d ? null : d)}
+                />
+              ))}
+              {[1, 2, 3].map((s) => (
+                <Chip
+                  key={s}
+                  active={spice === s}
+                  onClick={() => setSpice(spice === s ? null : s)}
+                  label={
+                    <span className="inline-flex items-center gap-1">
+                      {Array.from({ length: s }).map((_, i) => (
+                        <Flame key={i} className="h-3 w-3" />
+                      ))}
+                      {s === 1 ? "Mild" : s === 2 ? "Medium" : "Hot"}
+                    </span>
+                  }
+                />
+              ))}
+              {(cuisine || diet || spice !== null || query) && (
+                <button
+                  onClick={() => {
+                    setCuisine(null);
+                    setDiet(null);
+                    setSpice(null);
+                    setQuery("");
+                  }}
+                  className="rounded-full px-3 py-1.5 text-xs text-muted-foreground underline-offset-2 hover:underline"
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/pricing"
+              className="flex items-center justify-between gap-3 rounded-2xl border border-dashed border-border bg-card px-4 py-3 text-sm text-muted-foreground hover:border-primary hover:text-foreground"
+            >
+              <span className="inline-flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Filters and dietary info are part of Diner Premium.
+              </span>
+              <span className="text-primary">Upgrade</span>
+            </Link>
+          )}
         </div>
 
         {/* Grid */}
