@@ -10,7 +10,15 @@ export const Route = createFileRoute("/refunds")({
         content:
           "MenuVision AI offers a 30-day money-back guarantee. Refunds are processed by Paddle.",
       },
+      { property: "og:title", content: "Refund Policy — MenuVision AI" },
+      {
+        property: "og:description",
+        content:
+          "MenuVision AI offers a 30-day money-back guarantee. Refunds are processed by Paddle.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/refunds" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/refunds" }],
   }),
   component: RefundsPage,
 });
