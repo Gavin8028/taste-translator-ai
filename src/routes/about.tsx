@@ -10,7 +10,15 @@ export const Route = createFileRoute("/about")({
         content:
           "MenuVision AI helps travelers and curious eaters understand any menu, anywhere in the world.",
       },
+      { property: "og:title", content: "About — MenuVision AI" },
+      {
+        property: "og:description",
+        content:
+          "MenuVision AI helps travelers and curious eaters understand any menu, anywhere in the world.",
+      },
+      { property: "og:url", content: "https://menuvisionai.live/about" },
     ],
+    links: [{ rel: "canonical", href: "https://menuvisionai.live/about" }],
   }),
   component: AboutPage,
 });
