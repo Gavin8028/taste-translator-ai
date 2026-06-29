@@ -299,7 +299,36 @@ function ScanPage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-16">
-        {!loading && (
+        {!user && !authLoading && !loading && (
+          <div className="rounded-3xl border border-border bg-card p-8 text-center">
+            <Lock className="mx-auto h-8 w-8 text-primary" />
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+              Sign in to scan a menu
+            </h1>
+            <p className="mt-3 text-muted-foreground">
+              Every new account gets <strong>3 free scans</strong>. No card required.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button asChild className="rounded-full">
+                <Link to="/auth" search={{ redirect: "/scan" } as never}>
+                  Sign in / create account
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/pricing">See pricing</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {user && showPaywall && !loading && (
+          <PaywallCard
+            status={status}
+            onClose={() => setShowPaywall(false)}
+          />
+        )}
+
+        {user && !showPaywall && !loading && (
           <>
             <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
               Scan a menu
@@ -307,6 +336,8 @@ function ScanPage() {
             <p className="mt-3 text-muted-foreground">
               Take a photo, or drop one in. We'll do the rest.
             </p>
+            {status && <CreditBadge status={status} />}
+
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <label className="text-sm text-muted-foreground">Translate to</label>
