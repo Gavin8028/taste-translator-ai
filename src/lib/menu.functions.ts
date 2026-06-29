@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateObject } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -43,6 +43,171 @@ export type Dish = z.infer<typeof DishSchema>;
 export type MenuResult = z.infer<typeof MenuSchema>;
 export type DishTranslations = z.infer<typeof TranslationsSchema>;
 
+type AnalyzeMenuImagesOptions = {
+  imageDataUrls: string[];
+  targetLanguage: string;
+  multiLanguage?: boolean;
+  modelId?: string;
+};
+
+function extractJsonObject(text: string): unknown {
+  const cleaned = text
+    .trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start === -1 || end === -1 || end <= start) {
+      throw new Error("We couldn't read that menu. Try a clearer, closer photo.");
+    }
+    return JSON.parse(cleaned.slice(start, end + 1));
+  }
+}
+
+function textOrFallback(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value.trim() : fallback;
+}
+
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => textOrFallback(item))
+    .filter(Boolean)
+    .slice(0, 24);
+}
+
+function normalizeTranslations(value: unknown): DishTranslations | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const normalized = Object.fromEntries(
+    SUPPORTED_LANGUAGES.map((language) => {
+      const item = record[language];
+      const itemRecord = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+      return [
+        language,
+        {
+          name: textOrFallback(itemRecord.name),
+          description: textOrFallback(itemRecord.description),
+        },
+      ];
+    }),
+  );
+  return TranslationsSchema.parse(normalized);
+}
+
+function normalizeMenuResult(raw: unknown, targetLanguage: string): MenuResult {
+  if (!raw || typeof raw !== "object") {
+    throw new Error("We couldn't read that menu. Try a clearer, closer photo.");
+  }
+
+  const root = raw as Record<string, unknown>;
+  const rawDishes = Array.isArray(root.dishes) ? root.dishes : [];
+  const dishes = rawDishes.flatMap((item): Dish[] => {
+    if (!item || typeof item !== "object") return [];
+    const dish = item as Record<string, unknown>;
+    const nameOriginal = textOrFallback(dish.nameOriginal || dish.name || dish.originalName);
+    if (!nameOriginal) return [];
+    const nameTranslated = textOrFallback(
+      dish.nameTranslated || dish.translatedName,
+      nameOriginal,
+    );
+    const spiceRaw = Number(dish.spiceLevel ?? 0);
+    const price = textOrFallback(dish.priceText || dish.price);
+
+    return [
+      {
+        nameOriginal,
+        nameTranslated,
+        description: textOrFallback(dish.description),
+        ingredients: stringArray(dish.ingredients),
+        cuisine: textOrFallback(dish.cuisine, "Restaurant"),
+        spiceLevel: Math.max(0, Math.min(3, Number.isFinite(spiceRaw) ? Math.round(spiceRaw) : 0)),
+        dietary: stringArray(dish.dietary),
+        priceText: price || null,
+        translations: normalizeTranslations(dish.translations),
+      },
+    ];
+  });
+
+  return MenuSchema.parse({
+    sourceLanguage: textOrFallback(root.sourceLanguage, "Unknown"),
+    restaurantName: textOrFallback(root.restaurantName) || null,
+    dishes,
+  });
+}
+
+export async function analyzeMenuImages({
+  imageDataUrls,
+  targetLanguage,
+  multiLanguage = false,
+  modelId = "google/gemini-3-flash-preview",
+}: AnalyzeMenuImagesOptions): Promise<MenuResult> {
+  const key = process.env.LOVABLE_API_KEY;
+  if (!key) throw new Error("Missing LOVABLE_API_KEY");
+
+  const gateway = createLovableAiGatewayProvider(key);
+
+  const multiLangBlock = multiLanguage
+    ? `\n- translations: an object with keys "English", "Spanish", "French", "Japanese", "Chinese" — each holding { "name": <dish name in that language>, "description": <1-2 sentence description in that language> }.`
+    : `\n- translations: null`;
+
+  const pagesNote =
+    imageDataUrls.length > 1
+      ? `\n\nThe user has provided ${imageDataUrls.length} photos. They are pages of the SAME menu. Combine every dish across all photos into one list. De-duplicate dishes that clearly appear on multiple pages.`
+      : "";
+
+  const prompt = `You are MenuVision, an expert at reading restaurant menus from photos.
+
+Return ONLY valid JSON. No markdown. No explanation.
+
+JSON shape:
+{
+  "sourceLanguage": "language of the menu text or Unknown",
+  "restaurantName": "restaurant name if visible, otherwise null",
+  "dishes": [
+    {
+      "nameOriginal": "dish name exactly as printed",
+      "nameTranslated": "dish name in ${targetLanguage}",
+      "description": "1-2 sentence appetizing description in ${targetLanguage}",
+      "ingredients": ["main visible or likely ingredients in ${targetLanguage}"],
+      "cuisine": "short cuisine label",
+      "spiceLevel": 0,
+      "dietary": ["vegetarian", "vegan", "gluten-free", "contains-dairy", "contains-nuts", "seafood", "pork", "beef"],
+      "priceText": "price exactly as printed if visible, otherwise null",${multiLangBlock}
+    }
+  ]
+}
+
+Analyze the menu image${imageDataUrls.length > 1 ? "s" : ""}. Include every dish you can clearly see. spiceLevel must be 0, 1, 2, or 3.${pagesNote}`;
+
+  const { text } = await generateText({
+    model: gateway(modelId),
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: prompt },
+          ...imageDataUrls.map((img) => ({ type: "image" as const, image: img })),
+        ],
+      },
+    ],
+  });
+
+  const parsed = extractJsonObject(text);
+  const normalized = normalizeMenuResult(parsed, targetLanguage);
+  if (!normalized.dishes.length) {
+    throw new Error(
+      "We couldn't find any dishes in those photos. Try clearer, closer shots of the menu.",
+    );
+  }
+  return normalized;
+}
+
 export class NoCreditsError extends Error {
   code = "NO_CREDITS" as const;
   constructor() {
@@ -68,9 +233,6 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       .parse(input);
   })
   .handler(async ({ data, context }): Promise<MenuResult> => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
-
     // 1. Check + consume a credit BEFORE calling AI
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: consumeResult, error: consumeError } = await supabaseAdmin.rpc(
@@ -95,51 +257,18 @@ export const analyzeMenu = createServerFn({ method: "POST" })
     const images = allImages.slice(0, maxImages);
     const useMultiLang = !isFree && data.multiLanguage;
 
-    const gateway = createLovableAiGatewayProvider(key);
-
-    const multiLangBlock = useMultiLang
-      ? `\n- translations: an object with keys "English", "Spanish", "French", "Japanese", "Chinese" — each holding { "name": <dish name in that language>, "description": <1-2 sentence description in that language> }.`
-      : "";
-
-    const pagesNote =
-      images.length > 1
-        ? `\n\nThe user has provided ${images.length} photos. They are pages of the SAME menu. Combine every dish across all photos into one list. De-duplicate dishes that clearly appear on multiple pages.`
-        : "";
-
-    const prompt = `You are MenuVision, an expert at reading restaurant menus from photos.
-
-Analyze the menu image${images.length > 1 ? "s" : ""}. For EVERY dish you can see:
-- nameOriginal: dish name exactly as printed
-- nameTranslated: dish name in ${data.targetLanguage}
-- description: 1-2 sentence appetizing description in ${data.targetLanguage}
-- ingredients: array of main visible/likely ingredients (in ${data.targetLanguage})
-- cuisine: short cuisine label
-- spiceLevel: integer 0 (none), 1 (mild), 2 (medium), 3 (hot)
-- dietary: subset of ["vegetarian","vegan","gluten-free","contains-dairy","contains-nuts","seafood","pork","beef"]
-- priceText: the price exactly as printed if visible, otherwise null${multiLangBlock}
-
-Also return sourceLanguage and restaurantName if visible. Be thorough.${pagesNote}`;
-
     // Cheaper model for free tier, better one for paid/premium/admin
     const modelId = isFree
       ? "google/gemini-2.5-flash-lite"
       : "google/gemini-3-flash-preview";
 
     try {
-      const { object } = await generateObject({
-        model: gateway(modelId),
-        schema: MenuSchema,
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: prompt },
-              ...images.map((img) => ({ type: "image" as const, image: img })),
-            ],
-          },
-        ],
+      return await analyzeMenuImages({
+        imageDataUrls: images,
+        targetLanguage: data.targetLanguage,
+        multiLanguage: useMultiLang,
+        modelId,
       });
-      return object;
     } catch (err) {
       // Refund the consumed credit on failure (paid credits only — free is cheap to lose).
       if (tier === "paid") {
