@@ -52,11 +52,28 @@ function MyMenusPage() {
             {error instanceof Error ? error.message : "Could not load your menus."}
           </p>
         ) : !data?.length ? (
-          <div className="mt-10 rounded-3xl border border-border bg-card p-10 text-center">
-            <p className="text-muted-foreground">You haven't created any menus yet.</p>
-            <Button asChild className="mt-5 rounded-full">
-              <Link to="/restaurants/new">Create your first menu</Link>
-            </Button>
+          <div className="mt-10 rounded-3xl border border-dashed border-border bg-card p-10 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Store className="h-6 w-6" />
+            </div>
+            <h2 className="mt-5 text-xl font-semibold tracking-tight">
+              You haven't published a menu yet
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Upload a photo of your menu and we'll publish a translated page with a
+              printable QR code for your tables.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              <Button asChild className="h-11 rounded-full">
+                <Link to="/restaurants/new">
+                  <Plus className="h-4 w-4" />
+                  Create your first menu
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-11 rounded-full">
+                <Link to="/demo">See a live example</Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <ul className="mt-8 space-y-3">

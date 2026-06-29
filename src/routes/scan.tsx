@@ -12,6 +12,7 @@ import {
   Lightbulb,
   RotateCw,
   CheckCircle2,
+  WifiOff,
 } from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
 import {
@@ -139,9 +140,22 @@ function ScanPage() {
   const [recent, setRecent] = useState<RecentScan[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+  const [offline, setOffline] = useState(false);
 
   useEffect(() => {
     setRecent(listRecentScans());
+  }, []);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const update = () => setOffline(!navigator.onLine);
+    update();
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
   }, []);
 
   useEffect(() => {
@@ -470,12 +484,26 @@ function ScanPage() {
                   </Button>
                   <Button
                     onClick={onAnalyze}
+                    disabled={offline}
                     size="lg"
                     className="h-12 flex-1 rounded-full text-base"
                   >
                     Analyze {pages.length === 1 ? "menu" : `${pages.length} pages`}
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {offline && (
+              <div
+                role="status"
+                className="mt-6 flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-300"
+              >
+                <WifiOff className="h-4 w-4 shrink-0" />
+                <p>
+                  You're offline. Reconnect to analyze a menu — your photos stay
+                  ready.
+                </p>
               </div>
             )}
 
