@@ -306,7 +306,7 @@ function ScanPage() {
               Sign in to scan a menu
             </h1>
             <p className="mt-3 text-muted-foreground">
-              Every new account gets <strong>3 free scans</strong>. No card required.
+              Every new account gets <strong>1 free scan</strong>. No card required.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild className="rounded-full">

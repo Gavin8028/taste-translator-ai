@@ -22,7 +22,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     price: "Free",
     cadence: "3 scans on signup",
     features: [
-      "3 free menu scans when you sign up",
+      "1 free menu scan when you sign up",
       "Translation to 50+ languages",
       "Search and dish photos",
       "Menu history synced to your account",
@@ -95,7 +95,7 @@ export const HOME_PRICING_PLANS = [
     name: "Free",
     price: "Free",
     cadence: "3 scans on signup",
-    features: ["3 free scans", "50+ languages", "Dish photos"],
+    features: ["1 free scan", "50+ languages", "Dish photos"],
   },
   {
     id: "diner_premium_monthly" as const,
