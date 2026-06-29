@@ -1,33 +1,53 @@
-# Next: Launch-Blocker Polish
+## Goal
+Stop you from paying for strangers' AI scans. Every scan is either paid for, capped, or covered by a subscription.
 
-You're 95% there. Before doing trust/onboarding nice-to-haves, close the last gaps that hurt a real first-time visitor.
+## Changes
 
-## 1. Friendly empty states
+### 1. Free scan cap (anti-abuse)
+- **Signed-out users:** 1 free scan, ever (tracked in localStorage + IP-based rate limit on server).
+- **Signed-in free users:** 3 free scans total (tracked in new `user_scan_credits` table).
+- After the cap: hard paywall screen → "Subscribe ($4.79/mo) or buy a scan pack".
+- Owner account (your email, allowlisted in `admin_emails`) = unlimited, no charge tracking.
 
-- **`/history`** (signed-in, zero scans) — replace the bare list with a centered card: icon, "No scans yet", and a primary "Scan your first menu" button linking to `/scan`.
-- **`/restaurants/mine`** (signed-in, zero menus) — same treatment: "You haven't published a menu yet" with a "Create your first menu" button to `/restaurants/new`.
-- **`/scan`** offline — small inline banner ("You're offline — connect to analyze a menu") and disable the Analyze button while `navigator.onLine === false`.
+### 2. Scan packs (new revenue stream)
+- New Paddle one-time products:
+  - 10 scans — $2.99
+  - 50 scans — $9.99
+  - 200 scans — $29.99
+- New `user_scan_credits` table: `user_id`, `remaining`, `lifetime_purchased`.
+- Webhook credits the user on purchase.
+- Every scan decrements `remaining` (skipped for Premium subscribers and admins).
 
-## 2. Deleted / missing menu 404
+### 3. Server-side enforcement (critical)
+- Move `analyzeMenu` behind `requireSupabaseAuth` + a `canScan(userId)` check that runs BEFORE the AI call.
+- Order: check admin → check active Premium subscription → check `remaining > 0` → else throw `PAYMENT_REQUIRED`.
+- Signed-out scan path: separate server fn with strict IP rate limit (1/day) using a `anon_scan_log` table keyed by hashed IP.
 
-- **`/m/$slug`** when the menu doesn't exist or was unpublished — render a real 404 component (headline, short message, link back to `/` and `/demo`) instead of a blank screen. Wire it through the route's `notFoundComponent`.
+### 4. Cost controls on the AI call itself
+- Drop `multiLanguage: true` for free-tier scans (translate only to target language, ~60% cheaper per call).
+- Cap image count at 3 for free tier, 8 for paid.
+- Switch free-tier model to `google/gemini-2.5-flash-lite` (cheapest); keep `gemini-3-flash-preview` for paid.
 
-## 3. Pre-publish verification pass
+### 5. UI updates
+- `/scan` page: show remaining credits badge at top ("2 free scans left" / "47 scan credits" / "Premium ∞").
+- New `/pricing` section: scan packs alongside subscription.
+- Paywall modal when out of credits with both options (subscribe vs buy pack).
+- `pricing-plans.ts`: add scan pack entries.
 
-- Run a fresh **security scan**; fix or justify any new criticals.
-- Run a fresh **SEO scan**; fix anything new it flags.
-- Confirm Paddle test checkout still shows "MenuVision AI" as seller and that a $39 menu actually flips to paid after the webhook fires.
-- Walk scan → results → share on a real phone (portrait).
-
-## Out of scope for this pass
-
-Homepage trust strip, onboarding toasts, performance lazy-loading, `/changelog` — all worth doing but post-launch.
+### 6. Owner exemption
+- Confirm your email is in `admin_emails` so you can scan freely while testing.
 
 ## Technical notes
+- New migration: `user_scan_credits`, `anon_scan_log` tables with proper RLS + GRANTs.
+- New server fn: `getMyScanCredits`, `consumeScanCredit`.
+- Webhook handler in `payments/webhook.ts`: handle `scan_pack_10/50/200` price IDs → insert credits.
+- `scan.tsx`: pre-flight credit check before showing upload UI; show paywall if 0.
+- Paddle product creation via `payments--batch_create_product` for the 3 packs.
 
-- `/history` and `/restaurants/mine` already detect the empty case; just swap the rendered block.
-- `/m/$slug` likely throws `notFound()` from its loader (or should) — set `notFoundComponent` on `createFileRoute("/m/$slug")` so the 404 stays within the site shell.
-- Use existing `SiteHeader` / `SiteFooter` so empty/404 states match the rest of the site.
-- For the scan-offline banner, listen to `online` / `offline` events in a small hook in `src/routes/scan.tsx`; no new dependency.
+## Result
+- You never lose money on a free user (cap = 1–3 scans, AI cost ≈ $0.05 each, max ~$0.15 loss per signup).
+- Every scan beyond the cap is pre-paid by the user.
+- Premium subscribers stay unlimited (their $4.79/mo covers heavy usage).
+- You as owner = unlimited free.
 
-Approve and I'll ship #1 and #2, then kick off the security + SEO scans for #3.
+Want me to build all of this?
