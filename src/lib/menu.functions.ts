@@ -65,7 +65,11 @@ function extractJsonObject(text: string): unknown {
     if (start === -1 || end === -1 || end <= start) {
       throw new Error("We couldn't read that menu. Try a clearer, closer photo.");
     }
-    return JSON.parse(cleaned.slice(start, end + 1));
+    try {
+      return JSON.parse(cleaned.slice(start, end + 1));
+    } catch {
+      throw new Error("We couldn't read that menu. Try a clearer, closer photo.");
+    }
   }
 }
 
@@ -153,8 +157,8 @@ export async function analyzeMenuImages({
   const gateway = createLovableAiGatewayProvider(key);
 
   const multiLangBlock = multiLanguage
-    ? `\n- translations: an object with keys "English", "Spanish", "French", "Japanese", "Chinese" — each holding { "name": <dish name in that language>, "description": <1-2 sentence description in that language> }.`
-    : `\n- translations: null`;
+    ? `\n      "translations": { "English": { "name": "", "description": "" }, "Spanish": { "name": "", "description": "" }, "French": { "name": "", "description": "" }, "Japanese": { "name": "", "description": "" }, "Chinese": { "name": "", "description": "" } }`
+    : `\n      "translations": null`;
 
   const pagesNote =
     imageDataUrls.length > 1
@@ -178,7 +182,7 @@ JSON shape:
       "cuisine": "short cuisine label",
       "spiceLevel": 0,
       "dietary": ["vegetarian", "vegan", "gluten-free", "contains-dairy", "contains-nuts", "seafood", "pork", "beef"],
-      "priceText": "price exactly as printed if visible, otherwise null",${multiLangBlock}
+      "priceText": null,${multiLangBlock}
     }
   ]
 }
