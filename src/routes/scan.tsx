@@ -12,6 +12,7 @@ import {
   Lightbulb,
   RotateCw,
   CheckCircle2,
+  WifiOff,
 } from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
 import {
