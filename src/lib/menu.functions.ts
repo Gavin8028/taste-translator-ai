@@ -77,6 +77,12 @@ function textOrFallback(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value.trim() : fallback;
 }
 
+function nullableText(value: unknown): string | null {
+  const text = textOrFallback(value);
+  if (!text || /^(null|none|n\/a|unknown)$/i.test(text)) return null;
+  return text;
+}
+
 function stringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value
@@ -121,7 +127,7 @@ function normalizeMenuResult(raw: unknown, targetLanguage: string): MenuResult {
       nameOriginal,
     );
     const spiceRaw = Number(dish.spiceLevel ?? 0);
-    const price = textOrFallback(dish.priceText || dish.price);
+    const price = nullableText(dish.priceText ?? dish.price);
 
     return [
       {
@@ -132,7 +138,7 @@ function normalizeMenuResult(raw: unknown, targetLanguage: string): MenuResult {
         cuisine: textOrFallback(dish.cuisine, "Restaurant"),
         spiceLevel: Math.max(0, Math.min(3, Number.isFinite(spiceRaw) ? Math.round(spiceRaw) : 0)),
         dietary: stringArray(dish.dietary),
-        priceText: price || null,
+        priceText: price,
         translations: normalizeTranslations(dish.translations),
       },
     ];
@@ -140,7 +146,7 @@ function normalizeMenuResult(raw: unknown, targetLanguage: string): MenuResult {
 
   return MenuSchema.parse({
     sourceLanguage: textOrFallback(root.sourceLanguage, "Unknown"),
-    restaurantName: textOrFallback(root.restaurantName) || null,
+    restaurantName: nullableText(root.restaurantName),
     dishes,
   });
 }
