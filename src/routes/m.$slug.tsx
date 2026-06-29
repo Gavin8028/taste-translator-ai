@@ -156,6 +156,7 @@ function MenuPage() {
         spiceLevel: d.spiceLevel,
         dietary: d.dietary,
         priceText: d.priceText ?? null,
+        translations: null,
       })),
     [menu],
   );

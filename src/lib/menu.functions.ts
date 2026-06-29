@@ -27,15 +27,15 @@ const DishSchema = z.object({
   description: z.string(),
   ingredients: z.array(z.string()),
   cuisine: z.string(),
-  spiceLevel: z.number().min(0).max(3),
+  spiceLevel: z.number(),
   dietary: z.array(z.string()),
-  priceText: z.string().optional().nullable(),
-  translations: TranslationsSchema.optional().nullable(),
+  priceText: z.string().nullable(),
+  translations: TranslationsSchema.nullable(),
 });
 
 const MenuSchema = z.object({
   sourceLanguage: z.string(),
-  restaurantName: z.string().optional().nullable(),
+  restaurantName: z.string().nullable(),
   dishes: z.array(DishSchema),
 });
 
