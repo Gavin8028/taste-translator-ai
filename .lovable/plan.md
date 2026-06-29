@@ -1,14 +1,9 @@
-I’m sorry. I changed too many moving parts around the scan flow, and the result is that the most important feature became unreliable. I’ll stop layering on extras and focus only on making scanning work again.
+Before publishing, I'll run a quick readiness sweep so you're not shipping a broken build:
 
-Plan:
-1. Reproduce the scan failure from the live `/scan` page with a real test image and capture the exact user-facing error.
-2. Check the server-function failure path for the scan call, especially auth, credit consumption, admin bypass, and backend RPC errors.
-3. Fix the likely failure point so your owner/admin account can scan without credits or subscription restrictions.
-4. Make scan failures safer: if the backend credit check fails, show a clear message and do not burn credits.
-5. Keep the existing robust JSON menu parser, but add one more fallback so malformed AI text does not crash the scan.
-6. Verify the full flow: upload/take menu photo → scan completes → result page opens → dishes render.
+1. **Build check** — run the production build and surface any TypeScript/Vite errors.
+2. **Security scan** — run the security scanner; Lovable blocks publish on unresolved critical findings.
+3. **Scan flow smoke test** — Playwright a real menu scan end-to-end on localhost (the flow that's been breaking) and confirm dishes render.
+4. **Website info preflight** — verify title, meta description, OG/Twitter tags, and favicon are correct on the home route.
+5. **Publish** — if all four pass, call `preview_ui--publish` to deploy to `menuvisionai.live`. If anything fails, stop and report back instead of publishing.
 
-Technical details:
-- Recent AI gateway logs show zero failed AI calls, which means the error is probably happening before AI analysis starts.
-- The scan function currently consumes/validates credits before calling AI; that area will be reviewed first.
-- I will only touch the scan/auth/credit path and any directly required error handling. I won’t redesign the site or add new features in this pass.
+Approve and I'll run the sweep and publish if clean.
