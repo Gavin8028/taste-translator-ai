@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +15,11 @@ import {
   RotateCw,
   CheckCircle2,
   WifiOff,
+  Sparkles,
+  Lock,
 } from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
+import { getMyScanStatus } from "@/lib/credits.functions";
 import {
   newScanId,
   saveScan,
@@ -129,7 +134,7 @@ type PageItem = { file: File; previewUrl: string };
 
 function ScanPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [pages, setPages] = useState<PageItem[]>([]);
   const [language, setLanguage] = useState("English");
   const [loading, setLoading] = useState(false);
@@ -141,6 +146,15 @@ function ScanPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const [offline, setOffline] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const fetchStatus = useServerFn(getMyScanStatus);
+  const { data: status, refetch: refetchStatus } = useQuery({
+    queryKey: ["scan-status", user?.id ?? null],
+    queryFn: () => fetchStatus(),
+    enabled: !!user,
+    staleTime: 30_000,
+  });
 
   useEffect(() => {
     setRecent(listRecentScans());
@@ -263,6 +277,12 @@ function ScanPage() {
       window.clearInterval(elapsedTimer);
       console.error(e);
       const raw = e instanceof Error ? e.message : "unknown";
+      if (raw.includes("out of free menu scans") || raw.includes("NO_CREDITS")) {
+        setShowPaywall(true);
+        void refetchStatus();
+        setLoading(false);
+        return;
+      }
       track("scan_failed", { message: raw.slice(0, 200) });
       setError(friendlyError(raw));
       setLoading(false);
@@ -279,7 +299,36 @@ function ScanPage() {
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-10 sm:py-16">
-        {!loading && (
+        {!user && !authLoading && !loading && (
+          <div className="rounded-3xl border border-border bg-card p-8 text-center">
+            <Lock className="mx-auto h-8 w-8 text-primary" />
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+              Sign in to scan a menu
+            </h1>
+            <p className="mt-3 text-muted-foreground">
+              Every new account gets <strong>3 free scans</strong>. No card required.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button asChild className="rounded-full">
+                <Link to="/auth" search={{ redirect: "/scan" } as never}>
+                  Sign in / create account
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="rounded-full">
+                <Link to="/pricing">See pricing</Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {user && showPaywall && !loading && (
+          <PaywallCard
+            status={status}
+            onClose={() => setShowPaywall(false)}
+          />
+        )}
+
+        {user && !showPaywall && !loading && (
           <>
             <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
               Scan a menu
@@ -287,6 +336,8 @@ function ScanPage() {
             <p className="mt-3 text-muted-foreground">
               Take a photo, or drop one in. We'll do the rest.
             </p>
+            {status && <CreditBadge status={status} />}
+
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <label className="text-sm text-muted-foreground">Translate to</label>
@@ -483,7 +534,13 @@ function ScanPage() {
                     Add from gallery
                   </Button>
                   <Button
-                    onClick={onAnalyze}
+                    onClick={() => {
+                      if (status && !status.canScan) {
+                        setShowPaywall(true);
+                        return;
+                      }
+                      onAnalyze();
+                    }}
                     disabled={offline}
                     size="lg"
                     className="h-12 flex-1 rounded-full text-base"
@@ -635,3 +692,104 @@ function ScanPage() {
     </div>
   );
 }
+
+function CreditBadge({
+  status,
+}: {
+  status: { freeRemaining: number; paidRemaining: number; isAdmin: boolean; isPremium: boolean };
+}) {
+  if (status.isAdmin) {
+    return (
+      <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <Sparkles className="h-3.5 w-3.5" /> Owner · unlimited scans
+      </div>
+    );
+  }
+  if (status.isPremium) {
+    return (
+      <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <Sparkles className="h-3.5 w-3.5" /> Premium · unlimited scans
+      </div>
+    );
+  }
+  const total = status.freeRemaining + status.paidRemaining;
+  const label =
+    status.paidRemaining > 0
+      ? `${total} scan credits left`
+      : `${status.freeRemaining} free ${status.freeRemaining === 1 ? "scan" : "scans"} left`;
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+      <span
+        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-medium ${
+          total > 0
+            ? "border-border bg-card text-foreground"
+            : "border-destructive/40 bg-destructive/10 text-destructive"
+        }`}
+      >
+        {label}
+      </span>
+      <Link
+        to="/pricing"
+        className="text-primary underline-offset-2 hover:underline"
+      >
+        Get more
+      </Link>
+    </div>
+  );
+}
+
+function PaywallCard({
+  status,
+  onClose,
+}: {
+  status?: { freeRemaining: number; paidRemaining: number };
+  onClose: () => void;
+}) {
+  return (
+    <div className="rounded-3xl border border-border bg-card p-8 text-center">
+      <Sparkles className="mx-auto h-8 w-8 text-primary" />
+      <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+        You're out of scans
+      </h1>
+      <p className="mt-3 text-muted-foreground">
+        {status
+          ? `${status.freeRemaining + status.paidRemaining} credits left.`
+          : ""}{" "}
+        Choose how you'd like to keep scanning.
+      </p>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <Link
+          to="/pricing"
+          className="rounded-2xl border border-primary bg-primary p-5 text-left text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide opacity-80">
+            Best value
+          </p>
+          <p className="mt-1 text-lg font-semibold">Diner Premium</p>
+          <p className="mt-1 text-sm opacity-90">
+            Unlimited scans · $4.79/mo · cancel anytime
+          </p>
+        </Link>
+        <Link
+          to="/pricing"
+          className="rounded-2xl border border-border bg-background p-5 text-left transition-colors hover:bg-accent"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            One-time
+          </p>
+          <p className="mt-1 text-lg font-semibold">Buy a scan pack</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            From $2.99 · never expires
+          </p>
+        </Link>
+      </div>
+      <button
+        onClick={onClose}
+        className="mt-6 text-sm text-muted-foreground underline-offset-2 hover:underline"
+      >
+        Back to scan
+      </button>
+    </div>
+  );
+}
+
