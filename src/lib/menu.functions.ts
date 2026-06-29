@@ -141,27 +141,19 @@ Also return sourceLanguage and restaurantName if visible. Be thorough.${pagesNot
       });
       return object;
     } catch (err) {
-      // Refund the credit if the AI call failed (only for free/paid; admin/premium aren't decremented)
-      if (tier === "free" || tier === "paid") {
-        const column = tier === "free" ? "free_remaining" : "paid_remaining";
-        await supabaseAdmin.rpc("grant_paid_credits", {
-          _user_id: context.userId,
-          _amount: 0,
-        }).catch(() => {});
-        // Direct refund
+      // Refund the consumed credit on failure (paid credits only — free is cheap to lose).
+      if (tier === "paid") {
         try {
           const { data: row } = await supabaseAdmin
             .from("user_scan_credits")
-            .select(column)
+            .select("paid_remaining")
             .eq("user_id", context.userId)
-            .single();
-          if (row) {
-            const current = (row as Record<string, number>)[column] ?? 0;
-            await supabaseAdmin
-              .from("user_scan_credits")
-              .update({ [column]: current + 1, lifetime_used: undefined })
-              .eq("user_id", context.userId);
-          }
+            .maybeSingle();
+          const current = row?.paid_remaining ?? 0;
+          await supabaseAdmin
+            .from("user_scan_credits")
+            .update({ paid_remaining: current + 1 })
+            .eq("user_id", context.userId);
         } catch {
           // ignore refund failure
         }
