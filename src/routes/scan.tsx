@@ -288,11 +288,6 @@ function ScanPage() {
       setLoading(false);
     }
   }
-      track("scan_failed", { message: raw.slice(0, 200) });
-      setError(friendlyError(raw));
-      setLoading(false);
-    }
-  }
 
   function onDeleteRecent(id: string) {
     deleteScan(id);
