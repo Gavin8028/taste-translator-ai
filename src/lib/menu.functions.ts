@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const SUPPORTED_LANGUAGES = [
   "English",
@@ -42,11 +43,20 @@ export type Dish = z.infer<typeof DishSchema>;
 export type MenuResult = z.infer<typeof MenuSchema>;
 export type DishTranslations = z.infer<typeof TranslationsSchema>;
 
+export class NoCreditsError extends Error {
+  code = "NO_CREDITS" as const;
+  constructor() {
+    super(
+      "You're out of free menu scans. Subscribe to Diner Premium or buy a scan pack to keep scanning.",
+    );
+  }
+}
+
 export const analyzeMenu = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
     return z
       .object({
-        // Accept either a single image (legacy) or an array of pages.
         imageDataUrl: z.string().min(20).optional(),
         imageDataUrls: z.array(z.string().min(20)).min(1).max(8).optional(),
         targetLanguage: z.string().min(2).max(40).default("English"),
@@ -57,44 +67,67 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       })
       .parse(input);
   })
-  .handler(async ({ data }): Promise<MenuResult> => {
+  .handler(async ({ data, context }): Promise<MenuResult> => {
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
-    const gateway = createLovableAiGatewayProvider(key);
+    // 1. Check + consume a credit BEFORE calling AI
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: consumeResult, error: consumeError } = await supabaseAdmin.rpc(
+      "consume_scan_credit",
+      { _user_id: context.userId },
+    );
+    if (consumeError) {
+      console.error("consume_scan_credit failed", consumeError);
+      throw new Error("Could not check your scan credits. Try again.");
+    }
+    const tier = consumeResult as string;
+    if (tier === "none") {
+      throw new NoCreditsError();
+    }
+    const isFree = tier === "free";
 
-    const images = data.imageDataUrls && data.imageDataUrls.length
+    // 2. Cost controls for free tier
+    const allImages = data.imageDataUrls && data.imageDataUrls.length
       ? data.imageDataUrls
       : [data.imageDataUrl!];
+    const maxImages = isFree ? 3 : 8;
+    const images = allImages.slice(0, maxImages);
+    const useMultiLang = !isFree && data.multiLanguage;
 
-    const multiLangBlock = data.multiLanguage
-      ? `\n- translations: an object with keys "English", "Spanish", "French", "Japanese", "Chinese" — each holding { "name": <dish name in that language>, "description": <1-2 sentence description in that language> }. Translate naturally; don't leave any language blank.`
+    const gateway = createLovableAiGatewayProvider(key);
+
+    const multiLangBlock = useMultiLang
+      ? `\n- translations: an object with keys "English", "Spanish", "French", "Japanese", "Chinese" — each holding { "name": <dish name in that language>, "description": <1-2 sentence description in that language> }.`
       : "";
 
     const pagesNote =
       images.length > 1
-        ? `\n\nThe user has provided ${images.length} photos. They are pages or sections of the SAME menu. Combine every dish across all photos into one list. De-duplicate dishes that clearly appear on multiple pages (same name and ingredients) — keep one entry. Preserve the order pages were given.`
+        ? `\n\nThe user has provided ${images.length} photos. They are pages of the SAME menu. Combine every dish across all photos into one list. De-duplicate dishes that clearly appear on multiple pages.`
         : "";
 
     const prompt = `You are MenuVision, an expert at reading restaurant menus from photos.
 
-Analyze the menu image${images.length > 1 ? "s" : ""}. For EVERY dish you can see (skip headers, drink lists if not real dishes, and footers):
+Analyze the menu image${images.length > 1 ? "s" : ""}. For EVERY dish you can see:
 - nameOriginal: dish name exactly as printed
 - nameTranslated: dish name in ${data.targetLanguage}
-- description: 1-2 sentence appetizing description in ${data.targetLanguage} explaining what the dish is
-- ingredients: array of the main visible/likely ingredients (in ${data.targetLanguage})
-- cuisine: short cuisine label, e.g. "Italian", "Thai", "Mexican"
+- description: 1-2 sentence appetizing description in ${data.targetLanguage}
+- ingredients: array of main visible/likely ingredients (in ${data.targetLanguage})
+- cuisine: short cuisine label
 - spiceLevel: integer 0 (none), 1 (mild), 2 (medium), 3 (hot)
-- dietary: subset of ["vegetarian","vegan","gluten-free","contains-dairy","contains-nuts","seafood","pork","beef"] that clearly apply
+- dietary: subset of ["vegetarian","vegan","gluten-free","contains-dairy","contains-nuts","seafood","pork","beef"]
 - priceText: the price exactly as printed if visible, otherwise null${multiLangBlock}
 
-Also return sourceLanguage (the detected language of the menu) and restaurantName if visible.
+Also return sourceLanguage and restaurantName if visible. Be thorough.${pagesNote}`;
 
-Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes that are not visible.${pagesNote}`;
+    // Cheaper model for free tier, better one for paid/premium/admin
+    const modelId = isFree
+      ? "google/gemini-2.5-flash-lite"
+      : "google/gemini-3-flash-preview";
 
     try {
       const { object } = await generateObject({
-        model: gateway("google/gemini-3-flash-preview"),
+        model: gateway(modelId),
         schema: MenuSchema,
         messages: [
           {
@@ -108,10 +141,35 @@ Be thorough. Real restaurant menus often have 10-40 items. Do not invent dishes 
       });
       return object;
     } catch (err) {
+      // Refund the credit if the AI call failed (only for free/paid; admin/premium aren't decremented)
+      if (tier === "free" || tier === "paid") {
+        const column = tier === "free" ? "free_remaining" : "paid_remaining";
+        await supabaseAdmin.rpc("grant_paid_credits", {
+          _user_id: context.userId,
+          _amount: 0,
+        }).catch(() => {});
+        // Direct refund
+        try {
+          const { data: row } = await supabaseAdmin
+            .from("user_scan_credits")
+            .select(column)
+            .eq("user_id", context.userId)
+            .single();
+          if (row) {
+            const current = (row as Record<string, number>)[column] ?? 0;
+            await supabaseAdmin
+              .from("user_scan_credits")
+              .update({ [column]: current + 1, lifetime_used: undefined })
+              .eq("user_id", context.userId);
+          }
+        } catch {
+          // ignore refund failure
+        }
+      }
       const msg = err instanceof Error ? err.message : String(err);
       if (/402|payment required|insufficient.*credit|quota/i.test(msg)) {
         throw new Error(
-          "MenuVision is temporarily over its daily AI usage limit. Please try again later — this isn't a charge to you.",
+          "MenuVision is temporarily over its daily AI usage limit. Please try again later.",
         );
       }
       if (/429|rate limit/i.test(msg)) {
