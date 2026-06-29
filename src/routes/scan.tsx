@@ -134,7 +134,7 @@ type PageItem = { file: File; previewUrl: string };
 
 function ScanPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [pages, setPages] = useState<PageItem[]>([]);
   const [language, setLanguage] = useState("English");
   const [loading, setLoading] = useState(false);
@@ -146,6 +146,15 @@ function ScanPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const [offline, setOffline] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const fetchStatus = useServerFn(getMyScanStatus);
+  const { data: status, refetch: refetchStatus } = useQuery({
+    queryKey: ["scan-status", user?.id ?? null],
+    queryFn: () => fetchStatus(),
+    enabled: !!user,
+    staleTime: 30_000,
+  });
 
   useEffect(() => {
     setRecent(listRecentScans());
