@@ -263,14 +263,16 @@ async function refundConsumedCredit(
       .eq("user_id", userId)
       .maybeSingle();
 
-    await supabaseAdmin
-      .from("user_scan_credits")
-      .update({
-        [column]: (row?.[column] ?? 0) + 1,
-        lifetime_used: Math.max(0, (row?.lifetime_used ?? 1) - 1),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", userId);
+    const baseUpdate = {
+      lifetime_used: Math.max(0, (row?.lifetime_used ?? 1) - 1),
+      updated_at: new Date().toISOString(),
+    };
+    const update =
+      tier === "free"
+        ? { ...baseUpdate, free_remaining: (row?.free_remaining ?? 0) + 1 }
+        : { ...baseUpdate, paid_remaining: (row?.paid_remaining ?? 0) + 1 };
+
+    await supabaseAdmin.from("user_scan_credits").update(update).eq("user_id", userId);
   } catch (refundError) {
     console.error("scan credit refund failed", refundError);
   }
