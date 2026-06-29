@@ -50,6 +50,18 @@ type AnalyzeMenuImagesOptions = {
   modelId?: string;
 };
 
+const OWNER_EMAIL = "mckinneygavin74@gmail.com";
+
+function getClaimEmail(claims: unknown): string | null {
+  if (!claims || typeof claims !== "object") return null;
+  const email = (claims as Record<string, unknown>).email;
+  return typeof email === "string" ? email.toLowerCase() : null;
+}
+
+function isOwnerEmail(email: string | null): boolean {
+  return email === OWNER_EMAIL;
+}
+
 function extractJsonObject(text: string): unknown {
   const cleaned = text
     .trim()
@@ -68,7 +80,15 @@ function extractJsonObject(text: string): unknown {
     try {
       return JSON.parse(cleaned.slice(start, end + 1));
     } catch {
-      throw new Error("We couldn't read that menu. Try a clearer, closer photo.");
+      const repaired = cleaned
+        .slice(start, end + 1)
+        .replace(/,\s*([}\]])/g, "$1")
+        .replace(/[\u0000-\u001F\u007F]/g, "");
+      try {
+        return JSON.parse(repaired);
+      } catch {
+        throw new Error("We couldn't read that menu. Try a clearer, closer photo.");
+      }
     }
   }
 }
@@ -227,6 +247,35 @@ export class NoCreditsError extends Error {
   }
 }
 
+type ScanTier = "admin" | "premium" | "free" | "paid" | "none";
+
+async function refundConsumedCredit(
+  supabaseAdmin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"],
+  userId: string,
+  tier: ScanTier,
+) {
+  if (tier !== "free" && tier !== "paid") return;
+  const column = tier === "free" ? "free_remaining" : "paid_remaining";
+  try {
+    const { data: row } = await supabaseAdmin
+      .from("user_scan_credits")
+      .select("free_remaining, paid_remaining, lifetime_used")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    await supabaseAdmin
+      .from("user_scan_credits")
+      .update({
+        [column]: (row?.[column] ?? 0) + 1,
+        lifetime_used: Math.max(0, (row?.lifetime_used ?? 1) - 1),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("user_id", userId);
+  } catch (refundError) {
+    console.error("scan credit refund failed", refundError);
+  }
+}
+
 export const analyzeMenu = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
@@ -243,17 +292,22 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       .parse(input);
   })
   .handler(async ({ data, context }): Promise<MenuResult> => {
-    // 1. Check + consume a credit BEFORE calling AI
+    // 1. Check + consume a credit BEFORE calling AI.
+    // The owner bypass uses server-verified auth claims first, so the site owner
+    // can keep scanning even if the credit helper is temporarily unavailable.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: consumeResult, error: consumeError } = await supabaseAdmin.rpc(
-      "consume_scan_credit",
-      { _user_id: context.userId },
-    );
-    if (consumeError) {
-      console.error("consume_scan_credit failed", consumeError);
-      throw new Error("Could not check your scan credits. Try again.");
+    let tier: ScanTier = isOwnerEmail(getClaimEmail(context.claims)) ? "admin" : "none";
+    if (tier !== "admin") {
+      const { data: consumeResult, error: consumeError } = await supabaseAdmin.rpc(
+        "consume_scan_credit",
+        { _user_id: context.userId },
+      );
+      if (consumeError) {
+        console.error("consume_scan_credit failed", consumeError);
+        throw new Error("We couldn't verify your scan access. Please try again in a moment.");
+      }
+      tier = (consumeResult as ScanTier) ?? "none";
     }
-    const tier = consumeResult as string;
     if (tier === "none") {
       throw new NoCreditsError();
     }
@@ -280,23 +334,8 @@ export const analyzeMenu = createServerFn({ method: "POST" })
         modelId,
       });
     } catch (err) {
-      // Refund the consumed credit on failure (paid credits only — free is cheap to lose).
-      if (tier === "paid") {
-        try {
-          const { data: row } = await supabaseAdmin
-            .from("user_scan_credits")
-            .select("paid_remaining")
-            .eq("user_id", context.userId)
-            .maybeSingle();
-          const current = row?.paid_remaining ?? 0;
-          await supabaseAdmin
-            .from("user_scan_credits")
-            .update({ paid_remaining: current + 1 })
-            .eq("user_id", context.userId);
-        } catch {
-          // ignore refund failure
-        }
-      }
+      // If AI or parsing fails, put the user's scan credit back.
+      await refundConsumedCredit(supabaseAdmin, context.userId, tier);
       const msg = err instanceof Error ? err.message : String(err);
       if (/402|payment required|insufficient.*credit|quota/i.test(msg)) {
         throw new Error(
