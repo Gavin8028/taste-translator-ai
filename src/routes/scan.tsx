@@ -71,6 +71,8 @@ function friendlyError(message: string): string {
     return "We're a little busy right now. Wait a few seconds and try again.";
   if (m.includes("payment") || m.includes("402"))
     return "AI credits are temporarily unavailable. Please try again shortly.";
+  if (m.includes("no object generated") || m.includes("schema"))
+    return "We couldn't read that menu cleanly. Try a brighter, closer photo with the text straight on.";
   if (m.includes("couldn't find") || m.includes("no dishes"))
     return "We couldn't find any dishes. Try a closer, brighter, less blurry photo.";
   if (m.includes("too large") || m.includes("size"))
