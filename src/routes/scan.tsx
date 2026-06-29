@@ -534,7 +534,13 @@ function ScanPage() {
                     Add from gallery
                   </Button>
                   <Button
-                    onClick={onAnalyze}
+                    onClick={() => {
+                      if (status && !status.canScan) {
+                        setShowPaywall(true);
+                        return;
+                      }
+                      onAnalyze();
+                    }}
                     disabled={offline}
                     size="lg"
                     className="h-12 flex-1 rounded-full text-base"
