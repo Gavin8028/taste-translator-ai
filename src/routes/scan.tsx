@@ -692,3 +692,104 @@ function ScanPage() {
     </div>
   );
 }
+
+function CreditBadge({
+  status,
+}: {
+  status: { freeRemaining: number; paidRemaining: number; isAdmin: boolean; isPremium: boolean };
+}) {
+  if (status.isAdmin) {
+    return (
+      <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <Sparkles className="h-3.5 w-3.5" /> Owner · unlimited scans
+      </div>
+    );
+  }
+  if (status.isPremium) {
+    return (
+      <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+        <Sparkles className="h-3.5 w-3.5" /> Premium · unlimited scans
+      </div>
+    );
+  }
+  const total = status.freeRemaining + status.paidRemaining;
+  const label =
+    status.paidRemaining > 0
+      ? `${total} scan credits left`
+      : `${status.freeRemaining} free ${status.freeRemaining === 1 ? "scan" : "scans"} left`;
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+      <span
+        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-medium ${
+          total > 0
+            ? "border-border bg-card text-foreground"
+            : "border-destructive/40 bg-destructive/10 text-destructive"
+        }`}
+      >
+        {label}
+      </span>
+      <Link
+        to="/pricing"
+        className="text-primary underline-offset-2 hover:underline"
+      >
+        Get more
+      </Link>
+    </div>
+  );
+}
+
+function PaywallCard({
+  status,
+  onClose,
+}: {
+  status?: { freeRemaining: number; paidRemaining: number };
+  onClose: () => void;
+}) {
+  return (
+    <div className="rounded-3xl border border-border bg-card p-8 text-center">
+      <Sparkles className="mx-auto h-8 w-8 text-primary" />
+      <h1 className="mt-4 text-3xl font-semibold tracking-tight">
+        You're out of scans
+      </h1>
+      <p className="mt-3 text-muted-foreground">
+        {status
+          ? `${status.freeRemaining + status.paidRemaining} credits left.`
+          : ""}{" "}
+        Choose how you'd like to keep scanning.
+      </p>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <Link
+          to="/pricing"
+          className="rounded-2xl border border-primary bg-primary p-5 text-left text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide opacity-80">
+            Best value
+          </p>
+          <p className="mt-1 text-lg font-semibold">Diner Premium</p>
+          <p className="mt-1 text-sm opacity-90">
+            Unlimited scans · $4.79/mo · cancel anytime
+          </p>
+        </Link>
+        <Link
+          to="/pricing"
+          className="rounded-2xl border border-border bg-background p-5 text-left transition-colors hover:bg-accent"
+        >
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            One-time
+          </p>
+          <p className="mt-1 text-lg font-semibold">Buy a scan pack</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            From $2.99 · never expires
+          </p>
+        </Link>
+      </div>
+      <button
+        onClick={onClose}
+        className="mt-6 text-sm text-muted-foreground underline-offset-2 hover:underline"
+      >
+        Back to scan
+      </button>
+    </div>
+  );
+}
+
