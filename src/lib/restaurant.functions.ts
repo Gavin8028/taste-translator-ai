@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { analyzeMenu, SUPPORTED_LANGUAGES } from "./menu.functions";
+import { analyzeMenuImages, SUPPORTED_LANGUAGES, type Dish } from "./menu.functions";
 
 function slugify(input: string): string {
   return input
@@ -18,7 +18,7 @@ function randomToken(len = 24): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function dishesToRows(menuId: string, dishes: Awaited<ReturnType<typeof analyzeMenu>>["dishes"]) {
+function dishesToRows(menuId: string, dishes: Dish[]) {
   return dishes.map((d, i) => ({
     menu_id: menuId,
     position: i,
@@ -59,12 +59,10 @@ export const createRestaurantMenu = createServerFn({ method: "POST" })
       ? data.targetLanguage
       : "English";
 
-    const result = await analyzeMenu({
-      data: {
-        imageDataUrl: data.imageDataUrl,
-        targetLanguage,
-        multiLanguage: true,
-      },
+    const result = await analyzeMenuImages({
+      imageDataUrls: [data.imageDataUrl],
+      targetLanguage,
+      multiLanguage: true,
     });
 
     if (!result.dishes?.length) {
@@ -225,12 +223,10 @@ export const replaceMenuDishes = createServerFn({ method: "POST" })
       ? data.targetLanguage
       : "English";
 
-    const result = await analyzeMenu({
-      data: {
-        imageDataUrl: data.imageDataUrl,
-        targetLanguage,
-        multiLanguage: true,
-      },
+    const result = await analyzeMenuImages({
+      imageDataUrls: [data.imageDataUrl],
+      targetLanguage,
+      multiLanguage: true,
     });
 
     if (!result.dishes?.length) {
