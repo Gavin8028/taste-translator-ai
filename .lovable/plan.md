@@ -1,17 +1,14 @@
-I found the scan error: the AI scan function is still using strict `generateObject` schema validation, so when the model returns slightly imperfect structured output, the whole scan crashes with `AI_NoObjectGeneratedError: No object generated: response did not match schema`.
+I’m sorry. I changed too many moving parts around the scan flow, and the result is that the most important feature became unreliable. I’ll stop layering on extras and focus only on making scanning work again.
 
 Plan:
-1. Replace the brittle `generateObject` scan call in `src/lib/menu.functions.ts` with a safer text-to-JSON flow:
-   - Ask the AI for JSON only.
-   - Extract JSON from the response even if it includes markdown or extra text.
-   - Validate and normalize it with the existing schema.
-2. Add a repair/fallback pass for imperfect output:
-   - Coerce missing arrays to `[]`.
-   - Coerce missing nullable fields to `null`.
-   - Clamp `spiceLevel` to `0–3`.
-   - Drop only unusable dish rows instead of failing the whole scan.
-3. Return friendly scan errors instead of raw AI SDK schema errors:
-   - If no dishes are readable, show the existing “try a clearer photo” message.
-   - If the AI service is rate-limited or out of credits, keep the existing specific messages.
-4. Update restaurant menu creation/replacement to avoid calling the auth-protected diner scan function internally, because that can break owner menu creation and credit logic.
-5. Verify by running the scan path after the fix and confirming the schema error no longer appears.
+1. Reproduce the scan failure from the live `/scan` page with a real test image and capture the exact user-facing error.
+2. Check the server-function failure path for the scan call, especially auth, credit consumption, admin bypass, and backend RPC errors.
+3. Fix the likely failure point so your owner/admin account can scan without credits or subscription restrictions.
+4. Make scan failures safer: if the backend credit check fails, show a clear message and do not burn credits.
+5. Keep the existing robust JSON menu parser, but add one more fallback so malformed AI text does not crash the scan.
+6. Verify the full flow: upload/take menu photo → scan completes → result page opens → dishes render.
+
+Technical details:
+- Recent AI gateway logs show zero failed AI calls, which means the error is probably happening before AI analysis starts.
+- The scan function currently consumes/validates credits before calling AI; that area will be reviewed first.
+- I will only touch the scan/auth/credit path and any directly required error handling. I won’t redesign the site or add new features in this pass.
