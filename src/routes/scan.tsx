@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +15,11 @@ import {
   RotateCw,
   CheckCircle2,
   WifiOff,
+  Sparkles,
+  Lock,
 } from "lucide-react";
 import { analyzeMenu } from "@/lib/menu.functions";
+import { getMyScanStatus } from "@/lib/credits.functions";
 import {
   newScanId,
   saveScan,
