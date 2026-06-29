@@ -20,7 +20,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     id: "diner_free",
     name: "For diners",
     price: "Free",
-    cadence: "3 scans on signup",
+    cadence: "1 scan on signup",
     features: [
       "1 free menu scan when you sign up",
       "Translation to 50+ languages",
@@ -94,7 +94,7 @@ export const HOME_PRICING_PLANS = [
     id: "diner_free" as const,
     name: "Free",
     price: "Free",
-    cadence: "3 scans on signup",
+    cadence: "1 scan on signup",
     features: ["1 free scan", "50+ languages", "Dish photos"],
   },
   {
