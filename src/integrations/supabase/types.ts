@@ -295,6 +295,24 @@ export type Database = {
         }
         Relationships: []
       }
+      trusted_ips: {
+        Row: {
+          created_at: string
+          ip: unknown
+          label: string | null
+        }
+        Insert: {
+          created_at?: string
+          ip: unknown
+          label?: string | null
+        }
+        Update: {
+          created_at?: string
+          ip?: unknown
+          label?: string | null
+        }
+        Relationships: []
+      }
       user_scan_credits: {
         Row: {
           free_remaining: number
@@ -335,6 +353,7 @@ export type Database = {
       }
       has_active_premium: { Args: { _user_id: string }; Returns: boolean }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_trusted_ip: { Args: { _ip: unknown }; Returns: boolean }
       refund_anonymous_scan: { Args: { _ip: unknown }; Returns: undefined }
     }
     Enums: {
