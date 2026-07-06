@@ -1,8 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { generateText } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "./ai-gateway.server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
 
 export const SUPPORTED_LANGUAGES = [
   "English",
