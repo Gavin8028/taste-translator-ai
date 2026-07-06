@@ -248,7 +248,16 @@ export class NoCreditsError extends Error {
   }
 }
 
-type ScanTier = "admin" | "premium" | "free" | "paid" | "none";
+export class AnonLimitError extends Error {
+  code = "ANON_LIMIT" as const;
+  constructor() {
+    super(
+      "You've used today's free scans on this network. Sign in for another free scan or upgrade for unlimited.",
+    );
+  }
+}
+
+type ScanTier = "admin" | "premium" | "free" | "paid" | "anon" | "none";
 
 async function refundConsumedCredit(
   supabaseAdmin: Awaited<typeof import("@/integrations/supabase/client.server")>["supabaseAdmin"],
@@ -279,8 +288,39 @@ async function refundConsumedCredit(
   }
 }
 
+function getClientIp(req: Request | undefined): string {
+  if (!req) return "0.0.0.0";
+  const h = req.headers;
+  const cf = h.get("cf-connecting-ip");
+  if (cf) return cf.trim();
+  const xff = h.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0]!.trim();
+  const real = h.get("x-real-ip");
+  if (real) return real.trim();
+  return "0.0.0.0";
+}
+
+async function verifyBearer(
+  token: string,
+): Promise<{ userId: string; email: string | null } | null> {
+  try {
+    const { createClient } = await import("@supabase/supabase-js");
+    const supabase = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+    );
+    const { data, error } = await supabase.auth.getClaims(token);
+    if (error || !data?.claims?.sub) return null;
+    const email =
+      typeof data.claims.email === "string" ? data.claims.email.toLowerCase() : null;
+    return { userId: data.claims.sub as string, email };
+  } catch {
+    return null;
+  }
+}
+
 export const analyzeMenu = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => {
     return z
       .object({
@@ -294,38 +334,61 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       })
       .parse(input);
   })
-  .handler(async ({ data, context }): Promise<MenuResult> => {
-    // 1. Check + consume a credit BEFORE calling AI.
-    // The owner bypass uses server-verified auth claims first, so the site owner
-    // can keep scanning even if the credit helper is temporarily unavailable.
+  .handler(async ({ data }): Promise<MenuResult> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    let tier: ScanTier = isOwnerEmail(getClaimEmail(context.claims)) ? "admin" : "none";
-    if (tier !== "admin") {
-      const { data: consumeResult, error: consumeError } = await supabaseAdmin.rpc(
-        "consume_scan_credit",
-        { _user_id: context.userId },
-      );
-      if (consumeError) {
-        console.error("consume_scan_credit failed", consumeError);
-        throw new Error("We couldn't verify your scan access. Please try again in a moment.");
-      }
-      tier = (consumeResult as ScanTier) ?? "none";
-    }
-    if (tier === "none") {
-      throw new NoCreditsError();
-    }
-    const isFree = tier === "free";
+    const req = getRequest();
 
-    // 2. Cost controls for free tier
+    // Optional bearer — if present and valid, treat as signed-in.
+    const authHeader = req?.headers.get("authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length).trim()
+      : "";
+    const session = token ? await verifyBearer(token) : null;
+
+    let tier: ScanTier = "none";
+    let userId: string | null = null;
+    const clientIp = getClientIp(req);
+
+    if (session) {
+      userId = session.userId;
+      if (isOwnerEmail(session.email)) {
+        tier = "admin";
+      } else {
+        const { data: consumeResult, error: consumeError } = await supabaseAdmin.rpc(
+          "consume_scan_credit",
+          { _user_id: session.userId },
+        );
+        if (consumeError) {
+          console.error("consume_scan_credit failed", consumeError);
+          throw new Error("We couldn't verify your scan access. Please try again in a moment.");
+        }
+        tier = (consumeResult as ScanTier) ?? "none";
+      }
+      if (tier === "none") throw new NoCreditsError();
+    } else {
+      // Anonymous path — IP-based rate limit, no user credit consumed.
+      const { data: anonResult, error: anonError } = await supabaseAdmin.rpc(
+        "consume_anonymous_scan",
+        { _ip: clientIp, _daily_limit: 3 },
+      );
+      if (anonError) {
+        console.error("consume_anonymous_scan failed", anonError);
+        throw new Error("We couldn't start your scan. Please try again in a moment.");
+      }
+      if (anonResult === "limit") throw new AnonLimitError();
+      tier = "anon";
+    }
+
+    // Free-tier-equivalent caps for anon and free users.
+    const isRestricted = tier === "free" || tier === "anon";
     const allImages = data.imageDataUrls && data.imageDataUrls.length
       ? data.imageDataUrls
       : [data.imageDataUrl!];
-    const maxImages = isFree ? 3 : 8;
+    const maxImages = isRestricted ? 3 : 8;
     const images = allImages.slice(0, maxImages);
-    const useMultiLang = !isFree && data.multiLanguage;
+    const useMultiLang = !isRestricted && data.multiLanguage;
 
-    // Cheaper model for free tier, better one for paid/premium/admin
-    const modelId = isFree
+    const modelId = isRestricted
       ? "google/gemini-2.5-flash-lite"
       : "google/gemini-3-flash-preview";
 
@@ -337,8 +400,15 @@ export const analyzeMenu = createServerFn({ method: "POST" })
         modelId,
       });
     } catch (err) {
-      // If AI or parsing fails, put the user's scan credit back.
-      await refundConsumedCredit(supabaseAdmin, context.userId, tier);
+      // Refund on failure.
+      if (tier === "anon") {
+        await supabaseAdmin.rpc("refund_anonymous_scan", { _ip: clientIp }).then(
+          () => undefined,
+          (e) => console.error("refund_anonymous_scan failed", e),
+        );
+      } else if (userId) {
+        await refundConsumedCredit(supabaseAdmin, userId, tier);
+      }
       const msg = err instanceof Error ? err.message : String(err);
       if (/402|payment required|insufficient.*credit|quota/i.test(msg)) {
         throw new Error(
@@ -351,3 +421,4 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       throw err;
     }
   });
+
