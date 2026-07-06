@@ -252,9 +252,10 @@ export class AnonLimitError extends Error {
   code = "ANON_LIMIT" as const;
   constructor() {
     super(
-      "You've used today's free scans on this network. Sign in for another free scan or upgrade for unlimited.",
+      "You've already used your free scan on this network. Sign in for another free scan, or upgrade for unlimited.",
     );
   }
+
 }
 
 type ScanTier = "admin" | "premium" | "free" | "paid" | "anon" | "none";
@@ -369,8 +370,9 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       // Anonymous path — IP-based rate limit, no user credit consumed.
       const { data: anonResult, error: anonError } = await supabaseAdmin.rpc(
         "consume_anonymous_scan",
-        { _ip: clientIp, _daily_limit: 3 },
+        { _ip: clientIp },
       );
+
       if (anonError) {
         console.error("consume_anonymous_scan failed", anonError);
         throw new Error("We couldn't start your scan. Please try again in a moment.");

@@ -1,42 +1,51 @@
-# Remove the sign-in wall from scanning
+# Tighten the free tier: 1 anonymous scan per network per 30 days
 
 ## Goal
-Scanning a menu should be open to everyone — no account required. Sign-in stays only for: saving history across devices, publishing restaurant menus, and paid upgrades.
+Protect margin as traffic scales. Each network (IP) gets **one free anonymous scan every 30 days**. After that, the visitor must sign in (which grants their one lifetime free scan) or pay.
 
-## What's happening today
-`/scan` shows a "Sign in to scan a menu" card when the user is signed out, and the `analyzeMenu` server function requires an authenticated session and consumes a per-user scan credit. That's why the app forced you to sign in at the restaurant.
+## Funnel after this change
+1. Brand-new visitor at a restaurant → 1 free scan, no sign-in.
+2. Same network tries a second scan within 30 days → paywall: "Sign in for 1 more free scan, or upgrade."
+3. Signed in → 1 lifetime free scan (unchanged), then Premium ($4.79/mo) or a scan pack.
+
+Net: ~2 free scans per person before they pay. Cheapest model (Gemini 2.5 Flash Lite) is used for both free tiers, so the loss on those 2 scans is negligible.
 
 ## Changes
 
-### 1. Frontend — `/scan` route
-- Remove the signed-out gate card. Show the normal photo picker + analyze UI to everyone.
-- Keep the "Save scans across devices — sign in" nudge as a soft banner (dismissable), never a blocker.
-- Skip the `getMyScanStatus` query when signed out; skip `saveScanRemote` when signed out (recent scans still save to localStorage, as they do today).
-- If the server returns the "out of anonymous scans" error, show a friendly card offering to sign in for a free scan or view pricing.
+### 1. Backend rate-limit rule
+Replace the current per-IP-per-day counter with a **30-day rolling window per IP**:
 
-### 2. Backend — `analyzeMenu` server function
-- Drop `requireSupabaseAuth` from `analyzeMenu` so it accepts anonymous calls, and read the caller's Supabase session inline: if a valid bearer is present, treat as signed-in and consume a user credit (current behavior); otherwise treat as anonymous.
-- Anonymous path:
-  - No user credit consumption.
-  - Rate-limit per IP using a new `anonymous_scans` table (columns: `ip inet`, `day date`, `count int`, PK `(ip, day)`), incremented via a `SECURITY DEFINER` RPC.
-  - Cap at **3 anonymous scans per IP per day**, free-tier model, max 3 images (same limits as free signed-in tier).
-  - Refund (decrement) on AI failure, matching the signed-in refund path.
-- Owner-email bypass and signed-in flow unchanged.
+- Rewrite `consume_anonymous_scan(_ip inet)`:
+  - Look up the most recent row for this IP.
+  - If the last scan was within 30 days, return `'limit'`.
+  - Otherwise upsert a row with `last_scan_at = now()` and return `'anon'`.
+- Rewrite `refund_anonymous_scan(_ip inet)`:
+  - If the row's `last_scan_at` is within the last hour (i.e. we just wrote it and the AI failed), clear/rewind it so the visitor can retry.
+- Schema tweak on `anonymous_scans`: drop `(ip, day, count)` PK, use `ip` as PK with a `last_scan_at timestamptz` column. Simpler and matches the new rule.
 
-### 3. Error surface
-- Add a new `ANON_LIMIT` error string. When the frontend sees it, show: "You've used today's free scans on this network. Sign in for another free scan or upgrade for unlimited."
+### 2. Frontend copy
+Update the anonymous paywall card copy from "You've used today's free scans" to **"You've used your free scan"** with the two CTAs already in place (Sign in for 1 more free · See pricing).
 
-### 4. Copy / nudges
-- Home page CTA stays "Scan a menu" (already works for everyone once the gate is gone).
-- History page still requires sign-in (unchanged) — cloud sync is the whole point of that route.
-- Pricing page keeps its current messaging.
+### 3. No changes to
+- Signed-in credit ledger (still 1 lifetime free + paid packs + Premium).
+- Owner-email bypass.
+- Image caps / model choice for anon (still 3 photos max, Flash Lite).
+- Auth flow, checkout, RLS on other tables.
 
-## Out of scope
-- No changes to restaurant publishing, admin analytics, Paddle, RLS on other tables, or the auth pages themselves.
-- No changes to the signed-in credit ledger.
+## Notes on abuse & scale
+- IP-based limits are the standard tradeoff: mobile carriers and coffee-shop Wi-Fi share IPs, so a handful of legitimate users on the same network may hit the paywall sooner than they "should." The 30-day window makes that rare in practice.
+- If abuse becomes visible (VPN rotation, etc.), the next step is a signed device cookie + IP combo — not needed today.
+- Free-tier cost per scan on Gemini Flash Lite is well under a cent, so even edge-case abuse is bounded.
 
-## Technical notes
-- New migration: create `public.anonymous_scans`, GRANT to `service_role` only, RLS enabled with no policies (accessed only via the SECURITY DEFINER RPC). Add `consume_anonymous_scan(_ip inet)` and `refund_anonymous_scan(_ip inet)` RPCs.
-- Read caller IP inside the handler from `x-forwarded-for` / `cf-connecting-ip` on the incoming `Request`.
-- Keep `getMyScanStatus` authenticated — it's user-scoped.
-- Frontend: `enabled: !!user` already guards the status query; just remove the gate card and always render the uploader.
+## Technical detail
+Migration:
+```sql
+DROP TABLE public.anonymous_scans;
+CREATE TABLE public.anonymous_scans (
+  ip inet PRIMARY KEY,
+  last_scan_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT ALL ON public.anonymous_scans TO service_role;
+ALTER TABLE public.anonymous_scans ENABLE ROW LEVEL SECURITY;
+```
+Then replace the two RPCs with the 30-day-window logic and re-apply the REVOKE/GRANT so only `service_role` can execute them.
