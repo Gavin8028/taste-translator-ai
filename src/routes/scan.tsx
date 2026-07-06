@@ -690,8 +690,11 @@ function CreditBadge({
 }) {
   if (status.isAdmin) {
     return (
-      <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-        <Sparkles className="h-3.5 w-3.5" /> Owner · unlimited scans
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          <Sparkles className="h-3.5 w-3.5" /> Owner · unlimited scans
+        </div>
+        <TrustNetworkButton />
       </div>
     );
   }
