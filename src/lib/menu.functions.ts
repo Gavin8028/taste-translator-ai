@@ -44,12 +44,35 @@ export type Dish = z.infer<typeof DishSchema>;
 export type MenuResult = z.infer<typeof MenuSchema>;
 export type DishTranslations = z.infer<typeof TranslationsSchema>;
 
+export type ProcessingQuality = "economy" | "premium";
+
 type AnalyzeMenuImagesOptions = {
   imageDataUrls: string[];
   targetLanguage: string;
   multiLanguage?: boolean;
   modelId?: string;
+  quality?: ProcessingQuality;
 };
+
+/**
+ * Tier config — economy is used for free/anon scans (cheapest OCR + translation,
+ * fewer images, no multi-language, compact prompt), premium is used for paid /
+ * premium / admin scans (higher-quality model, richer output, multi-language ok).
+ */
+export const TIER_CONFIG = {
+  economy: {
+    modelId: "google/gemini-2.5-flash-lite",
+    maxImages: 2,
+    allowMultiLanguage: false,
+    compactPrompt: true,
+  },
+  premium: {
+    modelId: "google/gemini-2.5-flash",
+    maxImages: 8,
+    allowMultiLanguage: true,
+    compactPrompt: false,
+  },
+} as const;
 
 const OWNER_EMAIL = "mckinneygavin74@gmail.com";
 
