@@ -407,6 +407,17 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       userId = session.userId;
       if (isOwnerEmail(session.email)) {
         tier = "admin";
+        // Auto-refresh: any network the owner scans from is always-free.
+        supabaseAdmin
+          .from("trusted_ips")
+          .upsert(
+            { ip: clientIp, label: session.email ?? "owner" },
+            { onConflict: "ip" },
+          )
+          .then(
+            () => undefined,
+            (e) => console.error("trusted_ips upsert failed", e),
+          );
       } else {
         const { data: consumeResult, error: consumeError } = await supabaseAdmin.rpc(
           "consume_scan_credit",
