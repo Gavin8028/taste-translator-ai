@@ -283,13 +283,14 @@ function ScanPage() {
         raw.includes("out of free menu scans") ||
         raw.includes("NO_CREDITS") ||
         raw.includes("ANON_LIMIT") ||
-        raw.includes("used today's free scans")
+        raw.includes("already used your free scan")
       ) {
         setShowPaywall(true);
         void refetchStatus();
         setLoading(false);
         return;
       }
+
 
       track("scan_failed", { message: raw.slice(0, 200) });
       setError(friendlyError(raw));
