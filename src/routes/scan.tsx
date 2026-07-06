@@ -723,45 +723,64 @@ function CreditBadge({
 function PaywallCard({
   status,
   onClose,
+  isAnon = false,
 }: {
   status?: { freeRemaining: number; paidRemaining: number };
   onClose: () => void;
+  isAnon?: boolean;
 }) {
   return (
     <div className="rounded-3xl border border-border bg-card p-8 text-center">
       <Sparkles className="mx-auto h-8 w-8 text-primary" />
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-        You're out of scans
+        {isAnon ? "You've used today's free scans" : "You're out of scans"}
       </h1>
       <p className="mt-3 text-muted-foreground">
-        {status
-          ? `${status.freeRemaining + status.paidRemaining} credits left.`
-          : ""}{" "}
-        Choose how you'd like to keep scanning.
+        {isAnon
+          ? "Sign in to get another free scan, or upgrade for unlimited."
+          : `${status ? status.freeRemaining + status.paidRemaining : 0} credits left. Choose how you'd like to keep scanning.`}
       </p>
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <Link
-          to="/pricing"
-          className="rounded-2xl border border-primary bg-primary p-5 text-left text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <p className="text-xs font-medium uppercase tracking-wide opacity-80">
-            Best value
-          </p>
-          <p className="mt-1 text-lg font-semibold">Diner Premium</p>
-          <p className="mt-1 text-sm opacity-90">
-            Unlimited scans · $4.79/mo · cancel anytime
-          </p>
-        </Link>
+        {isAnon ? (
+          <Link
+            to="/auth"
+            search={{ redirect: "/scan" } as never}
+            className="rounded-2xl border border-primary bg-primary p-5 text-left text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <p className="text-xs font-medium uppercase tracking-wide opacity-80">
+              Free
+            </p>
+            <p className="mt-1 text-lg font-semibold">Sign in</p>
+            <p className="mt-1 text-sm opacity-90">
+              Get 1 more free scan · no card required
+            </p>
+          </Link>
+        ) : (
+          <Link
+            to="/pricing"
+            className="rounded-2xl border border-primary bg-primary p-5 text-left text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <p className="text-xs font-medium uppercase tracking-wide opacity-80">
+              Best value
+            </p>
+            <p className="mt-1 text-lg font-semibold">Diner Premium</p>
+            <p className="mt-1 text-sm opacity-90">
+              Unlimited scans · $4.79/mo · cancel anytime
+            </p>
+          </Link>
+        )}
         <Link
           to="/pricing"
           className="rounded-2xl border border-border bg-background p-5 text-left transition-colors hover:bg-accent"
         >
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            One-time
+            {isAnon ? "Upgrade" : "One-time"}
           </p>
-          <p className="mt-1 text-lg font-semibold">Buy a scan pack</p>
+          <p className="mt-1 text-lg font-semibold">
+            {isAnon ? "See pricing" : "Buy a scan pack"}
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            From $2.99 · never expires
+            {isAnon ? "Unlimited or scan packs" : "From $2.99 · never expires"}
           </p>
         </Link>
       </div>
@@ -774,4 +793,5 @@ function PaywallCard({
     </div>
   );
 }
+
 
