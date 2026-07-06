@@ -252,9 +252,10 @@ export class AnonLimitError extends Error {
   code = "ANON_LIMIT" as const;
   constructor() {
     super(
-      "You've used today's free scans on this network. Sign in for another free scan or upgrade for unlimited.",
+      "You've already used your free scan on this network. Sign in for another free scan, or upgrade for unlimited.",
     );
   }
+
 }
 
 type ScanTier = "admin" | "premium" | "free" | "paid" | "anon" | "none";
