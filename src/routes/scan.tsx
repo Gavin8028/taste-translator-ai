@@ -805,4 +805,30 @@ function PaywallCard({
   );
 }
 
+function TrustNetworkButton() {
+  const trust = useServerFn(trustCurrentIp);
+  const [pending, setPending] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={async () => {
+        setPending(true);
+        try {
+          const res = await trust({ data: {} });
+          toast.success(`Trusted ${res.ip} — always free from this network.`);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Couldn't trust this network.");
+        } finally {
+          setPending(false);
+        }
+      }}
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+    >
+      {pending ? "Saving…" : "Trust this network"}
+    </button>
+  );
+}
+
+
 
