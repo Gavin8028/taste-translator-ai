@@ -370,8 +370,9 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       // Anonymous path — IP-based rate limit, no user credit consumed.
       const { data: anonResult, error: anonError } = await supabaseAdmin.rpc(
         "consume_anonymous_scan",
-        { _ip: clientIp, _daily_limit: 3 },
+        { _ip: clientIp },
       );
+
       if (anonError) {
         console.error("consume_anonymous_scan failed", anonError);
         throw new Error("We couldn't start your scan. Please try again in a moment.");
