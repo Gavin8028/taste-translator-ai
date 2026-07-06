@@ -18,7 +18,8 @@ import {
   Sparkles,
   Lock,
 } from "lucide-react";
-import { analyzeMenu } from "@/lib/menu.functions";
+import { analyzeMenu, trustCurrentIp } from "@/lib/menu.functions";
+import { toast } from "sonner";
 import { getMyScanStatus } from "@/lib/credits.functions";
 import {
   newScanId,
