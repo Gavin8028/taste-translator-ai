@@ -67,22 +67,16 @@ export type Database = {
       }
       anonymous_scans: {
         Row: {
-          count: number
-          day: string
           ip: unknown
-          updated_at: string
+          last_scan_at: string
         }
         Insert: {
-          count?: number
-          day?: string
           ip: unknown
-          updated_at?: string
+          last_scan_at?: string
         }
         Update: {
-          count?: number
-          day?: string
           ip?: unknown
-          updated_at?: string
+          last_scan_at?: string
         }
         Relationships: []
       }
@@ -333,10 +327,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      consume_anonymous_scan: {
-        Args: { _daily_limit?: number; _ip: unknown }
-        Returns: string
-      }
+      consume_anonymous_scan: { Args: { _ip: unknown }; Returns: string }
       consume_scan_credit: { Args: { _user_id: string }; Returns: string }
       grant_paid_credits: {
         Args: { _amount: number; _user_id: string }
