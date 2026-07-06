@@ -740,7 +740,7 @@ function PaywallCard({
     <div className="rounded-3xl border border-border bg-card p-8 text-center">
       <Sparkles className="mx-auto h-8 w-8 text-primary" />
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">
-        {isAnon ? "You've used today's free scans" : "You're out of scans"}
+        {isAnon ? "You've used your free scan" : "You're out of scans"}
       </h1>
       <p className="mt-3 text-muted-foreground">
         {isAnon
