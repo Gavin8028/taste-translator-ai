@@ -279,12 +279,18 @@ function ScanPage() {
       window.clearInterval(elapsedTimer);
       console.error(e);
       const raw = e instanceof Error ? e.message : "unknown";
-      if (raw.includes("out of free menu scans") || raw.includes("NO_CREDITS")) {
+      if (
+        raw.includes("out of free menu scans") ||
+        raw.includes("NO_CREDITS") ||
+        raw.includes("ANON_LIMIT") ||
+        raw.includes("used today's free scans")
+      ) {
         setShowPaywall(true);
         void refetchStatus();
         setLoading(false);
         return;
       }
+
       track("scan_failed", { message: raw.slice(0, 200) });
       setError(friendlyError(raw));
       setLoading(false);
