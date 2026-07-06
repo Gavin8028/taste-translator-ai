@@ -1,51 +1,43 @@
-# Tighten the free tier: 1 anonymous scan per network per 30 days
+## Always-free IP allowlist
 
-## Goal
-Protect margin as traffic scales. Each network (IP) gets **one free anonymous scan every 30 days**. After that, the visitor must sign in (which grants their one lifetime free scan) or pay.
+Add a small allowlist of IPs that bypass the 30-day anonymous scan limit. When any request comes from an allowlisted IP, treat it as free (like the owner-email bypass, but for anonymous requests from your phone).
 
-## Funnel after this change
-1. Brand-new visitor at a restaurant → 1 free scan, no sign-in.
-2. Same network tries a second scan within 30 days → paywall: "Sign in for 1 more free scan, or upgrade."
-3. Signed in → 1 lifetime free scan (unchanged), then Premium ($4.79/mo) or a scan pack.
+### How your phone's IP gets added
 
-Net: ~2 free scans per person before they pay. Cheapest model (Gemini 2.5 Flash Lite) is used for both free tiers, so the loss on those 2 scans is negligible.
+Mobile IPs change (cell carriers rotate, Wi-Fi networks differ). Two ways to keep it accurate:
 
-## Changes
+1. **One-tap "trust this network" button** — visible only when you're signed in as owner. It captures the current request IP and inserts it into the allowlist. Tap it once from your phone on cell data, once on home Wi-Fi, once at your usual restaurant Wi-Fi, etc.
+2. **Auto-refresh** — every time you scan while signed in as owner, we silently upsert your current IP into the allowlist. So just using the app from your phone keeps its IPs trusted.
 
-### 1. Backend rate-limit rule
-Replace the current per-IP-per-day counter with a **30-day rolling window per IP**:
+Option 2 alone covers 90% of the case with zero UI. I'd do both: auto-refresh on owner scans, plus a manual "trust this IP" button on the scan page for edge cases (someone else's phone, testing).
 
-- Rewrite `consume_anonymous_scan(_ip inet)`:
-  - Look up the most recent row for this IP.
-  - If the last scan was within 30 days, return `'limit'`.
-  - Otherwise upsert a row with `last_scan_at = now()` and return `'anon'`.
-- Rewrite `refund_anonymous_scan(_ip inet)`:
-  - If the row's `last_scan_at` is within the last hour (i.e. we just wrote it and the AI failed), clear/rewind it so the visitor can retry.
-- Schema tweak on `anonymous_scans`: drop `(ip, day, count)` PK, use `ip` as PK with a `last_scan_at timestamptz` column. Simpler and matches the new rule.
+### What changes
 
-### 2. Frontend copy
-Update the anonymous paywall card copy from "You've used today's free scans" to **"You've used your free scan"** with the two CTAs already in place (Sign in for 1 more free · See pricing).
+**Database**
+- New table `trusted_ips` (ip inet PK, label text, created_at). RLS: only service_role.
+- New RPC `is_trusted_ip(_ip inet) → boolean`.
+- Update `consume_anonymous_scan(_ip)`: if `is_trusted_ip(_ip)` is true, return `'anon'` without touching `anonymous_scans` (no 30-day limit, no row written).
 
-### 3. No changes to
-- Signed-in credit ledger (still 1 lifetime free + paid packs + Premium).
-- Owner-email bypass.
-- Image caps / model choice for anon (still 3 photos max, Flash Lite).
-- Auth flow, checkout, RLS on other tables.
+**Server (`src/lib/menu.functions.ts`)**
+- After owner-email is detected on a successful scan, upsert the request IP into `trusted_ips` with label = owner email.
 
-## Notes on abuse & scale
-- IP-based limits are the standard tradeoff: mobile carriers and coffee-shop Wi-Fi share IPs, so a handful of legitimate users on the same network may hit the paywall sooner than they "should." The 30-day window makes that rare in practice.
-- If abuse becomes visible (VPN rotation, etc.), the next step is a signed device cookie + IP combo — not needed today.
-- Free-tier cost per scan on Gemini Flash Lite is well under a cent, so even edge-case abuse is bounded.
+**Scan page**
+- Small "Trust this network" button, visible only when `isAdmin` is true, that calls a new `trustCurrentIp` server fn. Shows a toast with the IP that was added.
 
-## Technical detail
-Migration:
-```sql
-DROP TABLE public.anonymous_scans;
-CREATE TABLE public.anonymous_scans (
-  ip inet PRIMARY KEY,
-  last_scan_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT ALL ON public.anonymous_scans TO service_role;
-ALTER TABLE public.anonymous_scans ENABLE ROW LEVEL SECURITY;
-```
-Then replace the two RPCs with the 30-day-window logic and re-apply the REVOKE/GRANT so only `service_role` can execute them.
+**Owner dashboard (optional, small)**
+- Add a "Trusted IPs" section to `/admin` (if it exists) listing rows with a remove button. Skip if you don't want the UI — you can always remove rows via a migration.
+
+### Notes
+
+- This only affects anonymous requests. Signed-in owner already has unlimited via admin bypass — unchanged.
+- IPv6: mobile carriers often hand out IPv6 addresses that rotate per session. The `inet` type handles both v4 and v6, but a rotating v6 will need occasional re-trusting — auto-refresh handles that.
+- Not a security boundary: anyone on an allowlisted network gets free scans. That's the intent (your home, your phone). Don't allowlist coffee shop Wi-Fi.
+
+### Technical details
+
+- Migration creates `trusted_ips`, RPC `is_trusted_ip`, and updates `consume_anonymous_scan` to check it first.
+- New server fn `trustCurrentIp` (auth-gated, admin-only via `is_admin` check) that reads the request IP with the existing `getClientIp` helper and upserts into `trusted_ips`.
+- Owner auto-refresh: inside the `analyzeMenu` handler, after `isOwnerEmail`, fire a non-blocking upsert into `trusted_ips`.
+- Scan page: import `trustCurrentIp`, render button gated on `getMyScanStatus().isAdmin`.
+
+Want me to include the manual button, or is auto-refresh alone enough?

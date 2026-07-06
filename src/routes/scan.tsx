@@ -18,7 +18,8 @@ import {
   Sparkles,
   Lock,
 } from "lucide-react";
-import { analyzeMenu } from "@/lib/menu.functions";
+import { analyzeMenu, trustCurrentIp } from "@/lib/menu.functions";
+import { toast } from "sonner";
 import { getMyScanStatus } from "@/lib/credits.functions";
 import {
   newScanId,
@@ -689,8 +690,11 @@ function CreditBadge({
 }) {
   if (status.isAdmin) {
     return (
-      <div className="mt-4 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-        <Sparkles className="h-3.5 w-3.5" /> Owner · unlimited scans
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+          <Sparkles className="h-3.5 w-3.5" /> Owner · unlimited scans
+        </div>
+        <TrustNetworkButton />
       </div>
     );
   }
@@ -800,5 +804,31 @@ function PaywallCard({
     </div>
   );
 }
+
+function TrustNetworkButton() {
+  const trust = useServerFn(trustCurrentIp);
+  const [pending, setPending] = useState(false);
+  return (
+    <button
+      type="button"
+      disabled={pending}
+      onClick={async () => {
+        setPending(true);
+        try {
+          const res = await trust({ data: {} });
+          toast.success(`Trusted ${res.ip} — always free from this network.`);
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : "Couldn't trust this network.");
+        } finally {
+          setPending(false);
+        }
+      }}
+      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+    >
+      {pending ? "Saving…" : "Trust this network"}
+    </button>
+  );
+}
+
 
 
