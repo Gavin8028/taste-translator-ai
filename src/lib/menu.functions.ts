@@ -486,3 +486,41 @@ export const analyzeMenu = createServerFn({ method: "POST" })
     }
   });
 
+export const trustCurrentIp = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ label: z.string().max(80).optional() }).parse(input ?? {}),
+  )
+  .handler(async ({ data }): Promise<{ ip: string }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const req = getRequest();
+
+    const authHeader = req?.headers.get("authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length).trim()
+      : "";
+    const session = token ? await verifyBearer(token) : null;
+    if (!session) throw new Error("Sign in required.");
+
+    // Admin-only: either owner email or is_admin() true.
+    let allowed = isOwnerEmail(session.email);
+    if (!allowed) {
+      const { data: isAdmin } = await supabaseAdmin.rpc("is_admin", {
+        _user_id: session.userId,
+      });
+      allowed = !!isAdmin;
+    }
+    if (!allowed) throw new Error("Not authorized.");
+
+    const clientIp = getClientIp(req);
+    const label = data.label?.trim() || session.email || "trusted";
+    const { error } = await supabaseAdmin
+      .from("trusted_ips")
+      .upsert({ ip: clientIp, label }, { onConflict: "ip" });
+    if (error) {
+      console.error("trusted_ips upsert failed", error);
+      throw new Error("Couldn't save this network. Try again.");
+    }
+    return { ip: clientIp };
+  });
+
+
