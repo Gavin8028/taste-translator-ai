@@ -199,23 +199,53 @@ export async function analyzeMenuImages({
   imageDataUrls,
   targetLanguage,
   multiLanguage = false,
-  modelId = "google/gemini-3-flash-preview",
+  modelId,
+  quality = "premium",
 }: AnalyzeMenuImagesOptions): Promise<MenuResult> {
   const key = process.env.LOVABLE_API_KEY;
   if (!key) throw new Error("Missing LOVABLE_API_KEY");
 
+  const tier = TIER_CONFIG[quality];
+  const effectiveModel = modelId ?? tier.modelId;
+  const effectiveMultiLang = multiLanguage && tier.allowMultiLanguage;
+  const cappedImages = imageDataUrls.slice(0, tier.maxImages);
+
   const gateway = createLovableAiGatewayProvider(key);
 
-  const multiLangBlock = multiLanguage
+  const multiLangBlock = effectiveMultiLang
     ? `\n      "translations": { "English": { "name": "", "description": "" }, "Spanish": { "name": "", "description": "" }, "French": { "name": "", "description": "" }, "Japanese": { "name": "", "description": "" }, "Chinese": { "name": "", "description": "" } }`
     : `\n      "translations": null`;
 
   const pagesNote =
-    imageDataUrls.length > 1
-      ? `\n\nThe user has provided ${imageDataUrls.length} photos. They are pages of the SAME menu. Combine every dish across all photos into one list. De-duplicate dishes that clearly appear on multiple pages.`
+    cappedImages.length > 1
+      ? `\n\nThe user has provided ${cappedImages.length} photos. They are pages of the SAME menu. Combine every dish across all photos into one list. De-duplicate dishes that clearly appear on multiple pages.`
       : "";
 
-  const prompt = `You are MenuVision, an expert at reading restaurant menus from photos.
+  // Economy prompt is shorter, asks for shorter output, and skips detailed
+  // ingredient/dietary reasoning to reduce token cost.
+  const prompt = tier.compactPrompt
+    ? `You are MenuVision. Read the menu photo${cappedImages.length > 1 ? "s" : ""} and return ONLY valid JSON. No markdown.
+
+{
+  "sourceLanguage": "language of menu text or Unknown",
+  "restaurantName": "name if visible, else null",
+  "dishes": [
+    {
+      "nameOriginal": "dish name exactly as printed",
+      "nameTranslated": "dish name in ${targetLanguage}",
+      "description": "1 short sentence in ${targetLanguage} (max 20 words)",
+      "ingredients": ["up to 4 main ingredients in ${targetLanguage}"],
+      "cuisine": "short label",
+      "spiceLevel": 0,
+      "dietary": [],
+      "priceText": null,
+      "translations": null
+    }
+  ]
+}
+
+spiceLevel must be 0, 1, 2, or 3. Keep output compact.${pagesNote}`
+    : `You are MenuVision, an expert at reading restaurant menus from photos.
 
 Return ONLY valid JSON. No markdown. No explanation.
 
@@ -237,16 +267,16 @@ JSON shape:
   ]
 }
 
-Analyze the menu image${imageDataUrls.length > 1 ? "s" : ""}. Include every dish you can clearly see. spiceLevel must be 0, 1, 2, or 3.${pagesNote}`;
+Analyze the menu image${cappedImages.length > 1 ? "s" : ""}. Include every dish you can clearly see. spiceLevel must be 0, 1, 2, or 3.${pagesNote}`;
 
   const { text } = await generateText({
-    model: gateway(modelId),
+    model: gateway(effectiveModel),
     messages: [
       {
         role: "user",
         content: [
           { type: "text", text: prompt },
-          ...imageDataUrls.map((img) => ({ type: "image" as const, image: img })),
+          ...cappedImages.map((img) => ({ type: "image" as const, image: img })),
         ],
       },
     ],
