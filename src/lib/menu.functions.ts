@@ -434,25 +434,23 @@ export const analyzeMenu = createServerFn({ method: "POST" })
       tier = "anon";
     }
 
-    // Free-tier-equivalent caps for anon and free users.
+    // Tiered processing: free/anon get economy pipeline (cheapest model, fewer
+    // images, compact prompt, no multi-language). Paid/premium/admin get the
+    // premium pipeline (higher-quality model, full features).
     const isRestricted = tier === "free" || tier === "anon";
+    const quality: ProcessingQuality = isRestricted ? "economy" : "premium";
     const allImages = data.imageDataUrls && data.imageDataUrls.length
       ? data.imageDataUrls
       : [data.imageDataUrl!];
-    const maxImages = isRestricted ? 3 : 8;
-    const images = allImages.slice(0, maxImages);
-    const useMultiLang = !isRestricted && data.multiLanguage;
-
-    const modelId = isRestricted
-      ? "google/gemini-2.5-flash-lite"
-      : "google/gemini-3-flash-preview";
+    const images = allImages.slice(0, TIER_CONFIG[quality].maxImages);
+    const useMultiLang = !!data.multiLanguage;
 
     try {
       return await analyzeMenuImages({
         imageDataUrls: images,
         targetLanguage: data.targetLanguage,
         multiLanguage: useMultiLang,
-        modelId,
+        quality,
       });
     } catch (err) {
       // Refund on failure.
