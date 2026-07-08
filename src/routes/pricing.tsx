@@ -100,11 +100,22 @@ function PricingPage() {
                   <Button asChild className="h-11 w-full rounded-full" variant="outline">
                     <Link to="/restaurants/new">Create your menu page</Link>
                   </Button>
+                ) : plan.id.startsWith("scan_pack_") ? (
+                  <Button
+                    className="h-11 w-full rounded-full"
+                    variant="outline"
+                    disabled={checkoutLoading}
+                    onClick={() => handleScanPack(plan.id)}
+                  >
+                    {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                    {user ? `Buy ${plan.scanCount} scans` : "Sign in to buy"}
+                  </Button>
                 ) : (
                   <Button asChild className="h-11 w-full rounded-full" variant="outline">
                     <Link to="/scan">Scan a menu</Link>
                   </Button>
                 )
+
               }
             />
           ))}
