@@ -92,8 +92,13 @@ function RefundsPage() {
             >
               support@menuvisionai.live
             </a>{" "}
+            or reach us via the{" "}
+            <Link to="/contact" className="underline hover:text-foreground">
+              Contact page
+            </Link>{" "}
             and we will help you.
           </p>
+
         </div>
       </main>
       <SiteFooter />
