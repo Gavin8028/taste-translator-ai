@@ -46,6 +46,21 @@ function PricingPage() {
     });
   }
 
+  function handleScanPack(priceId: string) {
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: "/pricing" } });
+      return;
+    }
+    openCheckout({
+      priceId,
+      customerEmail: user.email,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/scan?purchase=success`,
+    });
+  }
+
+
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
