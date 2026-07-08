@@ -1,51 +1,47 @@
-# Tighten the free tier: 1 anonymous scan per network per 30 days
-
 ## Goal
-Protect margin as traffic scales. Each network (IP) gets **one free anonymous scan every 30 days**. After that, the visitor must sign in (which grants their one lifetime free scan) or pay.
 
-## Funnel after this change
-1. Brand-new visitor at a restaurant → 1 free scan, no sign-in.
-2. Same network tries a second scan within 30 days → paywall: "Sign in for 1 more free scan, or upgrade."
-3. Signed in → 1 lifetime free scan (unchanged), then Premium ($4.79/mo) or a scan pack.
+Give MenuVision AI a proper, discoverable support/contact surface before launch. Paddle (merchant of record) and general trust signals expect a dedicated page — not just a `mailto:` in the footer.
 
-Net: ~2 free scans per person before they pay. Cheapest model (Gemini 2.5 Flash Lite) is used for both free tiers, so the loss on those 2 scans is negligible.
+## What to build
 
-## Changes
+### 1. New route: `/contact`
 
-### 1. Backend rate-limit rule
-Replace the current per-IP-per-day counter with a **30-day rolling window per IP**:
+A single-page contact route styled to match the existing marketing pages (SiteHeader / SiteFooter shell, same typography, rounded cards).
 
-- Rewrite `consume_anonymous_scan(_ip inet)`:
-  - Look up the most recent row for this IP.
-  - If the last scan was within 30 days, return `'limit'`.
-  - Otherwise upsert a row with `last_scan_at = now()` and return `'anon'`.
-- Rewrite `refund_anonymous_scan(_ip inet)`:
-  - If the row's `last_scan_at` is within the last hour (i.e. we just wrote it and the AI failed), clear/rewind it so the visitor can retry.
-- Schema tweak on `anonymous_scans`: drop `(ip, day, count)` PK, use `ip` as PK with a `last_scan_at timestamptz` column. Simpler and matches the new rule.
+Sections, top to bottom:
 
-### 2. Frontend copy
-Update the anonymous paywall card copy from "You've used today's free scans" to **"You've used your free scan"** with the two CTAs already in place (Sign in for 1 more free · See pricing).
+- **Hero**: "Get in touch" heading + one-line reassurance ("We reply to every message, usually within 1 business day").
+- **Primary contact card**: big `support@menuvisionai.live` button (mailto), with a copy-to-clipboard affordance like the existing "Copy" button in `restaurants.new.tsx`.
+- **What to email us about** grouped list:
+  - Diners: refunds, scan credits, account issues → link to `/refunds`
+  - Restaurants: menu edits, publishing help, taking a page down
+  - Privacy / data requests → link to `/privacy`
+  - Press / partnerships
+- **Response times** card: "Support 1 business day · Refunds 1–3 business days · Data requests within 30 days"
+- **Business details** card (Paddle compliance / trust): product name, merchant of record note ("Payments are processed by Paddle.com Inc., our merchant of record"), support email again, link to Terms + Privacy + Refunds.
+- **FAQ shortcut**: "Most questions are answered in our [FAQ](/faq)."
 
-### 3. No changes to
-- Signed-in credit ledger (still 1 lifetime free + paid packs + Premium).
-- Owner-email bypass.
-- Image caps / model choice for anon (still 3 photos max, Flash Lite).
-- Auth flow, checkout, RLS on other tables.
+Head metadata: unique title, description, canonical, og:title/description, og:url — matching the pattern in `pricing.tsx` / `about.tsx`.
 
-## Notes on abuse & scale
-- IP-based limits are the standard tradeoff: mobile carriers and coffee-shop Wi-Fi share IPs, so a handful of legitimate users on the same network may hit the paywall sooner than they "should." The 30-day window makes that rare in practice.
-- If abuse becomes visible (VPN rotation, etc.), the next step is a signed device cookie + IP combo — not needed today.
-- Free-tier cost per scan on Gemini Flash Lite is well under a cent, so even edge-case abuse is bounded.
+### 2. Surface it everywhere
 
-## Technical detail
-Migration:
-```sql
-DROP TABLE public.anonymous_scans;
-CREATE TABLE public.anonymous_scans (
-  ip inet PRIMARY KEY,
-  last_scan_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT ALL ON public.anonymous_scans TO service_role;
-ALTER TABLE public.anonymous_scans ENABLE ROW LEVEL SECURITY;
-```
-Then replace the two RPCs with the 30-day-window logic and re-apply the REVOKE/GRANT so only `service_role` can execute them.
+- Add "Contact" to `SiteFooter` in `src/components/site-header.tsx` (currently only Terms / Privacy / Refunds live there).
+- Keep the existing `mailto:` link in the header, but also add a `/contact` link so users clicking "Contact" go to a real page instead of triggering their mail client.
+- Add `/contact` to `src/routes/sitemap[.]xml.ts` (`changefreq: monthly`, `priority: 0.5`).
+
+### 3. Update Terms / Privacy / Refunds cross-links
+
+The three legal pages already show `support@menuvisionai.live`. Add a small "See our Contact page" link next to each so users have a non-email path too.
+
+## Out of scope (deliberately)
+
+- No contact form (a form needs spam protection + a server endpoint; a well-designed `/contact` page with a mailto is stronger and lower-risk for launch — we can add a form later if support volume warrants it).
+- No live chat.
+- No changes to Paddle configuration itself — you'll still want to confirm the support email is set on the Paddle merchant profile.
+
+## Files touched
+
+- `src/routes/contact.tsx` — new
+- `src/components/site-header.tsx` — add footer link
+- `src/routes/sitemap[.]xml.ts` — add `/contact` entry
+- `src/routes/privacy.tsx`, `src/routes/terms.tsx`, `src/routes/refunds.tsx` — small "Contact page" cross-link
