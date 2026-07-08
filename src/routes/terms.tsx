@@ -237,9 +237,14 @@ function TermsPage() {
                 className="underline hover:text-foreground"
               >
                 support@menuvisionai.live
-              </a>
+              </a>{" "}
+              or use our{" "}
+              <Link to="/contact" className="underline hover:text-foreground">
+                Contact page
+              </Link>
               .
             </p>
+
           </section>
         </div>
       </main>
