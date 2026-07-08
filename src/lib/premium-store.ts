@@ -3,6 +3,10 @@
 // tracked per-device in localStorage and set by the Paddle checkout
 // success page. Not a security boundary — purely a UX gate.
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { getMyScanStatus } from "@/lib/credits.functions";
+
 
 const KEY = "menuvision:diner-premium";
 const EVENT = "menuvision:diner-premium-changed";
