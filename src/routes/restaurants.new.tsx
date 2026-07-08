@@ -76,6 +76,7 @@ const STAGES = [
 ];
 
 function NewRestaurantMenu() {
+  const { user, loading: authLoading } = useAuth();
   const [name, setName] = useState("");
 
   const [slug, setSlug] = useState("");
@@ -91,6 +92,9 @@ function NewRestaurantMenu() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
+  
+
+
   
 
   function pickFile(f: File) {
@@ -278,7 +282,8 @@ function NewRestaurantMenu() {
     );
   }
 
-  const { user, loading: authLoading } = useAuth();
+
+
 
   if (authLoading) {
     return (

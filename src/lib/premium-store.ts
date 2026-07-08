@@ -3,6 +3,10 @@
 // tracked per-device in localStorage and set by the Paddle checkout
 // success page. Not a security boundary — purely a UX gate.
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { getMyScanStatus } from "@/lib/credits.functions";
+
 
 const KEY = "menuvision:diner-premium";
 const EVENT = "menuvision:diner-premium-changed";
@@ -48,10 +52,10 @@ export function clearDinerPremium() {
 }
 
 export function useDinerPremium(): boolean {
-  const [active, setActive] = useState<boolean>(false);
+  const [localActive, setLocalActive] = useState<boolean>(false);
   useEffect(() => {
-    setActive(isDinerPremium());
-    const update = () => setActive(isDinerPremium());
+    setLocalActive(isDinerPremium());
+    const update = () => setLocalActive(isDinerPremium());
     window.addEventListener(EVENT, update);
     window.addEventListener("storage", update);
     return () => {
@@ -59,5 +63,19 @@ export function useDinerPremium(): boolean {
       window.removeEventListener("storage", update);
     };
   }, []);
-  return active;
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["scan-status", user?.id ?? "anon"],
+    queryFn: () => getMyScanStatus(),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+  const serverPremium = !!data?.isPremium || !!data?.isAdmin;
+  useEffect(() => {
+    if (serverPremium && !isDinerPremium()) {
+      setDinerPremium();
+    }
+  }, [serverPremium]);
+  return localActive || serverPremium;
 }
+
