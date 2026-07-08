@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 
 export const Route = createFileRoute("/terms")({
@@ -237,9 +237,14 @@ function TermsPage() {
                 className="underline hover:text-foreground"
               >
                 support@menuvisionai.live
-              </a>
+              </a>{" "}
+              or use our{" "}
+              <Link to="/contact" className="underline hover:text-foreground">
+                Contact page
+              </Link>
               .
             </p>
+
           </section>
         </div>
       </main>

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 
 export const Route = createFileRoute("/refunds")({
@@ -92,8 +92,13 @@ function RefundsPage() {
             >
               support@menuvisionai.live
             </a>{" "}
+            or reach us via the{" "}
+            <Link to="/contact" className="underline hover:text-foreground">
+              Contact page
+            </Link>{" "}
             and we will help you.
           </p>
+
         </div>
       </main>
       <SiteFooter />

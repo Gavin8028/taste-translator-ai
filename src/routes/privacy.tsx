@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 
 export const Route = createFileRoute("/privacy")({
@@ -48,9 +48,14 @@ function PrivacyPage() {
                 className="underline hover:text-foreground"
               >
                 support@menuvisionai.live
-              </a>
+              </a>{" "}
+              or via our{" "}
+              <Link to="/contact" className="underline hover:text-foreground">
+                Contact page
+              </Link>
               .
             </p>
+
           </section>
 
           <section className="space-y-3">

@@ -171,12 +171,8 @@ export function SiteFooter() {
             <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
             <Link to="/terms" className="hover:text-foreground">Terms</Link>
             <Link to="/refunds" className="hover:text-foreground">Refunds</Link>
-            <a
-              href="mailto:support@menuvisionai.live"
-              className="hover:text-foreground"
-            >
-              Contact
-            </a>
+            <Link to="/contact" className="hover:text-foreground">Contact</Link>
+
           </div>
         </div>
       </div>
