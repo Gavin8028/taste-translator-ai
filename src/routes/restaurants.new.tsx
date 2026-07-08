@@ -282,7 +282,8 @@ function NewRestaurantMenu() {
     );
   }
 
-  const { user, loading: authLoading } = useAuth();
+
+
 
   if (authLoading) {
     return (
