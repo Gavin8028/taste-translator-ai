@@ -52,10 +52,10 @@ export function clearDinerPremium() {
 }
 
 export function useDinerPremium(): boolean {
-  const [active, setActive] = useState<boolean>(false);
+  const [localActive, setLocalActive] = useState<boolean>(false);
   useEffect(() => {
-    setActive(isDinerPremium());
-    const update = () => setActive(isDinerPremium());
+    setLocalActive(isDinerPremium());
+    const update = () => setLocalActive(isDinerPremium());
     window.addEventListener(EVENT, update);
     window.addEventListener("storage", update);
     return () => {
@@ -63,5 +63,19 @@ export function useDinerPremium(): boolean {
       window.removeEventListener("storage", update);
     };
   }, []);
-  return active;
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["scan-status", user?.id ?? "anon"],
+    queryFn: () => getMyScanStatus(),
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+  const serverPremium = !!data?.isPremium || !!data?.isAdmin;
+  useEffect(() => {
+    if (serverPremium && !isDinerPremium()) {
+      setDinerPremium();
+    }
+  }, [serverPremium]);
+  return localActive || serverPremium;
 }
+
