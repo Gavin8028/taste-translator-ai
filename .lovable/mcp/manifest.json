@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "sdk_version": "0.25.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://cqovurpehhymmtycbwzl.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "menuvision-mcp",
+      "version": "0.1.0",
+      "title": "MenuVision AI"
+    },
+    "tools": [
+      {
+        "name": "list_scans",
+        "title": "List my menu scans",
+        "description": "List the signed-in user's saved MenuVision menu scans, newest first, with title, languages and dish count.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "description": "How many scans to return (default 20).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_scan",
+        "title": "Get a menu scan",
+        "description": "Fetch the full translated dish list for one of the signed-in user's saved menu scans, by its scan id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "scan_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The scan id returned by list_scans (id or client_id)."
+            }
+          },
+          "required": [
+            "scan_id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_scan_credits",
+        "title": "Get my scan credits",
+        "description": "Show the signed-in user's remaining free and paid MenuVision scan credits.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_restaurant_menus",
+        "title": "List my restaurant menus",
+        "description": "List the published restaurant menu pages owned by the signed-in user, including slug, name and paid status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_restaurant_menu",
+        "title": "Get a restaurant menu",
+        "description": "Fetch one of the signed-in user's restaurant menus by slug, together with all of its dishes.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The menu slug, e.g. the /m/<slug> path segment."
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
