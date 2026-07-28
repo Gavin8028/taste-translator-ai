@@ -38,6 +38,7 @@ import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$s
 import { Route as AuthenticatedRestaurantsMineRouteImport } from './routes/_authenticated/restaurants.mine'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const TermsRoute = TermsRouteImport.update({
@@ -189,6 +190,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -221,6 +227,7 @@ export interface FileRoutesByFullPath {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
@@ -252,6 +259,7 @@ export interface FileRoutesByTo {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants': typeof RestaurantsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
@@ -285,6 +293,7 @@ export interface FileRoutesById {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
@@ -318,6 +327,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/analytics'
     | '/restaurants/mine'
@@ -349,6 +359,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/analytics'
     | '/restaurants/mine'
@@ -381,6 +392,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan_/$id'
     | '/restaurants/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/restaurants/mine'
@@ -413,6 +425,7 @@ export interface RootRouteChildren {
   RestaurantsNewRoute: typeof RestaurantsNewRoute
   ScanIdRoute: typeof ScanIdRoute
   RestaurantsIndexRoute: typeof RestaurantsIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   RestaurantsSlugEditRoute: typeof RestaurantsSlugEditRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -623,6 +636,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -682,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantsNewRoute: RestaurantsNewRoute,
   ScanIdRoute: ScanIdRoute,
   RestaurantsIndexRoute: RestaurantsIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   RestaurantsSlugEditRoute: RestaurantsSlugEditRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
