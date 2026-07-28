@@ -15,6 +15,7 @@ import { Route as ScanRouteImport } from './routes/scan'
 import { Route as RefundsRouteImport } from './routes/refunds'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DemoRouteImport } from './routes/demo'
@@ -31,9 +32,12 @@ import { Route as CheckoutPremiumSuccessRouteImport } from './routes/checkout.pr
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiDishPhotoRouteImport } from './routes/api/dish-photo'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
 import { Route as AuthenticatedRestaurantsMineRouteImport } from './routes/_authenticated/restaurants.mine'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
 const TermsRoute = TermsRouteImport.update({
@@ -64,6 +68,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryRoute = HistoryRouteImport.update({
@@ -145,6 +154,18 @@ const ApiDishImageRoute = ApiDishImageRouteImport.update({
   path: '/api/dish-image',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const RestaurantsSlugEditRoute = RestaurantsSlugEditRouteImport.update({
   id: '/restaurants/$slug/edit',
   path: '/restaurants/$slug/edit',
@@ -162,6 +183,12 @@ const AuthenticatedAdminAnalyticsRoute =
     path: '/admin/analytics',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
     id: '/api/public/payments/webhook',
@@ -177,12 +204,15 @@ export interface FileRoutesByFullPath {
   '/demo': typeof DemoRoute
   '/faq': typeof FaqRoute
   '/history': typeof HistoryRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -191,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
@@ -204,12 +235,15 @@ export interface FileRoutesByTo {
   '/demo': typeof DemoRoute
   '/faq': typeof FaqRoute
   '/history': typeof HistoryRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -218,6 +252,7 @@ export interface FileRoutesByTo {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
   '/restaurants': typeof RestaurantsIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
@@ -233,12 +268,15 @@ export interface FileRoutesById {
   '/demo': typeof DemoRoute
   '/faq': typeof FaqRoute
   '/history': typeof HistoryRoute
+  '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refunds': typeof RefundsRoute
   '/scan': typeof ScanRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/auth/callback': typeof AuthCallbackRoute
@@ -247,6 +285,7 @@ export interface FileRoutesById {
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
   '/restaurants/': typeof RestaurantsIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
@@ -262,12 +301,15 @@ export interface FileRouteTypes {
     | '/demo'
     | '/faq'
     | '/history'
+    | '/mcp'
     | '/pricing'
     | '/privacy'
     | '/refunds'
     | '/scan'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/auth/callback'
@@ -276,6 +318,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants/'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/analytics'
     | '/restaurants/mine'
     | '/restaurants/$slug/edit'
@@ -289,12 +332,15 @@ export interface FileRouteTypes {
     | '/demo'
     | '/faq'
     | '/history'
+    | '/mcp'
     | '/pricing'
     | '/privacy'
     | '/refunds'
     | '/scan'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/auth/callback'
@@ -303,6 +349,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan/$id'
     | '/restaurants'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/analytics'
     | '/restaurants/mine'
     | '/restaurants/$slug/edit'
@@ -317,12 +364,15 @@ export interface FileRouteTypes {
     | '/demo'
     | '/faq'
     | '/history'
+    | '/mcp'
     | '/pricing'
     | '/privacy'
     | '/refunds'
     | '/scan'
     | '/sitemap.xml'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/auth/callback'
@@ -331,6 +381,7 @@ export interface FileRouteTypes {
     | '/restaurants/new'
     | '/scan_/$id'
     | '/restaurants/'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/restaurants/mine'
     | '/restaurants/$slug/edit'
@@ -346,12 +397,15 @@ export interface RootRouteChildren {
   DemoRoute: typeof DemoRoute
   FaqRoute: typeof FaqRoute
   HistoryRoute: typeof HistoryRoute
+  McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundsRoute: typeof RefundsRoute
   ScanRoute: typeof ScanRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
   ApiDishPhotoRoute: typeof ApiDishPhotoRoute
   CheckoutPremiumSuccessRoute: typeof CheckoutPremiumSuccessRoute
@@ -359,6 +413,7 @@ export interface RootRouteChildren {
   RestaurantsNewRoute: typeof RestaurantsNewRoute
   ScanIdRoute: typeof ScanIdRoute
   RestaurantsIndexRoute: typeof RestaurantsIndexRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   RestaurantsSlugEditRoute: typeof RestaurantsSlugEditRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
@@ -405,6 +460,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/history': {
@@ -519,6 +581,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDishImageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/restaurants/$slug/edit': {
       id: '/restaurants/$slug/edit'
       path: '/restaurants/$slug/edit'
@@ -539,6 +615,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/analytics'
       preLoaderRoute: typeof AuthenticatedAdminAnalyticsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
@@ -582,12 +665,16 @@ const rootRouteChildren: RootRouteChildren = {
   DemoRoute: DemoRoute,
   FaqRoute: FaqRoute,
   HistoryRoute: HistoryRoute,
+  McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RefundsRoute: RefundsRoute,
   ScanRoute: ScanRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiDishImageRoute: ApiDishImageRoute,
   ApiDishPhotoRoute: ApiDishPhotoRoute,
   CheckoutPremiumSuccessRoute: CheckoutPremiumSuccessRoute,
@@ -595,6 +682,7 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantsNewRoute: RestaurantsNewRoute,
   ScanIdRoute: ScanIdRoute,
   RestaurantsIndexRoute: RestaurantsIndexRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   RestaurantsSlugEditRoute: RestaurantsSlugEditRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
