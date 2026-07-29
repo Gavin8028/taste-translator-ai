@@ -1,47 +1,38 @@
-## Goal
+## What I can and can't do here
 
-Give MenuVision AI a proper, discoverable support/contact surface before launch. Paddle (merchant of record) and general trust signals expect a dedicated page — not just a `mailto:` in the footer.
+A real live purchase needs a real credit card entered into Paddle's checkout. That checkout renders in a cross-domain iframe, so no automation tool (mine included) can type card details or click Pay. The card also has to be yours — I shouldn't and can't buy anything on your behalf.
 
-## What to build
+So the test is: **you click through the purchase, I verify every automated step around it.**
 
-### 1. New route: `/contact`
+## Step 1 — I pre-verify the live plumbing (no purchase needed)
 
-A single-page contact route styled to match the existing marketing pages (SiteHeader / SiteFooter shell, same typography, rounded cards).
+Before you spend a cent, I check:
 
-Sections, top to bottom:
+- The live Paddle catalog still contains `scan_pack_10` at $2.99 and its price resolves to a live `pri_...` ID.
+- The live webhook destination points at `https://menuvisionai.live/api/public/payments/webhook?env=live` and is active.
+- The published site's webhook route answers (a signature-less POST should return 400 "Webhook error", proving the route exists and verification is on — a 403 or 404 would mean it's misrouted).
+- Your account's current credit row in the database, so we have a clean "before" number.
 
-- **Hero**: "Get in touch" heading + one-line reassurance ("We reply to every message, usually within 1 business day").
-- **Primary contact card**: big `support@menuvisionai.live` button (mailto), with a copy-to-clipboard affordance like the existing "Copy" button in `restaurants.new.tsx`.
-- **What to email us about** grouped list:
-  - Diners: refunds, scan credits, account issues → link to `/refunds`
-  - Restaurants: menu edits, publishing help, taking a page down
-  - Privacy / data requests → link to `/privacy`
-  - Press / partnerships
-- **Response times** card: "Support 1 business day · Refunds 1–3 business days · Data requests within 30 days"
-- **Business details** card (Paddle compliance / trust): product name, merchant of record note ("Payments are processed by Paddle.com Inc., our merchant of record"), support email again, link to Terms + Privacy + Refunds.
-- **FAQ shortcut**: "Most questions are answered in our [FAQ](/faq)."
+## Step 2 — You run the purchase
 
-Head metadata: unique title, description, canonical, og:title/description, og:url — matching the pattern in `pricing.tsx` / `about.tsx`.
+1. Open https://menuvisionai.live/pricing in a normal browser window (not the Lovable preview — the preview uses test mode).
+2. Sign in with your account first, so `userId` is attached to the transaction.
+3. Buy the **10 scans for $2.99** pack with a real card.
+4. Tell me when the checkout success screen appears.
 
-### 2. Surface it everywhere
+## Step 3 — I verify the result
 
-- Add "Contact" to `SiteFooter` in `src/components/site-header.tsx` (currently only Terms / Privacy / Refunds live there).
-- Keep the existing `mailto:` link in the header, but also add a `/contact` link so users clicking "Contact" go to a real page instead of triggering their mail client.
-- Add `/contact` to `src/routes/sitemap[.]xml.ts` (`changefreq: monthly`, `priority: 0.5`).
+- Query `analytics_events` for a `scan_pack_purchased` row with your user ID and transaction ID.
+- Query `user_scan_credits` for your user and confirm `paid_remaining` went up by 10 and `lifetime_paid_purchased` increased.
+- Read the live Paddle transaction to confirm it completed and shows $2.99.
+- Pull server logs for the webhook route to confirm it fired and returned 200 (and surface any error if it didn't).
 
-### 3. Update Terms / Privacy / Refunds cross-links
+If credits didn't land, the logs plus the transaction's `custom_data` tell us exactly which link broke — most likely a missing `userId` or a missing `importMeta.externalId` on the price.
 
-The three legal pages already show `support@menuvisionai.live`. Add a small "See our Contact page" link next to each so users have a non-email path too.
+## Step 4 — Refund
 
-## Out of scope (deliberately)
+Once verified, I issue a full refund on the live transaction through the Paddle adjustments API so you're not out the $2.99. Live refunds are reviewed by Paddle and typically settle in a few days.
 
-- No contact form (a form needs spam protection + a server endpoint; a well-designed `/contact` page with a mailto is stronger and lower-risk for launch — we can add a form later if support volume warrants it).
-- No live chat.
-- No changes to Paddle configuration itself — you'll still want to confirm the support email is set on the Paddle merchant profile.
+## Note
 
-## Files touched
-
-- `src/routes/contact.tsx` — new
-- `src/components/site-header.tsx` — add footer link
-- `src/routes/sitemap[.]xml.ts` — add `/contact` entry
-- `src/routes/privacy.tsx`, `src/routes/terms.tsx`, `src/routes/refunds.tsx` — small "Contact page" cross-link
+One caveat worth naming up front: your account is admin-whitelisted, so extra credits won't change what you can actually do in the app. The database row is the proof, not the UI.
