@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { verifyWebhook, EventName, type PaddleEnv } from "@/lib/paddle.server";
+import { verifyWebhook, gatewayFetch, EventName, type PaddleEnv } from "@/lib/paddle.server";
 import { SCAN_PACK_AMOUNTS, type ScanPackId } from "@/lib/pricing-plans";
 
 async function markMenuPaid(slug: string, transactionId: string) {
@@ -71,6 +71,55 @@ async function upsertSubscription(data: any, env: PaddleEnv, status: string) {
   );
 }
 
+function normalizePackId(raw?: string | null): ScanPackId | null {
+  if (!raw) return null;
+  const id = raw.endsWith("_product") ? raw.slice(0, -"_product".length) : raw;
+  return id in SCAN_PACK_AMOUNTS ? (id as ScanPackId) : null;
+}
+
+/**
+ * transaction.completed payloads do NOT include import_meta on the price
+ * object — only details.line_items[].product.import_meta is populated (as
+ * "<pack>_product"). Fall back through every known location, then to a
+ * direct price lookup, so a purchase can never silently grant nothing.
+ */
+async function resolveScanPacks(data: any, env: PaddleEnv): Promise<ScanPackId[]> {
+  const found = new Set<ScanPackId>();
+
+  for (const item of data?.items ?? []) {
+    const fromPrice = normalizePackId(item?.price?.importMeta?.externalId);
+    if (fromPrice) found.add(fromPrice);
+  }
+
+  const lineItems = data?.details?.lineItems ?? data?.details?.line_items ?? [];
+  for (const li of lineItems) {
+    const fromProduct = normalizePackId(
+      li?.product?.importMeta?.externalId ?? li?.product?.import_meta?.external_id,
+    );
+    if (fromProduct) found.add(fromProduct);
+  }
+
+  if (found.size > 0) return [...found];
+
+  // Last resort: look the price up directly to read its external id.
+  for (const item of data?.items ?? []) {
+    const priceId = item?.price?.id;
+    if (!priceId) continue;
+    try {
+      const res = await gatewayFetch(env, `/prices/${encodeURIComponent(priceId)}`);
+      const json = (await res.json()) as {
+        data?: { import_meta?: { external_id?: string } };
+      };
+      const resolved = normalizePackId(json?.data?.import_meta?.external_id);
+      if (resolved) found.add(resolved);
+    } catch (e) {
+      console.error("price lookup failed", priceId, e);
+    }
+  }
+
+  return [...found];
+}
+
 async function handleWebhook(req: Request, env: PaddleEnv) {
   const event = await verifyWebhook(req, env);
 
@@ -86,16 +135,22 @@ async function handleWebhook(req: Request, env: PaddleEnv) {
       return;
     }
 
-    // scan pack purchase — figure out which pack from line items
-    const items = data?.items ?? [];
-    for (const item of items) {
-      const priceExt = item?.price?.importMeta?.externalId as string | undefined;
-      if (priceExt && priceExt in SCAN_PACK_AMOUNTS && userId) {
-        await grantScanPack(userId, priceExt as ScanPackId, transactionId);
-      }
+    // scan pack purchase — figure out which pack(s) were bought
+    const packs = await resolveScanPacks(data, env);
+    if (!packs.length) {
+      console.warn("transaction.completed matched no scan pack", transactionId);
+      return;
+    }
+    if (!userId) {
+      console.error("scan pack purchase without customData.userId", transactionId);
+      return;
+    }
+    for (const pack of packs) {
+      await grantScanPack(userId, pack, transactionId);
     }
     return;
   }
+
 
   if (
     event.eventType === EventName.SubscriptionCreated ||
