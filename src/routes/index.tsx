@@ -89,12 +89,12 @@ function Landing() {
           >
             <span
               aria-hidden
-              className="absolute inset-0 animate-ping rounded-full opacity-30"
+              className="pointer-events-none absolute inset-0 animate-ping rounded-full opacity-30"
               style={{ backgroundColor: "var(--primary)" }}
             />
             <span
               aria-hidden
-              className="absolute -inset-6 -z-10 rounded-full opacity-30 blur-2xl"
+              className="pointer-events-none absolute -inset-6 -z-10 rounded-full opacity-30 blur-2xl"
               style={{ backgroundColor: "var(--secondary)" }}
             />
             <Camera className="relative h-16 w-16" strokeWidth={1.5} />
@@ -106,10 +106,11 @@ function Landing() {
           <Button
             asChild
             variant="outline"
-            className="mt-8 h-11 rounded-full px-6"
+            className="relative z-10 mt-8 h-11 rounded-full px-6"
           >
             <Link to="/pricing">See pricing</Link>
           </Button>
+
 
           <p className="mt-4 text-xs text-muted-foreground">
             Free · No sign-up · 50+ languages
