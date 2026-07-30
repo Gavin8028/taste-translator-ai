@@ -1,38 +1,51 @@
-## What I can and can't do here
+## Goal
 
-A real live purchase needs a real credit card entered into Paddle's checkout. That checkout renders in a cross-domain iframe, so no automation tool (mine included) can type card details or click Pay. The card also has to be yours — I shouldn't and can't buy anything on your behalf.
+Make Diner Premium harder to refuse by adding an **annual plan at $34.99/year** next to the $4.79/month plan, framed as "Save 39% — 2 months free". Annual raises lifetime value, removes 12 chances to churn, and makes the monthly price feel small by comparison.
 
-So the test is: **you click through the purchase, I verify every automated step around it.**
+### Why $34.99
 
-## Step 1 — I pre-verify the live plumbing (no purchase needed)
+- Monthly for 12 months = $57.48
+- Annual = $34.99 → **saves $22.49 (39%)**
+- Effective $2.92/mo, which reads much cheaper than $4.79
+- Above the $10 threshold, so the payment fee drops from a flat 10% to the standard rate — net revenue per annual subscriber is roughly $32.75
 
-Before you spend a cent, I check:
+## What gets built
 
-- The live Paddle catalog still contains `scan_pack_10` at $2.99 and its price resolves to a live `pri_...` ID.
-- The live webhook destination points at `https://menuvisionai.live/api/public/payments/webhook?env=live` and is active.
-- The published site's webhook route answers (a signature-less POST should return 400 "Webhook error", proving the route exists and verification is on — a 403 or 404 would mean it's misrouted).
-- Your account's current credit row in the database, so we have a clean "before" number.
+**1. New annual price in the payments catalog**
 
-## Step 2 — You run the purchase
+Add a `diner_premium_yearly` price ($34.99/yr, recurring yearly, quantity fixed at 1) to the existing `diner_premium` product. The monthly price and all scan packs stay untouched. It syncs to live on the next publish.
 
-1. Open https://menuvisionai.live/pricing in a normal browser window (not the Lovable preview — the preview uses test mode).
-2. Sign in with your account first, so `userId` is attached to the transaction.
-3. Buy the **10 scans for $2.99** pack with a real card.
-4. Tell me when the checkout success screen appears.
+**2. Fix the premium access check (required)**
 
-## Step 3 — I verify the result
+The database function that decides who is Premium currently only matches the monthly price ID. An annual subscriber would pay and still be treated as free. A migration widens it to accept either premium price ID.
 
-- Query `analytics_events` for a `scan_pack_purchased` row with your user ID and transaction ID.
-- Query `user_scan_credits` for your user and confirm `paid_remaining` went up by 10 and `lifetime_paid_purchased` increased.
-- Read the live Paddle transaction to confirm it completed and shows $2.99.
-- Pull server logs for the webhook route to confirm it fired and returned 200 (and surface any error if it didn't).
+**3. Pricing page: monthly/annual toggle**
 
-If credits didn't land, the logs plus the transaction's `custom_data` tell us exactly which link broke — most likely a missing `userId` or a missing `importMeta.externalId` on the price.
+- A "Monthly / Annual — Save 39%" switch above the plan grid.
+- The Premium card price swaps between "$4.79 /month" and "$34.99 /year", with a struck-through "$57.48" anchor and a "$2.92/mo billed annually" subline when annual is selected.
+- Annual is the default selection (highest-value option shown first).
+- The checkout button passes the selected price ID; sign-in requirement, user ID attachment, and success URL behavior are unchanged.
 
-## Step 4 — Refund
+**4. Home pricing teaser**
 
-Once verified, I issue a full refund on the live transaction through the Paddle adjustments API so you're not out the $2.99. Live refunds are reviewed by Paddle and typically settle in a few days.
+The Premium card on the home page shows "from $2.92/mo" with a "Save 39% yearly" badge, linking through to the pricing page with the annual toggle preselected.
 
-## Note
+**5. Small honesty guardrails**
 
-One caveat worth naming up front: your account is admin-whitelisted, so extra credits won't change what you can actually do in the app. The database row is the proof, not the UI.
+- "Cancel anytime" already listed; annual card adds "Billed once a year".
+- Feature lists stay identical between monthly and annual — only the price and cadence change.
+
+## Technical details
+
+- Catalog: `create_price` with id `diner_premium_yearly`, product `diner_premium`, amount 3499 USD, `recurring_interval: year`, quantity min/max 1. Never reuse or mutate the `diner_premium_monthly` ID.
+- Migration: `CREATE OR REPLACE FUNCTION public.has_active_premium` changing `price_id = 'diner_premium_monthly'` to `price_id IN ('diner_premium_monthly','diner_premium_yearly')`, keeping `SECURITY DEFINER`, `STABLE`, `SET search_path = public`, and the existing execute grants.
+- `src/lib/pricing-plans.ts`: add `diner_premium_yearly` to the `PricingPlan` id union and a plan entry; export a helper for the monthly-equivalent and savings strings so the home page and pricing page don't diverge.
+- `src/routes/pricing.tsx`: local `billing` state ('annual' default), toggle UI, and `handlePremium` using the selected price ID.
+- `src/routes/index.tsx`: teaser copy update only.
+- No webhook change needed — the handler stores whatever `price_id` the subscription carries, so annual rows land correctly once the access function accepts them.
+
+## Verification
+
+- Test-mode checkout on the annual price in the preview, confirm the subscription row is written with `price_id = 'diner_premium_yearly'` and premium features unlock.
+- Confirm the monthly path still works unchanged.
+- Publish is required for the annual price to exist for real customers.
