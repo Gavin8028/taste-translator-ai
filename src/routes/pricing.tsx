@@ -39,6 +39,8 @@ function PricingPage() {
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [billing, setBilling] = useState<PremiumBillingCycle>("annual");
+  const premium = PREMIUM_BILLING[billing];
 
   function handlePremium() {
     if (!user) {
@@ -46,12 +48,13 @@ function PricingPage() {
       return;
     }
     openCheckout({
-      priceId: "diner_premium_monthly",
+      priceId: premium.priceId,
       customerEmail: user.email,
       customData: { userId: user.id },
       successUrl: `${window.location.origin}/checkout/premium-success`,
     });
   }
+
 
   function handleScanPack(priceId: string) {
     if (!user) {
