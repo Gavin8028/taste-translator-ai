@@ -2,6 +2,7 @@ export type PricingPlan = {
   id:
     | "diner_free"
     | "diner_premium_monthly"
+    | "diner_premium_yearly"
     | "restaurant_publish"
     | "scan_pack_10"
     | "scan_pack_50"
@@ -14,6 +15,30 @@ export type PricingPlan = {
   featured?: boolean;
   scanCount?: number;
 };
+
+/** Diner Premium billing options. Amounts must match the payments catalog. */
+export const PREMIUM_BILLING = {
+  monthly: {
+    priceId: "diner_premium_monthly" as const,
+    price: "$4.79",
+    cadence: "per month",
+    note: "Billed monthly. Cancel anytime.",
+  },
+  annual: {
+    priceId: "diner_premium_yearly" as const,
+    price: "$34.99",
+    cadence: "per year",
+    anchor: "$57.48",
+    note: "Just $2.92/mo, billed once a year. Cancel anytime.",
+  },
+} as const;
+
+export type PremiumBillingCycle = keyof typeof PREMIUM_BILLING;
+
+/** 12 × $4.79 = $57.48 vs $34.99 → 39% off. */
+export const PREMIUM_ANNUAL_SAVINGS_PCT = 39;
+export const PREMIUM_ANNUAL_MONTHLY_EQUIVALENT = "$2.92";
+
 
 export const PRICING_PLANS: PricingPlan[] = [
   {
@@ -100,12 +125,13 @@ export const HOME_PRICING_PLANS = [
   {
     id: "diner_premium_monthly" as const,
     name: "Diner Premium",
-    price: "$4.79",
-    cadence: "per month",
-    badge: "Best value",
+    price: `from ${PREMIUM_ANNUAL_MONTHLY_EQUIVALENT}`,
+    cadence: "per month, billed yearly",
+    badge: `Save ${PREMIUM_ANNUAL_SAVINGS_PCT}%`,
     featured: true,
     features: ["Unlimited scans", "Filters & dietary info", "Cancel anytime"],
   },
+
   {
     id: "restaurant_publish" as const,
     name: "Restaurants",
