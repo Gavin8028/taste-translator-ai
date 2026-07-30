@@ -1,10 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { useAuth } from "@/hooks/use-auth";
-import { PRICING_PLANS } from "@/lib/pricing-plans";
+import {
+  PRICING_PLANS,
+  PREMIUM_BILLING,
+  PREMIUM_ANNUAL_SAVINGS_PCT,
+  type PremiumBillingCycle,
+} from "@/lib/pricing-plans";
+
 
 export const Route = createFileRoute("/pricing")({
   head: () => ({
