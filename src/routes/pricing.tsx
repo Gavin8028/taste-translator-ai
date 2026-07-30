@@ -185,6 +185,7 @@ function TierCard({
   badge,
   featured,
   footnote,
+  anchor,
 }: {
   name: string;
   price: string;
@@ -194,6 +195,7 @@ function TierCard({
   badge?: string;
   featured?: boolean;
   footnote?: string;
+  anchor?: string;
 }) {
   return (
     <div
@@ -212,7 +214,11 @@ function TierCard({
         )}
       </div>
       <div className="mt-4 flex items-baseline gap-2">
+        {anchor && (
+          <span className="text-lg text-muted-foreground line-through">{anchor}</span>
+        )}
         <span className="text-4xl font-semibold tracking-tight">{price}</span>
+
         <span className="text-sm text-muted-foreground">{cadence}</span>
       </div>
       <ul className="mt-6 flex-1 space-y-3 text-sm">
