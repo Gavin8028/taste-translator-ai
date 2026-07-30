@@ -125,12 +125,13 @@ export const HOME_PRICING_PLANS = [
   {
     id: "diner_premium_monthly" as const,
     name: "Diner Premium",
-    price: "$4.79",
-    cadence: "per month",
-    badge: "Best value",
+    price: `from ${PREMIUM_ANNUAL_MONTHLY_EQUIVALENT}`,
+    cadence: "per month, billed yearly",
+    badge: `Save ${PREMIUM_ANNUAL_SAVINGS_PCT}%`,
     featured: true,
     features: ["Unlimited scans", "Filters & dietary info", "Cancel anytime"],
   },
+
   {
     id: "restaurant_publish" as const,
     name: "Restaurants",
