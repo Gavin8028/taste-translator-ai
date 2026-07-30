@@ -132,14 +132,18 @@ function PricingPage() {
               featured={plan.featured}
               cta={
 
-                plan.id === "diner_premium_monthly" ? (
+                isPremium ? (
                   <Button
                     className="h-11 w-full rounded-full"
                     disabled={checkoutLoading}
                     onClick={handlePremium}
                   >
                     {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    {user ? "Get Premium" : "Sign in to subscribe"}
+                    {user
+                      ? billing === "annual"
+                        ? "Get Premium yearly"
+                        : "Get Premium monthly"
+                      : "Sign in to subscribe"}
                   </Button>
                 ) : plan.id === "restaurant_publish" ? (
                   <Button asChild className="h-11 w-full rounded-full" variant="outline">
@@ -160,10 +164,11 @@ function PricingPage() {
                     <Link to="/scan">Scan a menu</Link>
                   </Button>
                 )
-
               }
             />
-          ))}
+            );
+          })}
+
         </div>
       </main>
       <SiteFooter />
