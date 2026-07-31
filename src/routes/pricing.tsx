@@ -1,5 +1,4 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
@@ -9,7 +8,6 @@ import {
   PRICING_PLANS,
   PREMIUM_BILLING,
   PREMIUM_ANNUAL_SAVINGS_PCT,
-  type PremiumBillingCycle,
 } from "@/lib/pricing-plans";
 
 
@@ -39,21 +37,20 @@ function PricingPage() {
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [billing, setBilling] = useState<PremiumBillingCycle>("annual");
-  const premium = PREMIUM_BILLING[billing];
 
-  function handlePremium() {
+  function handlePremium(priceId: string) {
     if (!user) {
       navigate({ to: "/auth", search: { redirect: "/pricing" } });
       return;
     }
     openCheckout({
-      priceId: premium.priceId,
+      priceId,
       customerEmail: user.email,
       customData: { userId: user.id },
       successUrl: `${window.location.origin}/checkout/premium-success`,
     });
   }
+
 
 
   function handleScanPack(priceId: string) {
@@ -86,66 +83,56 @@ function PricingPage() {
           </p>
         </div>
 
-        <div className="mt-8 flex justify-center">
-          <div
-            role="group"
-            aria-label="Premium billing cycle"
-            className="inline-flex rounded-full border border-border bg-card p-1"
-          >
-            {(["monthly", "annual"] as const).map((cycle) => (
-              <button
-                key={cycle}
-                type="button"
-                aria-pressed={billing === cycle}
-                onClick={() => setBilling(cycle)}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  billing === cycle
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {cycle === "monthly"
-                  ? "Monthly"
-                  : `Annual — save ${PREMIUM_ANNUAL_SAVINGS_PCT}%`}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mx-auto mt-10 grid max-w-6xl gap-6 lg:grid-cols-3">
-          {PRICING_PLANS.map((plan) => {
+        <div className="mx-auto mt-10 grid max-w-6xl gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {PRICING_PLANS.flatMap((plan) => {
             const isPremium = plan.id === "diner_premium_monthly";
-            return (
+
+            if (isPremium) {
+              return (["monthly", "annual"] as const).map((cycle) => {
+                const opt = PREMIUM_BILLING[cycle];
+                const isAnnual = cycle === "annual";
+                return (
+                  <TierCard
+                    key={opt.priceId}
+                    name={isAnnual ? `${plan.name} — Yearly` : `${plan.name} — Monthly`}
+                    price={opt.price}
+                    cadence={opt.cadence}
+                    anchor={isAnnual ? PREMIUM_BILLING.annual.anchor : undefined}
+                    footnote={opt.note}
+                    features={plan.features}
+                    badge={isAnnual ? `Save ${PREMIUM_ANNUAL_SAVINGS_PCT}%` : plan.badge}
+                    featured={isAnnual}
+                    cta={
+                      <Button
+                        className="h-11 w-full rounded-full"
+                        variant={isAnnual ? "default" : "outline"}
+                        disabled={checkoutLoading}
+                        onClick={() => handlePremium(opt.priceId)}
+                      >
+                        {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                        {user
+                          ? isAnnual
+                            ? "Get Premium yearly"
+                            : "Get Premium monthly"
+                          : "Sign in to subscribe"}
+                      </Button>
+                    }
+                  />
+                );
+              });
+            }
+
+            return [
             <TierCard
               key={plan.id}
               name={plan.name}
-              price={isPremium ? premium.price : plan.price}
-              cadence={isPremium ? premium.cadence : plan.cadence}
-              anchor={isPremium && billing === "annual" ? PREMIUM_BILLING.annual.anchor : undefined}
-              footnote={isPremium ? premium.note : undefined}
+              price={plan.price}
+              cadence={plan.cadence}
               features={plan.features}
-              badge={
-                isPremium && billing === "annual"
-                  ? `Save ${PREMIUM_ANNUAL_SAVINGS_PCT}%`
-                  : plan.badge
-              }
+              badge={plan.badge}
               featured={plan.featured}
               cta={
-
-                isPremium ? (
-                  <Button
-                    className="h-11 w-full rounded-full"
-                    disabled={checkoutLoading}
-                    onClick={handlePremium}
-                  >
-                    {checkoutLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    {user
-                      ? billing === "annual"
-                        ? "Get Premium yearly"
-                        : "Get Premium monthly"
-                      : "Sign in to subscribe"}
-                  </Button>
-                ) : plan.id === "restaurant_publish" ? (
+                plan.id === "restaurant_publish" ? (
                   <Button asChild className="h-11 w-full rounded-full" variant="outline">
                     <Link to="/restaurants/new">Create your menu page</Link>
                   </Button>
@@ -166,10 +153,11 @@ function PricingPage() {
                 )
               }
             />
-            );
+            ];
           })}
 
         </div>
+
       </main>
       <SiteFooter />
     </div>
