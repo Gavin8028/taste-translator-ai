@@ -39,21 +39,20 @@ function PricingPage() {
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [billing, setBilling] = useState<PremiumBillingCycle>("annual");
-  const premium = PREMIUM_BILLING[billing];
 
-  function handlePremium() {
+  function handlePremium(priceId: string) {
     if (!user) {
       navigate({ to: "/auth", search: { redirect: "/pricing" } });
       return;
     }
     openCheckout({
-      priceId: premium.priceId,
+      priceId,
       customerEmail: user.email,
       customData: { userId: user.id },
       successUrl: `${window.location.origin}/checkout/premium-success`,
     });
   }
+
 
 
   function handleScanPack(priceId: string) {
