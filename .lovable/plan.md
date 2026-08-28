@@ -1,51 +1,34 @@
-## Goal
+# Going international: auto language + local currency
 
-Make Diner Premium harder to refuse by adding an **annual plan at $34.99/year** next to the $4.79/month plan, framed as "Save 39% — 2 months free". Annual raises lifetime value, removes 12 chances to churn, and makes the monthly price feel small by comparison.
+Two changes for travelers and non-US visitors.
 
-### Why $34.99
+## 1. Auto-detect the translation language
 
-- Monthly for 12 months = $57.48
-- Annual = $34.99 → **saves $22.49 (39%)**
-- Effective $2.92/mo, which reads much cheaper than $4.79
-- Above the $10 threshold, so the payment fee drops from a flat 10% to the standard rate — net revenue per annual subscriber is roughly $32.75
+Today the scan page always defaults to "Translate to: English" and the visitor has to change it manually.
 
-## What gets built
+New behavior:
+- On first visit, detect the visitor's language from their browser/device setting (e.g. a phone set to Spanish → "Translate to: Español").
+- If their language isn't in the list, fall back to English.
+- Their choice is remembered on that device, and changing the dropdown always wins over detection.
+- Language names in the dropdown are shown in their own language (Español, Français, 日本語) so they're recognizable.
+- Also widen the current language list to cover the main travel languages: English, Spanish, French, German, Italian, Portuguese, Dutch, Japanese, Korean, Chinese (Simplified & Traditional), Arabic, Hindi, Russian, Turkish, Thai, Vietnamese, Polish, Indonesian.
 
-**1. New annual price in the payments catalog**
+The rest of the site copy stays in English — only the menu translation target adapts. (Full UI translation can be added later if you want it.)
 
-Add a `diner_premium_yearly` price ($34.99/yr, recurring yearly, quantity fixed at 1) to the existing `diner_premium` product. The monthly price and all scan packs stay untouched. It syncs to live on the next publish.
+## 2. Show prices in the visitor's local currency
 
-**2. Fix the premium access check (required)**
+Payments already work worldwide — Paddle sells in 200+ countries, handles local tax/VAT, and offers local payment methods. What's missing is that the pricing page always shows USD.
 
-The database function that decides who is Premium currently only matches the monthly price ID. An annual subscriber would pay and still be treated as free. A migration widens it to accept either premium price ID.
+New behavior:
+- The pricing page asks the payment provider for the visitor's localized price and shows it (for example €4,49 / ¥750 / £3.79 instead of $4.79).
+- Amounts are auto-converted by Paddle, formatted correctly for the locale, and match exactly what checkout will charge.
+- If the lookup fails or is slow, USD prices show as they do now — no blank cards.
+- Applies to all cards: Premium monthly, Premium yearly, the three scan packs, and the $39 restaurant plan. The yearly "39% savings" badge is computed from the localized amounts so it stays truthful.
+- The home page pricing teaser keeps its simple static USD copy.
 
-**3. Pricing page: monthly/annual toggle**
+## Technical notes
 
-- A "Monthly / Annual — Save 39%" switch above the plan grid.
-- The Premium card price swaps between "$4.79 /month" and "$34.99 /year", with a struck-through "$57.48" anchor and a "$2.92/mo billed annually" subline when annual is selected.
-- Annual is the default selection (highest-value option shown first).
-- The checkout button passes the selected price ID; sign-in requirement, user ID attachment, and success URL behavior are unchanged.
-
-**4. Home pricing teaser**
-
-The Premium card on the home page shows "from $2.92/mo" with a "Save 39% yearly" badge, linking through to the pricing page with the annual toggle preselected.
-
-**5. Small honesty guardrails**
-
-- "Cancel anytime" already listed; annual card adds "Billed once a year".
-- Feature lists stay identical between monthly and annual — only the price and cadence change.
-
-## Technical details
-
-- Catalog: `create_price` with id `diner_premium_yearly`, product `diner_premium`, amount 3499 USD, `recurring_interval: year`, quantity min/max 1. Never reuse or mutate the `diner_premium_monthly` ID.
-- Migration: `CREATE OR REPLACE FUNCTION public.has_active_premium` changing `price_id = 'diner_premium_monthly'` to `price_id IN ('diner_premium_monthly','diner_premium_yearly')`, keeping `SECURITY DEFINER`, `STABLE`, `SET search_path = public`, and the existing execute grants.
-- `src/lib/pricing-plans.ts`: add `diner_premium_yearly` to the `PricingPlan` id union and a plan entry; export a helper for the monthly-equivalent and savings strings so the home page and pricing page don't diverge.
-- `src/routes/pricing.tsx`: local `billing` state ('annual' default), toggle UI, and `handlePremium` using the selected price ID.
-- `src/routes/index.tsx`: teaser copy update only.
-- No webhook change needed — the handler stores whatever `price_id` the subscription carries, so annual rows land correctly once the access function accepts them.
-
-## Verification
-
-- Test-mode checkout on the annual price in the preview, confirm the subscription row is written with `price_id = 'diner_premium_yearly'` and premium features unlock.
-- Confirm the monthly path still works unchanged.
-- Publish is required for the annual price to exist for real customers.
+- Language: add a `resolveDefaultLanguage()` helper in `src/lib/` that reads `navigator.languages`, maps the primary subtag to a supported language, and falls back to English. Read it in `useEffect` (not in the `useState` initializer) to avoid hydration mismatch, persist the pick in `localStorage`, and expand the `LANGUAGES` constant in `src/routes/scan.tsx` into a shared `{ code, label, englishName }` list also used by `/m/$slug`.
+- Currency: add a `previewPrices` server function in `src/lib/payments.functions.ts` that resolves each human-readable price ID to its Paddle ID via `gatewayFetch` and calls `POST /pricing-preview` with the caller's IP (`cf-connecting-ip` / `x-forwarded-for`). Return a map of price ID → `formattedTotals.subtotal`.
+- `src/routes/pricing.tsx` calls it through TanStack Query (client-side, non-blocking) and renders the localized string when present, otherwise the static string from `src/lib/pricing-plans.ts`. Nothing about checkout itself changes — Paddle already localizes inside the overlay.
+- No database or catalog changes; no new prices created.
