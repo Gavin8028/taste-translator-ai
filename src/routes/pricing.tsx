@@ -37,6 +37,9 @@ export const Route = createFileRoute("/pricing")({
   component: PricingPage,
 });
 
+/** Provider price ID behind the one-time restaurant menu page. */
+const RESTAURANT_PRICE_ID = "publish_menu_one_time";
+
 function PricingPage() {
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const { user } = useAuth();
@@ -49,7 +52,7 @@ function PricingPage() {
     PREMIUM_BILLING.monthly.priceId,
     PREMIUM_BILLING.annual.priceId,
     ...PRICING_PLANS.filter((p) => p.id.startsWith("scan_pack_")).map((p) => p.id),
-    "restaurant_publish",
+    RESTAURANT_PRICE_ID,
   ];
   const { data: localized } = useQuery({
     queryKey: ["localized-prices"],
@@ -172,7 +175,11 @@ function PricingPage() {
             <TierCard
               key={plan.id}
               name={plan.name}
-              price={localized?.[plan.id]?.formatted ?? plan.price}
+              price={
+                localized?.[
+                  plan.id === "restaurant_publish" ? RESTAURANT_PRICE_ID : plan.id
+                ]?.formatted ?? plan.price
+              }
               cadence={plan.cadence}
               features={plan.features}
               badge={plan.badge}

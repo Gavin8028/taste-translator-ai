@@ -84,8 +84,8 @@ export const previewLocalizedPrices = createServerFn({ method: "GET" })
           details?: {
             line_items?: Array<{
               price?: { id?: string };
-              formatted_totals?: { subtotal?: string };
-              totals?: { subtotal?: string };
+              formatted_totals?: { total?: string };
+              totals?: { total?: string };
             }>;
           };
         };
@@ -97,13 +97,14 @@ export const previewLocalizedPrices = createServerFn({ method: "GET" })
 
       for (const item of preview.data?.details?.line_items ?? []) {
         const paddleId = item.price?.id;
-        const formatted = item.formatted_totals?.subtotal;
+        // Use the tax-inclusive total: that's what the buyer actually pays.
+        const formatted = item.formatted_totals?.total;
         if (!paddleId || !formatted) continue;
         const externalId = paddleIdToExternal.get(paddleId);
         if (!externalId) continue;
         out[externalId] = {
           formatted,
-          amount: Number(item.totals?.subtotal ?? 0),
+          amount: Number(item.totals?.total ?? 0),
           currency,
         };
       }
