@@ -1,4 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Check, Loader2 } from "lucide-react";
@@ -9,6 +11,8 @@ import {
   PREMIUM_BILLING,
   PREMIUM_ANNUAL_SAVINGS_PCT,
 } from "@/lib/pricing-plans";
+import { previewLocalizedPrices } from "@/lib/payments.functions";
+import { getPaddleEnvironment } from "@/lib/paddle";
 
 
 export const Route = createFileRoute("/pricing")({
@@ -37,6 +41,39 @@ function PricingPage() {
   const { openCheckout, loading: checkoutLoading } = usePaddleCheckout();
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Ask the payment provider for prices in the visitor's own currency.
+  // Falls back silently to the static USD strings.
+  const fetchLocalized = useServerFn(previewLocalizedPrices);
+  const priceIds = [
+    PREMIUM_BILLING.monthly.priceId,
+    PREMIUM_BILLING.annual.priceId,
+    ...PRICING_PLANS.filter((p) => p.id.startsWith("scan_pack_")).map((p) => p.id),
+    "restaurant_publish",
+  ];
+  const { data: localized } = useQuery({
+    queryKey: ["localized-prices"],
+    queryFn: () =>
+      fetchLocalized({
+        data: { priceIds, environment: getPaddleEnvironment() },
+      }),
+    staleTime: 60 * 60 * 1000,
+    retry: false,
+  });
+
+  const monthlyLocal = localized?.[PREMIUM_BILLING.monthly.priceId];
+  const annualLocal = localized?.[PREMIUM_BILLING.annual.priceId];
+
+  /** Localized anchor price (12 x monthly) and savings, when we have both. */
+  const localAnnual =
+    monthlyLocal && annualLocal && monthlyLocal.amount > 0 && annualLocal.amount > 0
+      ? {
+          anchor: formatFromLocalized(monthlyLocal, monthlyLocal.amount * 12),
+          savingsPct: Math.round(
+            (1 - annualLocal.amount / (monthlyLocal.amount * 12)) * 100,
+          ),
+        }
+      : null;
 
   function handlePremium(priceId: string) {
     if (!user) {
@@ -91,16 +128,25 @@ function PricingPage() {
               return (["monthly", "annual"] as const).map((cycle) => {
                 const opt = PREMIUM_BILLING[cycle];
                 const isAnnual = cycle === "annual";
+                const local = isAnnual ? annualLocal : monthlyLocal;
                 return (
                   <TierCard
                     key={opt.priceId}
                     name={isAnnual ? `${plan.name} — Yearly` : `${plan.name} — Monthly`}
-                    price={opt.price}
+                    price={local?.formatted ?? opt.price}
                     cadence={opt.cadence}
-                    anchor={isAnnual ? PREMIUM_BILLING.annual.anchor : undefined}
-                    footnote={opt.note}
+                    anchor={
+                      isAnnual
+                        ? (localAnnual?.anchor ?? PREMIUM_BILLING.annual.anchor)
+                        : undefined
+                    }
+                    footnote={local ? undefined : opt.note}
                     features={plan.features}
-                    badge={isAnnual ? `Save ${PREMIUM_ANNUAL_SAVINGS_PCT}%` : plan.badge}
+                    badge={
+                      isAnnual
+                        ? `Save ${localAnnual?.savingsPct ?? PREMIUM_ANNUAL_SAVINGS_PCT}%`
+                        : plan.badge
+                    }
                     featured={isAnnual}
                     cta={
                       <Button
@@ -126,7 +172,7 @@ function PricingPage() {
             <TierCard
               key={plan.id}
               name={plan.name}
-              price={plan.price}
+              price={localized?.[plan.id]?.formatted ?? plan.price}
               cadence={plan.cadence}
               features={plan.features}
               badge={plan.badge}
@@ -223,4 +269,25 @@ function TierCard({
       )}
     </div>
   );
+}
+
+/**
+ * Re-format an amount using the currency/locale conventions the provider
+ * already resolved for this visitor.
+ */
+function formatFromLocalized(
+  reference: { currency: string; amount: number; formatted: string },
+  amountMinorUnits: number,
+): string {
+  try {
+    const decimals = /[.,]\d{2}(?!\d)/.test(reference.formatted) ? 2 : 0;
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: reference.currency,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(amountMinorUnits / (decimals === 2 ? 100 : 1));
+  } catch {
+    return "";
+  }
 }

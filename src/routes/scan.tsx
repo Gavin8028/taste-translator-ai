@@ -30,6 +30,12 @@ import {
 import { saveScan as saveScanRemote } from "@/lib/scan-sync.functions";
 import { useAuth } from "@/hooks/use-auth";
 import { track } from "@/lib/analytics";
+import {
+  DEFAULT_LANGUAGE,
+  LANGUAGE_OPTIONS,
+  resolveDefaultLanguage,
+  saveLanguagePreference,
+} from "@/lib/languages";
 
 export const Route = createFileRoute("/scan")({
   head: () => ({
@@ -80,22 +86,6 @@ function friendlyError(message: string): string {
   return message || "Something went wrong. Please try again.";
 }
 
-const LANGUAGES = [
-  "English",
-  "Spanish",
-  "French",
-  "German",
-  "Italian",
-  "Portuguese",
-  "Japanese",
-  "Chinese",
-  "Korean",
-  "Arabic",
-  "Hindi",
-  "Russian",
-  "Turkish",
-  "Dutch",
-];
 
 async function fileToDataUrl(file: File): Promise<string> {
   const bitmap = await createImageBitmap(file).catch(() => null);
@@ -138,7 +128,7 @@ function ScanPage() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const [pages, setPages] = useState<PageItem[]>([]);
-  const [language, setLanguage] = useState("English");
+  const [language, setLanguage] = useState(DEFAULT_LANGUAGE);
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -149,6 +139,18 @@ function ScanPage() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const [offline, setOffline] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+
+  // Pick the visitor's own language on first load (saved choice wins).
+  // Runs after hydration so server and client markup stay identical.
+  useEffect(() => {
+    setLanguage(resolveDefaultLanguage());
+  }, []);
+
+  function changeLanguage(next: string) {
+    setLanguage(next);
+    saveLanguagePreference(next);
+  }
+
 
   const fetchStatus = useServerFn(getMyScanStatus);
   const { data: status, refetch: refetchStatus } = useQuery({
@@ -332,11 +334,13 @@ function ScanPage() {
               <label className="text-sm text-muted-foreground">Translate to</label>
               <select
                 value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+                onChange={(e) => changeLanguage(e.target.value)}
                 className="rounded-full border border-border bg-card px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {LANGUAGES.map((l) => (
-                  <option key={l}>{l}</option>
+                {LANGUAGE_OPTIONS.map((l) => (
+                  <option key={l.name} value={l.name}>
+                    {l.label}
+                  </option>
                 ))}
               </select>
             </div>
