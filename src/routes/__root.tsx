@@ -90,6 +90,8 @@ const websiteLd = {
   url: "https://menuvisionai.live",
 };
 
+const GOOGLE_ADS_ID = import.meta.env.VITE_GOOGLE_ADS_CONVERSION_ID;
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -130,6 +132,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
     scripts: [
+      ...(GOOGLE_ADS_ID
+        ? [
+            {
+              src: `https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`,
+              async: true,
+            },
+            {
+              children: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GOOGLE_ADS_ID}');`,
+            },
+          ]
+        : []),
       { type: "application/ld+json", children: JSON.stringify(organizationLd) },
       { type: "application/ld+json", children: JSON.stringify(websiteLd) },
     ],
