@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2 } from "lucide-react";
 import { setDinerPremium } from "@/lib/premium-store";
 import { track } from "@/lib/analytics";
+import { trackConversion } from "@/lib/google-ads";
 
 export const Route = createFileRoute("/checkout/premium-success")({
   head: () => ({
@@ -25,6 +26,7 @@ function PremiumSuccessPage() {
       undefined;
     setDinerPremium(txnId);
     track("premium_subscribed", { txnId: txnId ?? null });
+    trackConversion(undefined, undefined);
   }, []);
 
   return (
