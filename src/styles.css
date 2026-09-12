@@ -158,3 +158,115 @@
     letter-spacing: -0.02em;
   }
 }
+
+/* Typography for imported blog articles */
+.blg-prose {
+  color: var(--color-foreground);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  overflow-wrap: break-word;
+}
+
+.blg-prose h1 {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0 0 1.25rem;
+}
+
+.blg-prose h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 2.25rem 0 0.85rem;
+}
+
+.blg-prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.75rem 0 0.6rem;
+}
+
+.blg-prose p,
+.blg-prose ul,
+.blg-prose ol,
+.blg-prose blockquote,
+.blg-prose table,
+.blg-prose pre,
+.blg-prose figure {
+  margin: 0 0 1.25rem;
+}
+
+.blg-prose ul { list-style: disc; padding-left: 1.5rem; }
+.blg-prose ol { list-style: decimal; padding-left: 1.5rem; }
+.blg-prose li { margin-bottom: 0.4rem; }
+
+.blg-prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.blg-prose strong { font-weight: 600; }
+
+.blg-prose blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: var(--color-muted-foreground);
+  font-style: italic;
+}
+
+.blg-prose img,
+.blg-prose video,
+.blg-prose iframe {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.9rem;
+  display: block;
+}
+
+.blg-prose iframe { aspect-ratio: 16 / 9; width: 100%; }
+
+.blg-prose figcaption {
+  font-size: 0.85rem;
+  color: var(--color-muted-foreground);
+  margin-top: 0.5rem;
+}
+
+.blg-prose code {
+  background: var(--color-muted);
+  border-radius: 0.35rem;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.9em;
+}
+
+.blg-prose pre {
+  background: var(--color-muted);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.blg-prose pre code { background: none; padding: 0; }
+
+.blg-prose table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.blg-prose th,
+.blg-prose td {
+  border: 1px solid var(--color-border);
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+}
+
+.blg-prose th { background: var(--color-muted); font-weight: 600; }
+
+.blg-prose hr {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 2rem 0;
+}
