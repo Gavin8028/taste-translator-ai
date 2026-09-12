@@ -80,6 +80,81 @@ export type Database = {
         }
         Relationships: []
       }
+      blg_articles: {
+        Row: {
+          article_created_at: string | null
+          article_updated_at: string | null
+          content_html: string | null
+          faq_json_ld: Json | null
+          hero_image_url: string | null
+          id: number
+          json_ld: Json | null
+          language_code: string | null
+          meta_description: string | null
+          previous_slugs: string[]
+          slug: string
+          synced_at: string
+          title: string
+        }
+        Insert: {
+          article_created_at?: string | null
+          article_updated_at?: string | null
+          content_html?: string | null
+          faq_json_ld?: Json | null
+          hero_image_url?: string | null
+          id: number
+          json_ld?: Json | null
+          language_code?: string | null
+          meta_description?: string | null
+          previous_slugs?: string[]
+          slug: string
+          synced_at?: string
+          title: string
+        }
+        Update: {
+          article_created_at?: string | null
+          article_updated_at?: string | null
+          content_html?: string | null
+          faq_json_ld?: Json | null
+          hero_image_url?: string | null
+          id?: number
+          json_ld?: Json | null
+          language_code?: string | null
+          meta_description?: string | null
+          previous_slugs?: string[]
+          slug?: string
+          synced_at?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      blg_sync_state: {
+        Row: {
+          id: number
+          last_run_at: string | null
+          lease_until: string | null
+          list_complete: boolean
+          list_offset: number
+          next_allowed_at: string | null
+        }
+        Insert: {
+          id?: number
+          last_run_at?: string | null
+          lease_until?: string | null
+          list_complete?: boolean
+          list_offset?: number
+          next_allowed_at?: string | null
+        }
+        Update: {
+          id?: number
+          last_run_at?: string | null
+          lease_until?: string | null
+          list_complete?: boolean
+          list_offset?: number
+          next_allowed_at?: string | null
+        }
+        Relationships: []
+      }
       menu_dishes: {
         Row: {
           created_at: string
