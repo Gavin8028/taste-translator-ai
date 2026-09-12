@@ -25,10 +25,12 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RestaurantsIndexRouteImport } from './routes/restaurants.index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as ScanIdRouteImport } from './routes/scan_.$id'
 import { Route as RestaurantsNewRouteImport } from './routes/restaurants.new'
 import { Route as MSlugRouteImport } from './routes/m.$slug'
 import { Route as CheckoutPremiumSuccessRouteImport } from './routes/checkout.premium-success'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiDishPhotoRouteImport } from './routes/api/dish-photo'
 import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
@@ -123,6 +125,11 @@ const RestaurantsIndexRoute = RestaurantsIndexRouteImport.update({
   path: '/restaurants/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScanIdRoute = ScanIdRouteImport.update({
   id: '/scan_/$id',
   path: '/scan/$id',
@@ -141,6 +148,11 @@ const MSlugRoute = MSlugRouteImport.update({
 const CheckoutPremiumSuccessRoute = CheckoutPremiumSuccessRouteImport.update({
   id: '/checkout/premium-success',
   path: '/checkout/premium-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
@@ -240,10 +252,12 @@ export interface FileRoutesByFullPath {
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
+  '/blog/': typeof BlogIndexRoute
   '/restaurants/': typeof RestaurantsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -275,10 +289,12 @@ export interface FileRoutesByTo {
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan/$id': typeof ScanIdRoute
+  '/blog': typeof BlogIndexRoute
   '/restaurants': typeof RestaurantsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -312,10 +328,12 @@ export interface FileRoutesById {
   '/api/dish-image': typeof ApiDishImageRoute
   '/api/dish-photo': typeof ApiDishPhotoRoute
   '/auth/callback': typeof AuthCallbackRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/checkout/premium-success': typeof CheckoutPremiumSuccessRoute
   '/m/$slug': typeof MSlugRoute
   '/restaurants/new': typeof RestaurantsNewRoute
   '/scan_/$id': typeof ScanIdRoute
+  '/blog/': typeof BlogIndexRoute
   '/restaurants/': typeof RestaurantsIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -349,10 +367,12 @@ export interface FileRouteTypes {
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/auth/callback'
+    | '/blog/$slug'
     | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
+    | '/blog/'
     | '/restaurants/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -384,10 +404,12 @@ export interface FileRouteTypes {
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/auth/callback'
+    | '/blog/$slug'
     | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan/$id'
+    | '/blog'
     | '/restaurants'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -420,10 +442,12 @@ export interface FileRouteTypes {
     | '/api/dish-image'
     | '/api/dish-photo'
     | '/auth/callback'
+    | '/blog/$slug'
     | '/checkout/premium-success'
     | '/m/$slug'
     | '/restaurants/new'
     | '/scan_/$id'
+    | '/blog/'
     | '/restaurants/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -456,10 +480,12 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiDishImageRoute: typeof ApiDishImageRoute
   ApiDishPhotoRoute: typeof ApiDishPhotoRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   CheckoutPremiumSuccessRoute: typeof CheckoutPremiumSuccessRoute
   MSlugRoute: typeof MSlugRoute
   RestaurantsNewRoute: typeof RestaurantsNewRoute
   ScanIdRoute: typeof ScanIdRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   RestaurantsIndexRoute: typeof RestaurantsIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -584,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/scan_/$id': {
       id: '/scan_/$id'
       path: '/scan/$id'
@@ -610,6 +643,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout/premium-success'
       fullPath: '/checkout/premium-success'
       preLoaderRoute: typeof CheckoutPremiumSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/callback': {
@@ -757,10 +797,12 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiDishImageRoute: ApiDishImageRoute,
   ApiDishPhotoRoute: ApiDishPhotoRoute,
+  BlogSlugRoute: BlogSlugRoute,
   CheckoutPremiumSuccessRoute: CheckoutPremiumSuccessRoute,
   MSlugRoute: MSlugRoute,
   RestaurantsNewRoute: RestaurantsNewRoute,
   ScanIdRoute: ScanIdRoute,
+  BlogIndexRoute: BlogIndexRoute,
   RestaurantsIndexRoute: RestaurantsIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
