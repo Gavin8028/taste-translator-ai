@@ -18,6 +18,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/scan", changefreq: "weekly", priority: "0.9" },
           { path: "/pricing", changefreq: "monthly", priority: "0.8" },
           { path: "/faq", changefreq: "monthly", priority: "0.8" },
+          { path: "/blog", changefreq: "daily", priority: "0.8" },
           { path: "/demo", changefreq: "monthly", priority: "0.8" },
           { path: "/restaurants", changefreq: "monthly", priority: "0.8" },
           { path: "/restaurants/new", changefreq: "monthly", priority: "0.7" },
@@ -49,6 +50,27 @@ export const Route = createFileRoute("/sitemap.xml")({
           }
         } catch {
           // If the query fails, return the static entries only
+        }
+
+        try {
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: articles } = await supabaseAdmin
+            .from("blg_articles")
+            .select("slug, article_updated_at")
+            .order("article_created_at", { ascending: false });
+
+          for (const article of articles ?? []) {
+            entries.push({
+              path: `/blog/${article.slug}`,
+              changefreq: "weekly",
+              priority: "0.7",
+              lastmod: article.article_updated_at
+                ? new Date(article.article_updated_at).toISOString().split("T")[0]
+                : undefined,
+            });
+          }
+        } catch {
+          // Blog entries are optional in the sitemap
         }
 
         const urls = entries.map((e) =>
