@@ -19,7 +19,6 @@ const NAV_LINKS = [
   { to: "/restaurants", label: "For restaurants" },
   { to: "/pricing", label: "Pricing" },
   { to: "/faq", label: "FAQ" },
-  { to: "/blog", label: "Blog" },
   { to: "/about", label: "About" },
 ] as const;
 
