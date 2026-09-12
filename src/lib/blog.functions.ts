@@ -9,10 +9,18 @@ export type BlogCard = {
   article_created_at: string | null;
 };
 
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue };
+
 export type BlogPost = BlogCard & {
   content_html: string | null;
-  json_ld: unknown;
-  faq_json_ld: unknown;
+  json_ld: JsonValue;
+  faq_json_ld: JsonValue;
   article_updated_at: string | null;
 };
 
