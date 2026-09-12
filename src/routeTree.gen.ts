@@ -35,6 +35,7 @@ import { Route as ApiDishImageRouteImport } from './routes/api/dish-image'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as RestaurantsSlugEditRouteImport } from './routes/restaurants.$slug.edit'
+import { Route as ApiPublicBlgSyncRouteImport } from './routes/api/public/blg-sync'
 import { Route as AuthenticatedRestaurantsMineRouteImport } from './routes/_authenticated/restaurants.mine'
 import { Route as AuthenticatedAdminAnalyticsRouteImport } from './routes/_authenticated/admin.analytics'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
@@ -174,6 +175,11 @@ const RestaurantsSlugEditRoute = RestaurantsSlugEditRouteImport.update({
   path: '/restaurants/$slug/edit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBlgSyncRoute = ApiPublicBlgSyncRouteImport.update({
+  id: '/api/public/blg-sync',
+  path: '/api/public/blg-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRestaurantsMineRoute =
   AuthenticatedRestaurantsMineRouteImport.update({
     id: '/restaurants/mine',
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
+  '/api/public/blg-sync': typeof ApiPublicBlgSyncRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
+  '/api/public/blg-sync': typeof ApiPublicBlgSyncRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/restaurants/mine': typeof AuthenticatedRestaurantsMineRoute
+  '/api/public/blg-sync': typeof ApiPublicBlgSyncRoute
   '/restaurants/$slug/edit': typeof RestaurantsSlugEditRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/admin/analytics'
     | '/restaurants/mine'
+    | '/api/public/blg-sync'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -383,6 +393,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/admin/analytics'
     | '/restaurants/mine'
+    | '/api/public/blg-sync'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -418,6 +429,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/restaurants/mine'
+    | '/api/public/blg-sync'
     | '/restaurants/$slug/edit'
     | '/api/public/payments/webhook'
     | '/lovable/email/auth/preview'
@@ -451,6 +463,7 @@ export interface RootRouteChildren {
   RestaurantsIndexRoute: typeof RestaurantsIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicBlgSyncRoute: typeof ApiPublicBlgSyncRoute
   RestaurantsSlugEditRoute: typeof RestaurantsSlugEditRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
@@ -641,6 +654,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RestaurantsSlugEditRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/blg-sync': {
+      id: '/api/public/blg-sync'
+      path: '/api/public/blg-sync'
+      fullPath: '/api/public/blg-sync'
+      preLoaderRoute: typeof ApiPublicBlgSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/restaurants/mine': {
       id: '/_authenticated/restaurants/mine'
       path: '/restaurants/mine'
@@ -744,6 +764,7 @@ const rootRouteChildren: RootRouteChildren = {
   RestaurantsIndexRoute: RestaurantsIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicBlgSyncRoute: ApiPublicBlgSyncRoute,
   RestaurantsSlugEditRoute: RestaurantsSlugEditRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
