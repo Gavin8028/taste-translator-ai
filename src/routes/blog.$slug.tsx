@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-route
 import { ArrowLeft } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-header";
 import { getBlogArticle } from "@/lib/blog.functions";
-import { repointJsonLd } from "@/lib/blg.server";
+import { repointJsonLd } from "@/lib/blog-schema";
 
 const SITE = "https://menuvisionai.live";
 
