@@ -12,10 +12,18 @@ export function useAuth() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getUser().then(({ data }) => {
+    // Read the saved sign-in from this device instantly, then confirm it.
+    supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      setUser(data.user ?? null);
+      if (data.session?.user) setUser(data.session.user);
       setLoading(false);
+      supabase.auth.getUser().then(({ data: u, error }) => {
+        if (!mounted) return;
+        if (u.user) setUser(u.user);
+        // Only drop the user on a real auth rejection, not a network hiccup.
+        else if (error && (error as { status?: number }).status && (error as { status?: number }).status! < 500) setUser(null);
+        else if (!data.session) setUser(null);
+      });
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
