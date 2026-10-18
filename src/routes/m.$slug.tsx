@@ -91,7 +91,7 @@ export const Route = createFileRoute("/m/$slug")({
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center justify-center px-5 py-16 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Couldn't load menu</h1>
-        <p className="mt-3 text-muted-foreground">{error.message}</p>
+        <p className="mt-3 text-muted-foreground">{error instanceof Error ? error.message : String(error)}</p>
       </main>
       <SiteFooter />
     </div>
