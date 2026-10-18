@@ -21,7 +21,27 @@ const errorMiddleware = createMiddleware().server(async ({ next, request }) => {
   }
 });
 
+// Send every visitor to one address so their sign-in is stored in one place.
+const PRIMARY_HOST = "menuvisionai.live";
+const canonicalHostMiddleware = createMiddleware().server(async ({ next, request }) => {
+  const url = new URL(request.url);
+  const host = url.hostname;
+  const p = url.pathname;
+  const skipPath =
+    p.startsWith("/lovable/") || p.startsWith("/api/public/") || p.startsWith("/.well-known/") || p.startsWith("/mcp") || p.startsWith("/.mcp") || p.startsWith("/.lovable/");
+  const isAlias =
+    host === "www.menuvisionai.live" ||
+    (host.endsWith(".lovable.app") && !host.startsWith("id-preview--") && !host.includes("preview"));
+  if (isAlias && !skipPath && (request.method === "GET" || request.method === "HEAD")) {
+    return new Response(null, {
+      status: 301,
+      headers: { location: `https://${PRIMARY_HOST}${p}${url.search}` },
+    }) as never;
+  }
+  return next();
+});
+
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware],
+  requestMiddleware: [canonicalHostMiddleware, errorMiddleware],
 }));
